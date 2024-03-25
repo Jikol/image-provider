@@ -1,0 +1,18 @@
+# Ignore files and dir for COPY #
+.idea
+.yarn
+.dockerignore
+.git
+.prettierignore
+.prettierrc.json
+.eslintignore
+.eslintrc.json
+.gitignore
+.parcel-cache
+dist
+data
+node_modules
+Taskfile.yml
+Dockerfile.express
+README.md
+compose.yml

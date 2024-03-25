@@ -1,0 +1,70 @@
+version: "3"
+
+vars:
+  SHELL_START: '{{if eq .OS "Windows_NT"}}wsl bash -c "{{end}}'
+  SHELL_END: '{{if eq .OS "Windows_NT"}}"{{end}}'
+  DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
+
+env:
+  VERSION: "latest"
+
+tasks:
+  init:
+    desc: Initialize parcel project for development
+    aliases: [i]
+    cmds:
+      - corepack enable
+      - yarn install
+
+  init:reinstall:
+    desc: Reinitialize parcel project for development (delete cache & node_modules)
+    aliases: [i:r]
+    cmds:
+      - task: clear
+      - task: init
+
+  init:reinit:
+    desc: Reinitialize parcel project for development (delete all)
+    aliases: [i:re]
+    cmds:
+      - task: prune
+      - task: init
+
+  clear:
+    desc: Clear node_modules of all yarn workspaces installs
+    aliases: [c]
+    internal: true
+    cmds:
+      - "{{.SHELL_START}}rm -rf .yarn{{.SHELL_END}}"
+      - "{{.SHELL_START}}rm -rf .parcel-cache{{.SHELL_END}}"
+      - "{{.SHELL_START}}rm -rf node_modules{{.SHELL_END}}"
+
+  prune:
+    desc: Prune node_modules of yarn installs with lock file
+    aliases: [p]
+    internal: true
+    cmds:
+      - "{{.SHELL_START}}rm -rf .yarn{{.SHELL_END}}"
+      - "{{.SHELL_START}}rm -rf .parcel-cache{{.SHELL_END}}"
+      - "{{.SHELL_START}}rm -rf yarn.lock{{.SHELL_END}}"
+      - "{{.SHELL_START}}rm -rf node_modules{{.SHELL_END}}"
+
+  docker:build:
+    desc: Build docker image with production frontend web server
+    aliases: [d:b]
+    cmds:
+      - >
+        docker build --build-arg DATETIME='{{.DATETIME}}'
+        --build-arg VITE_DEBUG=false
+        -t lpp-ax/frontend:{{.VERSION}}
+        -f Dockerfile.prod .
+      - docker image prune -f
+
+  docker:save:
+    desc: Save frontend webapp image into tarball
+    deps: [docker:build]
+    aliases: [d:s]
+    dir: ../images
+    cmd: >
+      docker save -o ax-frontend.{{.VERSION}}.tar
+      lpp-ax/frontend:{{.VERSION}}

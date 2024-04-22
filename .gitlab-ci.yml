@@ -1,2 +1,2 @@
 test:
-  script: "TEST"
+  script: task list

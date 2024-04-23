@@ -1,3 +1,0 @@
-test:
-  only: ["develop"]
-  script: echo "Test"

@@ -7,8 +7,10 @@ vars:
 
 env:
   VERSION: "latest"
+  NODE_UPLOAD_DIR: "/data/uploads"
 
 tasks:
+  ## development tasks ##
   init:
     desc: Initialize parcel project for development
     aliases: [i]
@@ -49,22 +51,25 @@ tasks:
       - "{{.SHELL_START}}rm -rf yarn.lock{{.SHELL_END}}"
       - "{{.SHELL_START}}rm -rf node_modules{{.SHELL_END}}"
 
+  ## ----------------- ##
+
+  ## deployment tasks ##
   docker:build:
-    desc: Build docker image with production frontend web server
+    desc: Build docker image for deployment
     aliases: [d:b]
     cmds:
       - >
-        docker build --build-arg DATETIME='{{.DATETIME}}'
-        --build-arg VITE_DEBUG=false
-        -t lpp-ax/frontend:{{.VERSION}}
-        -f Dockerfile.prod .
+        docker build 
+        --build-arg DATETIME='{{.DATETIME}}'
+        --build-arg VERSION='{{.VERSION}}'
+        -t retina/image-provider:{{.VERSION}}
+        -f Dockerfile .
       - docker image prune -f
 
-  docker:save:
-    desc: Save frontend webapp image into tarball
-    deps: [docker:build]
-    aliases: [d:s]
-    dir: ../images
-    cmd: >
-      docker save -o ax-frontend.{{.VERSION}}.tar
-      lpp-ax/frontend:{{.VERSION}}
+  docker:compose:
+    desc: Run compose for builded images
+    aliases: [d:c]
+    cmds:
+      - "{{.SHELL_START}}mkdir -p {{.NODE_UPLOAD_DIR}}{{.SHELL_END}}"
+      - docker compose --profile deploy up -d
+  ## ---------------- ##

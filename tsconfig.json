@@ -10,11 +10,12 @@
     "strict": true,
     "paths": {
       "@/*": ["./src/*"]
-    },
+    }
   },
-  "include": ["src"],
+  "include": ["src", "types"],
   "exclude": ["node_modules"],
   "ts-node": {
+    "files": true,
     "require": ["tsconfig-paths/register"]
   }
 }

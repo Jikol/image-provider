@@ -1,4 +1,4 @@
-# Ignore files and dir for COPY #
+## Ignore files and dir for COPY ##
 .idea
 .yarn
 .dockerignore
@@ -8,11 +8,11 @@
 .eslintignore
 .eslintrc.json
 .gitignore
-.parcel-cache
+.env
 dist
 data
 node_modules
 Taskfile.yml
-Dockerfile.express
+Dockerfile
 README.md
 compose.yml

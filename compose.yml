@@ -1,0 +1,14 @@
+name: image-provider
+
+services:
+  image-provider:
+    container_name: image-provider
+    image: retina/image-provider:${VERSION}
+    restart: unless-stopped
+    profiles: [deploy]
+    environment:
+      NODE_UPLOAD_DIR: ${NODE_UPLOAD_DIR}
+    ports:
+      - 8000:8000
+    volumes:
+      - ${NODE_UPLOAD_DIR}:${NODE_UPLOAD_DIR}

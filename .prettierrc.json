@@ -10,5 +10,9 @@
   "bracketSameLine": true,
   "arrowParens": "always",
   "endOfLine": "lf",
-  "proseWrap": "always"
+  "proseWrap": "always",
+  "importOrder": ["^@/(.*)$", "^[./]"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "plugins": ["@trivago/prettier-plugin-sort-imports"]
 }

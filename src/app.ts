@@ -1,36 +1,32 @@
-import fs from "fs";
+import { json, urlencoded } from "body-parser";
 import express from "express";
-import multer from "multer";
-
-import config from "./config";
-
 import type { Express } from "express";
-import type { Multer } from "multer";
 
-console.log(config.UPLOAD_DIR);
+import config from "@/config";
+import logger from "@/logger";
+import { responseMiddleware } from "@/response";
+import { upload } from "@/router";
 
 const app: Express = express();
-const storage = multer.diskStorage({
-  destination: (req, file, cb): void => {
-    if (!fs.existsSync(config.UPLOAD_DIR)) {
-      fs.mkdirSync(config.UPLOAD_DIR);
-    }
-    cb(null, config.UPLOAD_DIR);
-  },
-  filename(req, file, cb): void {
-    cb(null, file.originalname);
-  }
-});
-const upload: Multer = multer({ storage });
 
-app.get("/", (req, res): void => {
-  res.send("Hello World");
-});
+/** Add middleware */
+app.use(json());
+app.use(urlencoded({ extended: true }));
+app.use(responseMiddleware);
 
-app.post("/api/upload", upload.single("file"), (req, res): void => {
-  res.send("TEST");
+/** Register routers */
+app.use("/api/v1", upload);
+app.use((req, res) => {
+  return res.status(404).jsonp({
+    message: `path ${req.path} not found`,
+    availablePaths: upload.stack.map(({ route }) => {
+      return { name: route.path, methods: route.methods };
+    })
+  });
 });
 
-app.listen("8000", () => {
-  console.log("listening on port 8000");
+/** Start express server */
+app.listen(config.PORT, () => {
+  logger.info("Express started");
+  logger.info("Listening on port 8000");
 });

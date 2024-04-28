@@ -4,26 +4,23 @@ import type { Express } from "express";
 
 import config from "@/config";
 import logger from "@/logger";
-import { responseMiddleware } from "@/response";
-import { upload } from "@/router";
+import { error, notFound, response } from "@/middleware";
+import { images, upload } from "@/router";
 
 const app: Express = express();
 
-/** Add middleware */
+/** Add helper middleware */
 app.use(json());
 app.use(urlencoded({ extended: true }));
-app.use(responseMiddleware);
+app.use(response);
 
 /** Register routers */
 app.use("/api/v1", upload);
-app.use((req, res) => {
-  return res.status(404).jsonp({
-    message: `path ${req.path} not found`,
-    availablePaths: upload.stack.map(({ route }) => {
-      return { name: route.path, methods: route.methods };
-    })
-  });
-});
+app.use("/api/v1", images);
+
+/** Add error middleware */
+app.use(error);
+app.use(notFound);
 
 /** Start express server */
 app.listen(config.PORT, () => {

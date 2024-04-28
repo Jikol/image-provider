@@ -1,15 +1,17 @@
+import { BuildOptions, build } from "esbuild";
 import path from "path";
-import { build, BuildOptions } from "esbuild";
 
-const projectRoot = path.resolve(__dirname);
+const projectRoot = path.join(path.resolve(__dirname), "..");
 const options: BuildOptions = {
   bundle: true,
   platform: "node",
   target: ["node21.0"],
+  packages: "external",
   entryPoints: [path.resolve(projectRoot, "src/app.ts")],
   format: "cjs",
   minify: true,
   sourcemap: true,
+  treeShaking: true,
   outfile: path.resolve(projectRoot, "dist/index.js")
 };
 

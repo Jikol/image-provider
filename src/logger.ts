@@ -1,17 +1,19 @@
 import pino from "pino";
 import type { Logger } from "pino";
+import pretty from "pino-pretty";
 
 import config from "@/config";
 
-const logger: Logger = pino({
-  level: config.DEBUG ? "debug" : "info",
-  transport: {
-    target: "pino-pretty",
-    options: {
-      colorize: true
-    }
-  }
+const stream = pretty({
+  colorize: true
 });
+
+const logger: Logger = pino(
+  {
+    level: config.DEBUG ? "debug" : "info"
+  },
+  stream
+);
 
 logger.debug(config);
 

@@ -1,14 +1,17 @@
-import express from "express";
-import { Router } from "express";
+import express, { Router } from "express";
+import type { NextFunction, Request, Response } from "express";
 import fs from "fs";
-import multer from "multer";
+import multer, { MulterError } from "multer";
 import type { Multer, StorageEngine } from "multer";
 import path from "path";
-import serveIndex from "serve-index";
 import { v4 } from "uuid";
 
 import config from "@/config";
+import { UploadError } from "@/exception";
+import { reqUrl } from "@/helper";
+import { reqBaseUrl } from "@/helper";
 import logger from "@/logger";
+import request from "@/middleware";
 
 const upload: Router = express.Router();
 const storage: StorageEngine = multer.diskStorage({
@@ -31,7 +34,7 @@ const storage: StorageEngine = multer.diskStorage({
 const fileUpload: Multer = multer({
   storage,
   limits: {
-    fileSize: 1000000
+    fileSize: config.UPLOAD_SIZE
   },
   fileFilter: (_req, file, cb): void => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
@@ -43,41 +46,60 @@ const fileUpload: Multer = multer({
       return cb(null, true);
     }
 
-    return cb(null, false);
+    return cb(
+      new UploadError("Uploaded file format is not supported", "LIMIT_FILE_TYPE")
+    );
   }
 });
 
-upload.post("/upload", fileUpload.single("file"), (req, res) => {
-  if (!req.file) {
-    logger.warn("Uploaded file format is not supported");
+/** Handle main method */
+upload.all(
+  "/upload",
+  request(["POST"], "multipart/form-data"),
+  fileUpload.single("file"),
+  (req, res) => {
+    logger.info(
+      `File ${req.file?.originalname} uploaded to ${req.file?.destination} as ${
+        req.file?.filename
+      } [${reqUrl(req)}]`
+    );
 
-    return res.unsupportedMedia({
+    return res.success({
       context: {
-        allowedContentType: "multipart/form-data",
-        expectedFormId: "file"
+        imageUrl: `${reqBaseUrl(req)}/images/${req.file?.filename}`
       },
-      message: "Only image file types are allowed"
+      message: "File Uploaded Successfully"
     });
   }
-
-  logger.info(
-    `File ${req.file.originalname} uploaded to ${req.file.destination} as ${req.file.filename}`
-  );
-
-  return res.success({
-    context: {
-      imageUrl: `${req.protocol}://${req.get("host")}${req.baseUrl}/images/${
-        req.file.filename
-      }`
-    },
-    message: "File uploaded successfully"
-  });
-});
-
-upload.use(
-  "/images",
-  express.static(config.UPLOAD_DIR),
-  serveIndex(config.UPLOAD_DIR, { icons: true })
 );
+
+/** Error handling */
+upload.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  if (err instanceof MulterError || err instanceof UploadError) {
+    if ((err as MulterError).code === "LIMIT_FILE_SIZE") {
+      logger.warn(`${err.message} [${reqUrl(req)}]`);
+
+      return res.tooLarge({
+        context: {
+          message: err.message,
+          maxFileSize: `${config.UPLOAD_SIZE / 1000} kB`
+        }
+      });
+    }
+    if ((err as UploadError).code === "LIMIT_FILE_TYPE") {
+      logger.warn(`${err.message} [${reqUrl(req)}]`);
+
+      return res.unsupportedMedia({
+        context: {
+          message: err.message,
+          allowedMimeTypes: ["jpg", "png", "gif", "webp"],
+          expectedFormId: "file"
+        }
+      });
+    }
+  }
+
+  next(err);
+});
 
 export { upload };

@@ -6,12 +6,15 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon src/app.ts",
-    "build": "rimraf dist && ts-node config/esbuild.prod.ts",
-    "prev": "yarn build && node --enable-source-maps dist/index.js"
+    "build": "rimraf dist && ts-node config/esbuild.prod.ts && pkg package.json",
+    "prev": "yarn build && node --enable-source-maps dist/index.js",
+    "prev-pkg": "yarn build && env-cmd dist/image-provider"
   },
   "dependencies": {
     "body-parser": "^1.20.2",
     "dotenv": "^16.4.5",
+    "emitter": "^0.0.5",
+    "env-cmd": "^10.1.0",
     "express": "^4.19.1",
     "multer": "^1.4.5-lts.1",
     "pino": "^8.20.0",
@@ -34,11 +37,20 @@
     "eslint-plugin-prettier": "^4.2.1",
     "nodemon": "^3.1.0",
     "pino-pretty": "^11.0.0",
+    "pkg": "^5.8.1",
     "prettier": "^2.7.1",
     "rimraf": "^5.0.1",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^4.9.3"
+  },
+  "bin": "dist/index.js",
+  "pkg": {
+    "scripts": "dist/index.js",
+    "targets": [
+      "node16-linux"
+    ],
+    "outputPath": "dist"
   },
   "packageManager": "yarn@4.0.0"
 }

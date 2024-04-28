@@ -58,6 +58,14 @@ upload.all(
   request(["POST"], "multipart/form-data"),
   fileUpload.array("file"),
   (req, res) => {
+    if ((req.files as Array<Express.Multer.File>).length <= 0) {
+      return res.badRequest({
+        context: {
+          message: "Files have not been provided"
+        }
+      });
+    }
+
     (req.files as Array<Express.Multer.File>).forEach((file) => {
       logger.info(
         `File ${file.originalname} uploaded to ${file.destination} as ${
@@ -66,9 +74,13 @@ upload.all(
       );
     });
 
+    console.log(req.files);
+
     return res.success({
       context: {
-        imageUrl: `${reqBaseUrl(req)}/images/${req.file?.filename}`
+        imageUrls: (req.files as Array<Express.Multer.File>).map(
+          (file) => `${reqBaseUrl(req)}/images/${file.filename}`
+        )
       },
       message: "File Uploaded Successfully"
     });

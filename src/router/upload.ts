@@ -56,13 +56,15 @@ const fileUpload: Multer = multer({
 upload.all(
   "/upload",
   request(["POST"], "multipart/form-data"),
-  fileUpload.single("file"),
+  fileUpload.array("file"),
   (req, res) => {
-    logger.info(
-      `File ${req.file?.originalname} uploaded to ${req.file?.destination} as ${
-        req.file?.filename
-      } [${reqUrl(req)}]`
-    );
+    (req.files as Array<Express.Multer.File>).forEach((file) => {
+      logger.info(
+        `File ${file.originalname} uploaded to ${file.destination} as ${
+          file.filename
+        } [${reqUrl(req)}]`
+      );
+    });
 
     return res.success({
       context: {
@@ -83,6 +85,16 @@ upload.use((err: Error, req: Request, res: Response, next: NextFunction) => {
         context: {
           message: err.message,
           maxFileSize: `${config.UPLOAD_SIZE / 1000} kB`
+        }
+      });
+    }
+    if ((err as MulterError).code === "LIMIT_UNEXPECTED_FILE") {
+      logger.warn(`${err.message} [${reqUrl(req)}]`);
+
+      return res.badRequest({
+        context: {
+          message: err.message,
+          expectedFormId: "file"
         }
       });
     }

@@ -51,6 +51,13 @@ const response = (_req: Request, res: Response, next: NextFunction): void => {
   }): Response => {
     return res.status(code).json({ context, message, code }).end();
   };
+  res.badRequest = ({
+    context = undefined,
+    message = "Bad Request",
+    code = 400
+  }): Response => {
+    return res.status(code).json({ context, message, code }).end();
+  };
   res.success = ({ context = undefined, message = "Success", code = 200 }): Response => {
     return res.status(code).json({ context, message, code }).end();
   };

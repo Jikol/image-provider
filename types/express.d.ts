@@ -25,6 +25,7 @@ declare global {
       notFound(props: TResponseProps): Response;
       notAllowed(props: TNotAllowedProps): Response;
       tooLarge(props: TResponseProps): Response;
+      badRequest(props: TResponseProps): Response;
       error(props: TResponseProps): Response;
     }
   }

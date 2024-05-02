@@ -2,12 +2,12 @@ variables:
   TASKFILE_PATH: "~/.local/bin"
 
 stages:
-  - runner_deps
+  - taskfile
   - build
   - deploy
 
-runner_deps:
-  stage: runner_deps
+taskfile:
+  stage: taskfile
   before_script:
     - apk add --no-cache curl
     - docker --version
@@ -27,11 +27,12 @@ build-staging:
   after_script:
     - docker image prune -f
   dependencies:
-    - runner_deps
+    - taskfile
 
 deploy-staging:
   stage: deploy
   script:
     - $TASKFILE_PATH/task docker:compose:up
   dependencies:
+    - taskfile
     - build-staging

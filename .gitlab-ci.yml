@@ -23,7 +23,7 @@ taskfile:
 build-staging:
   stage: build
   script:
-    - $TASKFILE_PATH/task docker:build VERSION=$VERSION
+    - $TASKFILE_PATH/task docker:build
   after_script:
     - docker image prune -f
   dependencies:

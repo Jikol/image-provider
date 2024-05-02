@@ -1,0 +1,38 @@
+variables:
+  DOCKER_IMAGE: "alpine:3.19.1"
+  TASKFILE_PATH: "~/.local/bin"
+
+stages:
+  - runner_deps
+  - build
+  - deploy
+
+runner_deps:
+  stage: runner_deps
+  image: $DOCKER_IMAGE
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b $TASKFILE_PATH
+    - $TASKFILE_PATH/task --version | grep "Task version" || (echo "Taskfile not installed."; exit 1)
+  cache:
+    paths:
+      - $TASKFILE_PATH
+
+build-staging:
+  stage: build
+  image: $DOCKER_IMAGE
+  script:
+    - $TASKFILE_PATH/task docker:build VERSION=$VERSION
+  after_script:
+    - docker image prune -f
+  dependencies:
+    - runner_deps
+
+deploy-staging:
+  stage: deploy
+  image: $DOCKER_IMAGE
+  script:
+    - $TASKFILE_PATH/task docker:compose
+  dependencies:
+    - runner_deps

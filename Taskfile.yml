@@ -8,7 +8,7 @@ vars:
 env:
   VERSION: latest
   DEBUG: true
-  HOSTNAME: vsrvfeia0h-86.vsb.cz
+  MY_HOSTNAME: vsrvfeia0h-86.vsb.cz
   PORT: 8000
   UPLOAD_DIR: /tmp/image_provider/uploads
   APISCHEMA_DIR: /tmp/image_provider

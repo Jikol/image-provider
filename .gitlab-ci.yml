@@ -15,7 +15,7 @@ runner_deps:
   script:
     - sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b $TASKFILE_PATH
     - $TASKFILE_PATH/task --version | grep "Task version" || (echo "Taskfile not installed."; exit 1)
-  cache:
+  artifacts:
     paths:
       - $TASKFILE_PATH
 

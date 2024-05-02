@@ -8,13 +8,13 @@ vars:
 env:
   VERSION: latest
   DEBUG: true
-  HOSTNAME: localhost
+  HOSTNAME: http://vsrvfeia0h-86.vsb.cz/
   PORT: 8000
   UPLOAD_DIR: /tmp/image_provider/uploads
   APISCHEMA_DIR: /tmp/image_provider
   UPLOAD_SIZE: 1000
-  REDOC_HOSTNAME: localhost
-  REDOC_PORT: 8080
+  REDOC_HOSTNAME: http://vsrvfeia0h-86.vsb.cz/
+  REDOC_PORT: 80
 
 tasks:
   ## development tasks ##

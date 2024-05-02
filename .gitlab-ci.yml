@@ -5,6 +5,7 @@ stages:
   - taskfile
   - build
   - deploy
+  - defer
 
 taskfile:
   stage: taskfile
@@ -36,3 +37,10 @@ deploy-staging:
   dependencies:
     - taskfile
     - build-staging
+
+defer-staging:
+  stage: defer
+  script:
+    - docker system prune -f
+  dependencies:
+    - deploy-staging

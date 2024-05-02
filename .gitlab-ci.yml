@@ -32,6 +32,6 @@ build-staging:
 deploy-staging:
   stage: deploy
   script:
-    - $TASKFILE_PATH/task docker:compose
+    - $TASKFILE_PATH/task docker:compose:up
   dependencies:
-    - runner_deps
+    - build-staging

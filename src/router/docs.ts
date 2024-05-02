@@ -1,21 +1,20 @@
 import express, { Router } from "express";
-import serveIndex from "serve-index";
+import path from "path";
 
 import config from "@/config";
 import { reqUrl } from "@/helper";
 import logger from "@/logger";
 
-const images: Router = express.Router();
+const docs: Router = express.Router();
 
 /** Static files middleware */
-images.use(
-  "/images",
-  (req, _res, next) => {
+docs.use(
+  "/docs",
+  (req, _req, next) => {
     logger.info(`Endpoint accesed [${reqUrl(req)}]`);
     next();
   },
-  express.static(config.UPLOAD_DIR),
-  serveIndex(config.UPLOAD_DIR, { icons: true })
+  express.static(path.join(config.APISCHEMA_DIR, "openapi.json"))
 );
 
-export { images };
+export { docs };

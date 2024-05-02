@@ -15,13 +15,15 @@ RUN yarn install
 RUN yarn build
 
 # final image
-FROM node:alpine3.19
+FROM alpine:3.19
 
 WORKDIR /app
 
 EXPOSE 8000
 
-COPY --from=base /app/dist/index.js .
+RUN apk add --update nodejs
+
+COPY --from=base /app/dist/index.js /app/dist/index.js.map ./
 
 CMD ["node", "index.js"]
 

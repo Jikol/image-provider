@@ -6,7 +6,6 @@ const options: BuildOptions = {
   bundle: true,
   platform: "node",
   target: ["node21.0"],
-  packages: "external",
   entryPoints: [path.resolve(projectRoot, "src/app.ts")],
   format: "cjs",
   minify: true,

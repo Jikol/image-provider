@@ -70,11 +70,11 @@ upload.all(
       logger.info(
         `File ${file.originalname} uploaded to ${file.destination} as ${
           file.filename
-        } [${reqUrl(req)}]`
+        } as [${(req.files as Array<Express.Multer.File>).map(
+          (file) => `${reqBaseUrl(req)}/images/${file.filename}`
+        )}] [${reqUrl(req)}]`
       );
     });
-
-    console.log(req.files);
 
     return res.success({
       context: {

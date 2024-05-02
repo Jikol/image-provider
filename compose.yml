@@ -1,14 +1,33 @@
-name: image-provider
+name: image-provider${STAGE}
 
 services:
   image-provider:
     container_name: image-provider
-    image: retina/image-provider:${VERSION}
+    image: jav0032/retina:image-provider-${VERSION}
     restart: unless-stopped
-    profiles: [deploy]
+    profiles: [ deploy ]
     environment:
-      NODE_UPLOAD_DIR: ${NODE_UPLOAD_DIR}
+      NODE_VERSION: ${VERSION}
+      NODE_DEBUG: ${DEBUG}
+      NODE_HOSTNAME: ${HOSTNAME}
+      NODE_PORT: ${PORT}
+      NODE_UPLOAD_DIR: ${UPLOAD_DIR}
+      NODE_APISCHEMA_DIR: ${APISCHEMA_DIR}
+      NODE_UPLOAD_SIZE: ${UPLOAD_SIZE}
+      NODE_REDOC_HOSTNAME: ${REDOC_HOSTNAME}
+      NODE_REDOC_PORT: ${REDOC_PORT}
     ports:
-      - 8000:8000
+      - ${PORT}:${PORT}
     volumes:
-      - ${NODE_UPLOAD_DIR}:${NODE_UPLOAD_DIR}
+      - ${UPLOAD_DIR}:${UPLOAD_DIR}
+
+  redoc:
+    container_name: redoc
+    image: redocly/redoc:v2.1.4
+    restart: unless-stopped
+    profiles: [ deploy, dev ]
+    environment:
+      SPEC_URL: "http://${HOSTNAME}:${PORT}/api/v1/docs"
+      PAGE_TITLE: "ReDoc - Image Provider"
+    ports:
+      - ${REDOC_PORT}:80

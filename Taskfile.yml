@@ -6,8 +6,15 @@ vars:
   DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
 
 env:
-  VERSION: "latest"
-  NODE_UPLOAD_DIR: "/data/uploads"
+  VERSION: latest
+  DEBUG: true
+  HOSTNAME: localhost
+  PORT: 8000
+  UPLOAD_DIR: /tmp/image_provider/uploads
+  APISCHEMA_DIR: /tmp/image_provider
+  UPLOAD_SIZE: 1000
+  REDOC_HOSTNAME: localhost
+  REDOC_PORT: 8080
 
 tasks:
   ## development tasks ##
@@ -51,6 +58,18 @@ tasks:
       - "{{.SHELL_START}}rm -rf yarn.lock{{.SHELL_END}}"
       - "{{.SHELL_START}}rm -rf node_modules{{.SHELL_END}}"
 
+  dev:compose:up:
+    desc: Run compose for dependent service for development
+    aliases: [d:c:d]
+    dotenv: [".env"]
+    cmd: "{{.SHELL_START}}STAGE='-dev' docker compose --profile dev up -d{{.SHELL_END}}"
+
+  dev:compose:down:
+    desc: Stop compose for dependent service for development
+    aliases: [d:c:d]
+    dotenv: [".env"]
+    cmd: "{{.SHELL_START}}STAGE='-dev' docker compose --profile dev down{{.SHELL_END}}"
+
   ## ----------------- ##
 
   ## deployment tasks ##
@@ -62,14 +81,21 @@ tasks:
         docker build 
         --build-arg DATETIME='{{.DATETIME}}'
         --build-arg VERSION='{{.VERSION}}'
-        -t retina/image-provider:{{.VERSION}}
+        -t jav0032/retina:image-provider-{{.VERSION}}
         -f Dockerfile .
       - docker image prune -f
 
-  docker:compose:
+  docker:compose:up:
     desc: Run compose for builded images
     aliases: [d:c]
     cmds:
-      - "{{.SHELL_START}}mkdir -p {{.NODE_UPLOAD_DIR}}{{.SHELL_END}}"
-      - docker compose --profile deploy up -d
+      - "{{.SHELL_START}}mkdir -p {{.UPLOAD_DIR}}{{.SHELL_END}}"
+      - "{{.SHELL_START}}mkdir -p {{.APISCHEMA_DIR}}{{.SHELL_END}}"
+      - "{{.SHELL_START}}STAGE='' docker compose --profile deploy up -d{{.SHELL_END}}"
+
+  docker:compose:down:
+    desc: Down compose for builded images
+    aliases: [d:c]
+    cmds:
+      - "{{.SHELL_START}}STAGE='' docker compose --profile deploy down{{.SHELL_END}}"
   ## ---------------- ##

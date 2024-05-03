@@ -6,15 +6,15 @@ vars:
   DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
 
 env:
-  VERSION: latest
-  DEBUG: true
-  MY_HOSTNAME: vsrvfeia0h-86.vsb.cz
-  PORT: 8000
-  UPLOAD_DIR: /tmp/image_provider/uploads
-  APISCHEMA_DIR: /tmp/image_provider
-  UPLOAD_SIZE: 1000
-  REDOC_HOSTNAME: vsrvfeia0h-86.vsb.cz
-  REDOC_PORT: 80
+  NODE_VERSION: latest
+  NODE_DEBUG: true
+  NODE_HOSTNAME: vsrvfeia0h-86.vsb.cz
+  NODE_PORT: 8000
+  NODE_UPLOAD_DIR: /tmp/image_provider/uploads
+  NODE_APISCHEMA_DIR: /tmp/image_provider
+  NODE_UPLOAD_SIZE: 1000
+  NODE_REDOC_HOSTNAME: vsrvfeia0h-86.vsb.cz
+  NODE_REDOC_PORT: 80
 
 tasks:
   ## development tasks ##

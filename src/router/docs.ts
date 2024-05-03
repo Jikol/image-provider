@@ -11,7 +11,7 @@ const docs: Router = express.Router();
 docs.use(
   "/docs",
   (req, _req, next) => {
-    logger.info(`Endpoint accesed [${reqUrl(req)}]`);
+    logger.info(`Endpoint accesed (${reqUrl(req)})`);
     next();
   },
   express.static(path.join(config.APISCHEMA_DIR, "openapi.json"))

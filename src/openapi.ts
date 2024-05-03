@@ -178,7 +178,9 @@ const generateOpenAPI = (): void => {
 
   fs.writeFile(path.join(config.APISCHEMA_DIR, "openapi.json"), docs, "utf8", (err) => {
     if (!err) {
-      logger.info("OpenAPI docs generated successfully!");
+      logger.info(
+        `OpenAPI docs generated successfully! (${config.APISCHEMA_DIR}/openapi.json)`
+      );
 
       return;
     }

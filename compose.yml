@@ -3,31 +3,31 @@ name: image-provider${STAGE}
 services:
   image-provider:
     container_name: image-provider
-    image: jav0032/retina:image-provider-${VERSION}
+    image: jav0032/retina:image-provider-${NODE_VERSION}
     restart: unless-stopped
-    profiles: [ deploy ]
+    profiles: [deploy]
     environment:
-      NODE_VERSION: ${VERSION}
-      NODE_DEBUG: ${DEBUG}
-      NODE_HOSTNAME: ${MY_HOSTNAME}
-      NODE_PORT: ${PORT}
-      NODE_UPLOAD_DIR: ${UPLOAD_DIR}
-      NODE_APISCHEMA_DIR: ${APISCHEMA_DIR}
-      NODE_UPLOAD_SIZE: ${UPLOAD_SIZE}
-      NODE_REDOC_HOSTNAME: ${REDOC_HOSTNAME}
-      NODE_REDOC_PORT: ${REDOC_PORT}
+      NODE_VERSION: ${NODE_VERSION}
+      NODE_DEBUG: ${NODE_DEBUG}
+      NODE_HOSTNAME: ${NODE_HOSTNAME}
+      NODE_PORT: ${NODE_PORT}
+      NODE_UPLOAD_DIR: ${NODE_UPLOAD_DIR}
+      NODE_APISCHEMA_DIR: ${NODE_APISCHEMA_DIR}
+      NODE_UPLOAD_SIZE: ${NODE_UPLOAD_SIZE}
+      NODE_REDOC_HOSTNAME: ${NODE_REDOC_HOSTNAME}
+      NODE_REDOC_PORT: ${NODE_REDOC_PORT}
     ports:
-      - ${PORT}:${PORT}
+      - ${NODE_PORT}:${NODE_PORT}
     volumes:
-      - ${UPLOAD_DIR}:${UPLOAD_DIR}
+      - ${NODE_UPLOAD_DIR}:${NODE_UPLOAD_DIR}
 
   redoc:
     container_name: redoc
     image: redocly/redoc:v2.1.4
     restart: unless-stopped
-    profiles: [ deploy, dev ]
+    profiles: [deploy, dev]
     environment:
-      SPEC_URL: "http://${MY_HOSTNAME}:${PORT}/api/v1/docs"
+      SPEC_URL: "http://${NODE_HOSTNAME}:${NODE_PORT}/api/v1/docs"
       PAGE_TITLE: "ReDoc - Image Provider"
     ports:
-      - ${REDOC_PORT}:80
+      - ${NODE_REDOC_PORT}:80

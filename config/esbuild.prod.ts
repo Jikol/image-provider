@@ -6,12 +6,28 @@ const options: BuildOptions = {
   bundle: true,
   platform: "node",
   target: ["node21.0"],
-  entryPoints: [path.resolve(projectRoot, "src/app.ts")],
+  entryPoints: [
+    { out: "index", in: path.resolve(projectRoot, "src/app.ts") },
+    {
+      out: "public/style",
+      in: path.resolve(projectRoot, "node_modules/serve-index/public/style.css")
+    },
+    {
+      out: "public/directory",
+      in: path.resolve(projectRoot, "node_modules/serve-index/public/directory.html")
+    },
+    {
+      out: "public/icons/image",
+      in: path.resolve(projectRoot, "node_modules/serve-index/public/icons/image.png")
+    }
+  ],
+  entryNames: "[dir]/[name]",
+  loader: { ".html": "copy", ".png": "copy" },
   format: "cjs",
   minify: true,
   sourcemap: true,
   treeShaking: true,
-  outfile: path.resolve(projectRoot, "dist/index.js")
+  outdir: path.resolve(projectRoot, "dist")
 };
 
 (async (): Promise<void> => {

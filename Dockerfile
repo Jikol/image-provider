@@ -23,7 +23,7 @@ EXPOSE 8000
 
 RUN apk add --update nodejs
 
-COPY --from=base /app/dist/index.js /app/dist/index.js.map ./
+COPY --from=base /app/dist/. .
 
 CMD ["node", "index.js"]
 

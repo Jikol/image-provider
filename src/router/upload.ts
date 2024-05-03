@@ -72,7 +72,7 @@ upload.all(
           file.filename
         } as [${(req.files as Array<Express.Multer.File>).map(
           (file) => `${reqBaseUrl(req)}/images/${file.filename}`
-        )}] [${reqUrl(req)}]`
+        )}] (${reqUrl(req)})`
       );
     });
 

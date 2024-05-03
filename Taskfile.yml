@@ -89,8 +89,8 @@ tasks:
     desc: Run compose for builded images
     aliases: [d:c]
     cmds:
-      - "{{.SHELL_START}}mkdir -p {{.UPLOAD_DIR}}{{.SHELL_END}}"
-      - "{{.SHELL_START}}mkdir -p {{.APISCHEMA_DIR}}{{.SHELL_END}}"
+      - "{{.SHELL_START}}mkdir -p {{.NODE_UPLOAD_DIR}}{{.SHELL_END}}"
+      - "{{.SHELL_START}}mkdir -p {{.NODE_APISCHEMA_DIR}}{{.SHELL_END}}"
       - "{{.SHELL_START}}STAGE='' docker compose --profile deploy up -d{{.SHELL_END}}"
 
   docker:compose:down:

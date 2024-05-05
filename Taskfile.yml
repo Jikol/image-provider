@@ -6,15 +6,17 @@ vars:
   DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
 
 env:
-  NODE_VERSION: latest
+  NODE_VERSION: v1.0
   NODE_DEBUG: true
-  NODE_HOSTNAME: vsrvfeia0h-86.vsb.cz
+  NODE_HOSTNAME: localhost
   NODE_PORT: 8000
   NODE_UPLOAD_DIR: /tmp/image_provider/uploads
   NODE_APISCHEMA_DIR: /tmp/image_provider
   NODE_UPLOAD_SIZE: 1000
-  NODE_REDOC_HOSTNAME: vsrvfeia0h-86.vsb.cz
-  NODE_REDOC_PORT: 80
+  NODE_REDOC_HOSTNAME: localhost
+  NODE_REDOC_PORT: 8080
+  DOCKER_USER: jav0032
+  DOCKER_PASSWD: Retina123456
 
 tasks:
   ## development tasks ##
@@ -80,10 +82,18 @@ tasks:
       - >
         docker build 
         --build-arg DATETIME='{{.DATETIME}}'
-        --build-arg VERSION='{{.VERSION}}'
-        -t jav0032/retina:image-provider-{{.VERSION}}
+        --build-arg VERSION='{{.NODE_VERSION}}'
+        -t jav0032/retina:image-provider-{{.NODE_VERSION}}
         -f Dockerfile .
       - docker image prune -f
+
+  docker:push:
+    desc: Push builded docker image to docker hub
+    aliases: [d:p]
+    cmds:
+      - docker login -u {{.DOCKER_USER}} -p {{.DOCKER_PASSWD}}
+      - docker push jav0032/retina:image-provider-{{.NODE_VERSION}}
+
 
   docker:compose:up:
     desc: Run compose for builded images

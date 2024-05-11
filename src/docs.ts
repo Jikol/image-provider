@@ -5,6 +5,8 @@ import swaggerJsdoc from "swagger-jsdoc";
 import config from "@/config";
 import logger from "@/logger";
 
+const docsDir = path.join(process.cwd(), "docs");
+const docsLocation = path.resolve(docsDir, "openapi.json");
 const options = {
   definition: {
     openapi: "3.0.0",
@@ -23,16 +25,17 @@ const options = {
 };
 
 const generateDocs = (): void => {
-  if (fs.existsSync(path.join(config.APISCHEMA_DIR, "openapi.json"))) return;
+  if (!fs.existsSync(docsDir)) {
+    fs.mkdirSync(docsDir);
+  }
+  if (config.DEV && fs.existsSync(docsLocation)) return;
   fs.writeFile(
-    path.join(config.APISCHEMA_DIR, "openapi.json"),
+    docsLocation,
     JSON.stringify(swaggerJsdoc(options), null, 2),
     "utf8",
     (err) => {
       if (!err) {
-        logger.info(
-          `OpenAPI docs generated successfully! (${config.APISCHEMA_DIR}/openapi.json)`
-        );
+        logger.info(`OpenAPI docs generated successfully! (${docsLocation})`);
 
         return;
       }
@@ -41,5 +44,7 @@ const generateDocs = (): void => {
     }
   );
 };
+
+if (!config.DEV) generateDocs();
 
 export { generateDocs };

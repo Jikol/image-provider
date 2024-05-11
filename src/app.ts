@@ -30,5 +30,7 @@ app.use(notFound);
 app.listen(config.PORT, () => {
   logger.info("Express started");
   logger.info("Listening on port 8000");
-  generateDocs();
+  if (config.DEV) {
+    generateDocs();
+  }
 });

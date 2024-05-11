@@ -2,8 +2,10 @@ variables:
   TASKFILE_PATH: "~/.local/bin"
 
 .develop: &develop
-  only:
-    - develop
+  only: [develop]
+
+.master: &master
+  only: [master]
 
 stages:
   - taskfile

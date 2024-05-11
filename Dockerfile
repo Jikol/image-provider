@@ -13,6 +13,7 @@ RUN yarn set version stable
 RUN yarn config set nodeLinker node-modules
 RUN yarn install
 RUN yarn build
+RUN yarn docs
 
 # final image
 FROM alpine:3.19
@@ -24,6 +25,7 @@ EXPOSE 8000
 RUN apk add --update nodejs
 
 COPY --from=base /app/dist/. .
+COPY --from=base /app/docs/. ./docs
 
 CMD ["node", "index.js"]
 

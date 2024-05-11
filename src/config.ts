@@ -9,18 +9,18 @@ const config = {
   DEBUG: ((): boolean => {
     return process.env.NODE_DEBUG === "true";
   })(),
+  DEV: ((): boolean => {
+    if (process.env.NODE_ENV === "development") return true;
+    if (process.env.NODE_ENV === "production") return false;
+
+    return false;
+  })(),
   HOSTNAME: process.env.NODE_HOSTNAME ? process.env.NODE_HOSTNAME : "localhost",
   PORT: process.env.NODE_PORT ? +process.env.NODE_PORT : 8000,
   UPLOAD_DIR: ((): string => {
     if (!process.env.NODE_UPLOAD_DIR) throw new Error("NODE_UPLOAD_DIR env is undefined");
 
     return path.resolve(process.env.NODE_UPLOAD_DIR);
-  })(),
-  APISCHEMA_DIR: ((): string => {
-    if (!process.env.NODE_APISCHEMA_DIR)
-      throw new Error("NODE_APISCHEMA_DIR env is undefined");
-
-    return path.resolve(process.env.NODE_APISCHEMA_DIR);
   })(),
   UPLOAD_SIZE: process.env.NODE_UPLOAD_SIZE
     ? +process.env.NODE_UPLOAD_SIZE * 1000

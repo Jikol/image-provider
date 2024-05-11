@@ -16,5 +16,8 @@ docs.use(
   },
   express.static(path.join(config.APISCHEMA_DIR, "openapi.json"))
 );
+docs.post("/test", (req, res) => {
+  res.send("Hello World!");
+});
 
 export { docs };

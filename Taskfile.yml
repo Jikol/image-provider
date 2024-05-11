@@ -5,19 +5,6 @@ vars:
   SHELL_END: '{{if eq .OS "Windows_NT"}}"{{end}}'
   DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
 
-env:
-  NODE_VERSION: v1.0
-  NODE_DEBUG: true
-  NODE_HOSTNAME: localhost
-  NODE_PORT: 8000
-  NODE_UPLOAD_DIR: /tmp/image_provider/uploads
-  NODE_APISCHEMA_DIR: /tmp/image_provider
-  NODE_UPLOAD_SIZE: 1000
-  NODE_REDOC_HOSTNAME: localhost
-  NODE_REDOC_PORT: 8080
-  DOCKER_USER: jav0032
-  DOCKER_PASSWD: Retina123456
-
 tasks:
   ## development tasks ##
   init:
@@ -64,14 +51,13 @@ tasks:
     desc: Run compose for dependent service for development
     aliases: [d:c:d]
     dotenv: [".env"]
-    cmd: "{{.SHELL_START}}STAGE='-dev' docker compose --profile dev up -d{{.SHELL_END}}"
+    cmd: "{{.SHELL_START}}STAGE='-dev' docker compose --profile dev up{{.SHELL_END}}"
 
   dev:compose:down:
     desc: Stop compose for dependent service for development
     aliases: [d:c:d]
     dotenv: [".env"]
     cmd: "{{.SHELL_START}}STAGE='-dev' docker compose --profile dev down{{.SHELL_END}}"
-
   ## ----------------- ##
 
   ## deployment tasks ##
@@ -93,7 +79,6 @@ tasks:
     cmds:
       - docker login -u {{.DOCKER_USER}} -p {{.DOCKER_PASSWD}}
       - docker push jav0032/retina:image-provider-{{.NODE_VERSION}}
-
 
   docker:compose:up:
     desc: Run compose for builded images

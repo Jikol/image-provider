@@ -7,7 +7,7 @@ import path from "path";
 import { v4 } from "uuid";
 
 import config from "@/config";
-import { UploadError } from "@/exception";
+import { UploadError } from "@/helper";
 import { reqUrl } from "@/helper";
 import { reqBaseUrl } from "@/helper";
 import logger from "@/logger";
@@ -52,7 +52,61 @@ const fileUpload: Multer = multer({
   }
 });
 
-/** Handle main method */
+/**
+ * @openapi
+ * /upload:
+ *   post:
+ *     summary: Upload files
+ *     description: Upload images to the server.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: The file(s) to upload.
+ *     responses:
+ *       '200':
+ *         description: File uploaded successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 context:
+ *                   type: object
+ *                   properties:
+ *                     imageUrls:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: URLs of the uploaded images.
+ *                 message:
+ *                   type: string
+ *                   description: A message describing the result of the upload.
+ *                 code:
+ *                   type: integer
+ *                   description: HTTP status code.
+ *                   example: 200
+ *             example:
+ *               context:
+ *                 imageUrls:
+ *                   - "http://localhost:8000/api/v1/images/<imgId>.<imgExtension>"
+ *               message: "File Uploaded Successfully"
+ *               code: 200
+ *       '400':
+ *         description: Bad Request.
+ *       '413':
+ *         description: Payload too large. The uploaded file exceeds the specified limit.
+ *       '415':
+ *         description: Unsupported Media Type. The uploaded file format is not supported.
+ */
 upload.all(
   "/upload",
   request(["POST"], "multipart/form-data"),

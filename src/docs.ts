@@ -28,7 +28,7 @@ const generateDocs = (): void => {
   if (!fs.existsSync(docsDir)) {
     fs.mkdirSync(docsDir);
   }
-  if (config.DEV && fs.existsSync(docsLocation)) return;
+  if (fs.existsSync(docsLocation)) return;
   fs.writeFile(
     docsLocation,
     JSON.stringify(swaggerJsdoc(options), null, 2),

@@ -1,5 +1,6 @@
 variables:
   TASKFILE_PATH: "~/.local/bin"
+  NODE_VERSION: v1.0.1
 
 .develop: &develop
   only: [develop]

@@ -32,6 +32,5 @@ app.listen(config.PORT, () => {
   logger.info("Listening on port 8000");
   if (config.DEV) {
     generateDocs();
-    logger.debug("jsem zde");
   }
 });

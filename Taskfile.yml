@@ -6,15 +6,7 @@ vars:
   DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
 
 env:
-  NODE_VERSION: v1.0.2
-  NODE_DEBUG: true
-  NODE_ENV: production
-  NODE_HOSTNAME: localhost
-  NODE_PORT: 8000
-  NODE_UPLOAD_DIR: /tmp/image_provider/uploads
-  NODE_UPLOAD_SIZE: 10000
-  NODE_REDOC_HOSTNAME: localhost
-  NODE_REDOC_PORT: 8080
+  NODE_VERSION: v1.0.0
 
 tasks:
   ## development tasks ##

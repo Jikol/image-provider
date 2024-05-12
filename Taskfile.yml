@@ -5,6 +5,8 @@ vars:
   SHELL_END: '{{if eq .OS "Windows_NT"}}"{{end}}'
   DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
 
+dotenv: [".env"]
+
 env:
   NODE_VERSION: v1.0.1
 

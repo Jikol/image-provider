@@ -6,7 +6,7 @@ vars:
   DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
 
 env:
-  NODE_VERSION: latest
+  NODE_VERSION: v1.0.2
   NODE_DEBUG: true
   NODE_ENV: production
   NODE_HOSTNAME: localhost

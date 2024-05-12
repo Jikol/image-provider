@@ -8,6 +8,8 @@ vars:
 env:
   NODE_VERSION: v1.0
 
+dotenv: [".env"]
+
 tasks:
   ## development tasks ##
   init:
@@ -71,7 +73,15 @@ tasks:
       - >
         docker build 
         --build-arg DATETIME='{{.DATETIME}}'
-        --build-arg VERSION='{{.NODE_VERSION}}'
+        --build-arg NODE_VERSION='{{.NODE_VERSION}}'
+        --build-arg NODE_DEBUG='{{.NODE_DEBUG}}'
+        --build-arg NODE_ENV='{{.NODE_ENV}}'
+        --build-arg NODE_HOSTNAME='{{.NODE_HOSTNAME}}'
+        --build-arg NODE_PORT='{{.NODE_PORT}}'
+        --build-arg NODE_UPLOAD_DIR='{{.NODE_UPLOAD_DIR}}'
+        --build-arg NODE_UPLOAD_SIZE='{{.NODE_UPLOAD_SIZE}}'
+        --build-arg NODE_REDOC_HOSTNAME='{{.NODE_REDOC_HOSTNAME}}'
+        --build-arg NODE_REDOC_PORT='{{.NODE_REDOC_PORT}}'
         -t jav0032/retina:image-provider-{{.NODE_VERSION}}
         -f Dockerfile .
       - docker image prune -f

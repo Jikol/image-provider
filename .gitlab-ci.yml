@@ -41,8 +41,8 @@ deploy-staging:
   stage: deploy
   script:
     - $TASKFILE_PATH/task docker:compose:up
-  after_script:
-    - docker system prune -f
+#  after_script:
+#    - docker system prune -f
   dependencies:
     - taskfile
     - build-staging

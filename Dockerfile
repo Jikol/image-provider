@@ -46,18 +46,16 @@ RUN apk add --update nodejs
 COPY --from=base /app/dist/. .
 COPY --from=base /app/docs/. ./docs
 
-#CMD ["node", "index.js"]
-#
-## mata additions
-#LABEL org.opencontainers.image.title="image-provider"
-#LABEL org.opencontainers.image.description="Express API for upload and serve retina images"
-#LABEL org.opencontainers.image.version=${NODE_VERSION}
-#LABEL org.opencontainers.image.created=${DATETIME}
-#LABEL org.opencontainers.image.vendor="VSB"
-#LABEL org.opencontainers.image.base.name="node:alpine3.19"
+# mata additions
+LABEL org.opencontainers.image.title="image-provider"
+LABEL org.opencontainers.image.description="Express API for upload and serve retina images"
+LABEL org.opencontainers.image.version=${NODE_VERSION}
+LABEL org.opencontainers.image.created=${DATETIME}
+LABEL org.opencontainers.image.vendor="VSB"
+LABEL org.opencontainers.image.base.name="node:alpine3.19"
 
 # for debug purpose only
-CMD ["sleep", "infinity"]
+# CMD ["sleep", "infinity"]
 
 
 

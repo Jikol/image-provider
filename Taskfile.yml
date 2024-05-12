@@ -6,9 +6,7 @@ vars:
   DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
 
 env:
-  NODE_VERSION: v1.0
-
-dotenv: [".env"]
+  NODE_VERSION: v1.0.1
 
 tasks:
   ## development tasks ##
@@ -97,8 +95,6 @@ tasks:
     desc: Run compose for builded images
     aliases: [d:c]
     cmds:
-      - "{{.SHELL_START}}mkdir -p {{.NODE_UPLOAD_DIR}}{{.SHELL_END}}"
-      - "{{.SHELL_START}}mkdir -p {{.NODE_APISCHEMA_DIR}}{{.SHELL_END}}"
       - "{{.SHELL_START}}STAGE='' docker compose --profile deploy up -d{{.SHELL_END}}"
 
   docker:compose:down:

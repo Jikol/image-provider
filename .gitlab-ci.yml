@@ -11,6 +11,7 @@ stages:
   - taskfile
   - build
   - deploy
+  - tagging
 
 taskfile:
   <<: *develop
@@ -46,3 +47,13 @@ deploy-staging:
   dependencies:
     - taskfile
     - build-staging
+
+tagging:
+  <<: *develop
+  stage: tagging
+  script:
+    - echo "VERSION=$NODE_VERSION" >> version.env
+  artifacts:
+    reports:
+      dotenv: version.env
+

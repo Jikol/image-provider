@@ -1,34 +1,19 @@
 variables:
   TASKFILE_PATH: "~/.local/bin"
-  VERSION_PATH: "version.env"
 
 .develop: &develop
+  variables:
+    NODE_VERSION: "staging"
   only: [develop]
 
 .master: &master
   only: [master]
 
-.git: &git
-  before_script:
-    - apk add --no-cache git
-    - git --version
-
 stages:
-  - prepare
   - taskfile
   - build
   - deploy
   - release
-
-prepare:
-  <<: *git
-  stage: prepare
-  script:
-    - echo "NODE_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))" > $VERSION_PATH
-    - cat version.env
-  artifacts:
-    paths:
-      - $VERSION_PATH
 
 taskfile:
   <<: *develop
@@ -48,15 +33,10 @@ taskfile:
 build-staging:
   <<: *develop
   stage: build
-  before_script:
-    - source $VERSION_PATH
-    - export NODE_VERSION=$NODE_VERSION
   script:
     - echo $NODE_VERSION
     - $TASKFILE_PATH/task docker:build
-    - $TASKFILE_PATH/task docker:push
   dependencies:
-    - prepare
     - taskfile
 
 deploy-staging:

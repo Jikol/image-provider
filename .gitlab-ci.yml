@@ -37,8 +37,6 @@ taskfile:
     - apk add --no-cache curl
     - docker --version
     - ls -l /var/run/docker.sock
-    - source $VERSION_PATH
-    - echo $NODE_VERSION
   script:
     - sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b $TASKFILE_PATH
   after_script:
@@ -46,17 +44,18 @@ taskfile:
   artifacts:
     paths:
       - $TASKFILE_PATH
-  dependencies:
-    - prepare
 
 build-staging:
   <<: *develop
   stage: build
+  before_script:
+    - source $VERSION_PATH
   script:
     - echo $NODE_VERSION
     - $TASKFILE_PATH/task docker:build
     - $TASKFILE_PATH/task docker:push
   dependencies:
+    - prepare
     - taskfile
 
 deploy-staging:

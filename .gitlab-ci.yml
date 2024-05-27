@@ -1,12 +1,13 @@
 variables:
   TASKFILE_PATH: "~/.local/bin"
+  NODE_VERSION: "staging"
 
 .develop: &develop
-  variables:
-    NODE_VERSION: "staging"
   only: [develop]
 
 .master: &master
+  variables:
+    RELEASE_VERSION: $CI_COMMIT_TAG
   only: [master]
 
 stages:
@@ -34,7 +35,6 @@ build-staging:
   <<: *develop
   stage: build
   script:
-    - echo $NODE_VERSION
     - $TASKFILE_PATH/task docker:build
   dependencies:
     - taskfile
@@ -53,5 +53,14 @@ deploy-staging:
 release:
   <<: *master
   stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG
   script:
-    - echo test
+    - $TASKFILE_PATH/task docker:push
+  release:
+    tag_name: $CI_COMMIT_TAG
+    name: "Release $CI_COMMIT_TAG"
+    description: "Release of image-provider $CI_COMMIT_TAG"
+  dependencies:
+    - taskfile

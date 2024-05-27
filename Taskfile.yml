@@ -77,7 +77,7 @@ tasks:
         --build-arg NODE_UPLOAD_SIZE='{{.NODE_UPLOAD_SIZE}}'
         --build-arg NODE_REDOC_HOSTNAME='{{.NODE_REDOC_HOSTNAME}}'
         --build-arg NODE_REDOC_PORT='{{.NODE_REDOC_PORT}}'
-        -t jav0032/retina:image-provider-{{.NODE_VERSION}}
+        -t image-provider:{{.NODE_VERSION}}
         -f Dockerfile .
       - docker image prune -f
 
@@ -86,7 +86,8 @@ tasks:
     aliases: [d:p]
     cmds:
       - docker login -u {{.DOCKER_USER}} -p {{.DOCKER_PASSWD}}
-      - docker push jav0032/retina:image-provider-{{.NODE_VERSION}}
+      - docker tag image-provider:{{.NODE_VERSION}} jav0032/retina:image-provider-{{.RELEASE_VERSION}}
+      - docker push jav0032/retina:image-provider-{{.RELEASE_VERSION}}
 
   docker:compose:up:
     desc: Run compose for builded images

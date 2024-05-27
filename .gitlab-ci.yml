@@ -50,6 +50,7 @@ build-staging:
   stage: build
   before_script:
     - source $VERSION_PATH
+    - export NODE_VERSION=$NODE_VERSION
   script:
     - echo $NODE_VERSION
     - $TASKFILE_PATH/task docker:build

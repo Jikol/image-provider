@@ -52,7 +52,8 @@ tagging:
   <<: *develop
   stage: tagging
   script:
-    - echo "VERSION=$NODE_VERSION" >> version.env
+    - cat version.env
+    - echo "LATEST_VERSION=$NODE_VERSION" >> version.env
   artifacts:
     reports:
       dotenv: version.env

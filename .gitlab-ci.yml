@@ -73,7 +73,5 @@ deploy-staging:
 release:
   <<: *master
   stage: release
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
     - echo test

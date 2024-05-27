@@ -112,4 +112,6 @@ All text in a commit message should be in the **present simple tense** in the **
 </tr>
 </table>
 
+foo bar foo b ar
+
 

@@ -11,6 +11,7 @@ stages:
   - taskfile
   - build
   - deploy
+  - release
 
 taskfile:
   <<: *develop
@@ -47,3 +48,9 @@ deploy-staging:
     - taskfile
     - build-staging
 
+release:
+  <<: *master
+  stage: release
+  script:
+    - echo $CI_COMMIT_REF_NAME
+    - echo $CI_COMMIT_TAG

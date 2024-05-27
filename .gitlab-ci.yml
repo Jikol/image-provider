@@ -1,5 +1,6 @@
 variables:
   TASKFILE_PATH: "~/.local/bin"
+  VERSION_PATH: "version.env"
 
 .develop: &develop
   only: [develop]
@@ -13,11 +14,21 @@ variables:
     - git --version
 
 stages:
-  - taskfile
   - prepare
+  - taskfile
   - build
   - deploy
   - release
+
+prepare:
+  <<: *git
+  stage: prepare
+  script:
+    - echo "NODE_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))" > $VERSION_PATH
+    - cat version.env
+  artifacts:
+    paths:
+      - $VERSION_PATH
 
 taskfile:
   <<: *develop
@@ -26,6 +37,8 @@ taskfile:
     - apk add --no-cache curl
     - docker --version
     - ls -l /var/run/docker.sock
+    - source $VERSION_PATH
+    - echo $NODE_VERSION
   script:
     - sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b $TASKFILE_PATH
   after_script:
@@ -33,31 +46,18 @@ taskfile:
   artifacts:
     paths:
       - $TASKFILE_PATH
-
-prepare:
-  <<: *git
-  stage: prepare
-  script:
-    - echo "NODE_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))" > version.env
-    - cat version.env
-  artifacts:
-    paths:
-      - version.env
+  dependencies:
+    - prepare
 
 build-staging:
   <<: *develop
   stage: build
-  before_script:
-    - source version.env
-    - echo $NODE_VERSION
   script:
     - echo $NODE_VERSION
-    - echo $CI_COMMIT_TAG
     - $TASKFILE_PATH/task docker:build
     - $TASKFILE_PATH/task docker:push
   dependencies:
     - taskfile
-    - prepare
 
 deploy-staging:
   <<: *develop
@@ -72,12 +72,8 @@ deploy-staging:
 
 release:
   <<: *master
-  <<: *git
   stage: release
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
-    - TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
-    - if [ "$CI_COMMIT_REF_NAME" == "master" ] && git log -1 --pretty=%B | grep -q "Merge branch 'develop' into '$CI_COMMIT_REF_NAME'"; then
-      
-      else
-        echo "Spatne"
-      fi
+    - echo test

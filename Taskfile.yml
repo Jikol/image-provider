@@ -86,7 +86,8 @@ tasks:
     aliases: [d:p]
     cmds:
       - docker login -u {{.DOCKER_USER}} -p {{.DOCKER_PASSWD}}
-      - docker push jav0032/retina:image-provider-{{.NODE_VERSION}}
+      - docker tag jav0032/retina:image-provider-{{.NODE_VERSION}} jav0032/retina:image-provider-{{.RELEASE_VERSION}}
+      - docker push jav0032/retina:image-provider-{{.RELEASE_VERSION}}
 
   docker:compose:up:
     desc: Run compose for builded images

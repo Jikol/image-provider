@@ -92,19 +92,15 @@ deploy-staging:
 release:
   <<: *develop_tag_commit
   stage: release
-  before_script:
-    - $BIN_PATH/release-cli -v
-    - export PATH="$BIN_PATH:$PATH"
-    - echo $PATH
-    - release-cli -v
   script:
+    - >
+      $BIN_PATH/release-cli create 
+      --name "Release Foo" 
+      --description "
+        # Release of image-provider Foo \n 
+        ## Docker images \n - [Foo] (https://hub.docker.com/repository/docker/jav0032/retina/tags)
+      "
     - $BIN_PATH/task docker:push
-  release:
-    tag_name: "Foo"
-    name: "Release Foo"
-    description: >
-      # Release of image-provider Foo \n ## Docker images \n - [Foo]
-      (https://hub.docker.com/repository/docker/jav0032/retina/tags)
   dependencies:
     - taskfile
     - release-cli

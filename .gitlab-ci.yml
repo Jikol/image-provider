@@ -91,7 +91,10 @@ release:
   <<: *develop_tag_commit
   stage: release
   before_script:
+    - $BIN_PATH/release-cli -v
     - export PATH="$BIN_PATH:$PATH"
+    - echo $PATH
+    - release-cli -v
   script:
     - $BIN_PATH/task docker:push
   release:

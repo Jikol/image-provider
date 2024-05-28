@@ -54,10 +54,9 @@ deploy-staging:
 release:
   <<: *master
   stage: release
-  services:
-    - registry.gitlab.com/gitlab-org/release-cli:latest
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
   script:
-    - docker -v
+    - echo "test"
   release:
     tag_name: $CI_COMMIT_TAG
     name: "Release $CI_COMMIT_TAG"

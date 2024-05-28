@@ -95,9 +95,7 @@ release:
   script:
     - $BIN_PATH/release-cli create 
       --name "Release Foo" 
-      --description "
-      # Release of image-provider Foo
-      ## Docker images - [Foo](https://hub.docker.com/repository/docker/jav0032/retina/tags)"
+      --description "# Release of image-provider Foo\n ## Docker images - [Foo](https://hub.docker.com/repository/docker/jav0032/retina/tags)"
     - $BIN_PATH/task docker:push
   dependencies:
     - taskfile

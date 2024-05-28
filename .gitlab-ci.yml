@@ -31,15 +31,16 @@ prepare:
   <<: *develop_tag_commit
   stage: prepare
   before_script:
+    - echo $CI_PROJECT_DIR
     - mkdir -p $BIN_PATH
   script:
     - apk add --no-cache curl
     - apk add --no-cache sudo
   after_script:
-    - $BIN_PATH/curl --version
-    - $BIN_PATH/sudo --version
     - ls -l /var/run/docker.sock
-    - docker --version
+    - docker --version | grep "Docker version" || (echo "Docker socket not binded."; exit 1)
+    - $BIN_PATH/curl --version | grep "curl" || (echo "Curl not installed."; exit 1)
+    - $BIN_PATH/sudo --version | grep "Sudo version" || (echo "Sudo not installed."; exit 1)
   artifacts:
     paths:
       - $BIN_PATH

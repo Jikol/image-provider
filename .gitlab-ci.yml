@@ -23,6 +23,7 @@ taskfile:
     - apk add --no-cache curl
     - docker --version
     - ls -l /var/run/docker.sock
+    - mkdir -p $TASKFILE_PATH
   script:
     - sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b $TASKFILE_PATH
   after_script:
@@ -53,7 +54,8 @@ deploy-staging:
 release:
   <<: *master
   stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  services:
+    - registry.gitlab.com/gitlab-org/release-cli:latest
   script:
     - $TASKFILE_PATH/task docker:push
   release:

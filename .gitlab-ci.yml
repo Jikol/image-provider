@@ -8,22 +8,14 @@ variables:
 
 .tag: &tag_commit
   rules:
-    - if: $CI_COMMIT_TAG
+    - if: "$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/"
   variables:
     RELEASE_VERSION: $CI_COMMIT_TAG
 
 .develop_or_tag: &develop_tag_commit
   rules:
     - if: "$CI_COMMIT_BRANCH == 'develop'"
-    - if: $CI_COMMIT_TAG
-
-.curl: &install_curl
-  - apk add --no-cache curl
-  - curl --version | grep "curl" || (echo "Curl not installed."; exit 1)
-
-.sudo: &install_sudo
-  - apk add --no-cache sudo
-  - sudo --version | grep "Sudo version" || (echo "Sudo not installed."; exit 1)
+    - if: "$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/"
 
 stages:
   - prepare
@@ -46,7 +38,8 @@ taskfile:
   <<: *develop_tag_commit
   stage: taskfile
   before_script:
-    *install_curl
+    - apk add --no-cache curl
+    - curl --version | grep "curl" || (echo "Curl not installed."; exit 1)
   script:
     - sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b $BIN_PATH
   after_script:
@@ -60,8 +53,10 @@ release-cli:
   <<: *develop_tag_commit
   stage: release-cli
   before_script:
-    *install_curl
-    *install_sudo
+    - apk add --no-cache curl
+    - curl --version | grep "curl" || (echo "Curl not installed."; exit 1)
+    - apk add --no-cache sudo
+    - sudo --version | grep "Sudo version" || (echo "Sudo not installed."; exit 1)
   script:
     - curl --location --output $BIN_PATH/release-cli
       "https://gitlab.com/api/v4/projects/gitlab-org%2Frelease-cli/packages/generic/release-cli/latest/release-cli-linux-amd64"

@@ -90,6 +90,8 @@ deploy-staging:
 release:
   <<: *develop_tag_commit
   stage: release
+  before_script:
+    - export PATH="$BIN_PATH:$PATH"
   script:
     - $BIN_PATH/task docker:push
   release:

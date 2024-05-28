@@ -93,11 +93,11 @@ release:
   <<: *develop_tag_commit
   stage: release
   script:
-    - >
-      $BIN_PATH/release-cli create
-      --name "Release Foo"
-      --description 
-      "# Release of image-provider Foo \n
+    - |
+      $BIN_PATH/release-cli create \
+      --name "Release Foo" \
+      --description \
+      "# Release of image-provider Foo \n \
        ## Docker images \n - [Foo] (https://hub.docker.com/repository/docker/jav0032/retina/tags)"
     - $BIN_PATH/task docker:push
   dependencies:

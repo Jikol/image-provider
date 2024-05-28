@@ -85,7 +85,7 @@ tasks:
     desc: Push builded docker image to docker hub
     aliases: [d:p]
     cmds:
-      - docker login -u {{.DOCKER_USER}} -p {{.DOCKER_PASSWD}}
+      - echo "{{.DOCKER_PASSWD}}" | docker login -u "{{.DOCKER_USER}}" --password-stdin
       - docker tag jav0032/retina:image-provider-{{.NODE_VERSION}} jav0032/retina:image-provider-{{.RELEASE_VERSION}}
       - docker push jav0032/retina:image-provider-{{.RELEASE_VERSION}}
 

@@ -91,13 +91,11 @@ release:
   <<: *tag_commit
   stage: release
   script:
+    - $BIN_PATH/release-cli create
+      --tag-name "$CI_COMMIT_TAG"
+      --name "Release $CI_COMMIT_TAG" 
+      --description "# Release of image-provider $CI_COMMIT_TAG Docker images - [$CI_COMMIT_TAG](https://hub.docker.com/repository/docker/jav0032/retina/tags)"
     - $BIN_PATH/task docker:push
-  release:
-    tag_name: $CI_COMMIT_TAG
-    name: "Release $CI_COMMIT_TAG"
-    description: >
-      # Release of image-provider $CI_COMMIT_TAG \n ## Docker images \n - [$CI_COMMIT_TAG]
-      (https://hub.docker.com/repository/docker/jav0032/retina/tags)
   dependencies:
     - taskfile
     - release-cli

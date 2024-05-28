@@ -94,7 +94,6 @@ release:
   stage: release
   script:
     - $BIN_PATH/release-cli create
-      --tag-name "test"
       --name "Release Foo" 
       --description "# Release of image-provider Foo <br /> Docker images <br /> - [Foo](https://hub.docker.com/repository/docker/jav0032/retina/tags)"
     - $BIN_PATH/task docker:push

@@ -1,39 +1,76 @@
 variables:
   TASKFILE_PATH: "~/.local/bin"
+  RELEASE_CLI_PATH: "/usr/local/bin"
   NODE_VERSION: "staging"
 
-.develop: &develop
-  only: [develop]
+.develop: &develop_commit
+  rules:
+    - if: "$CI_COMMIT_BRANCH == 'develop'"
 
-.master: &master
+.tag: &tag_commit
   rules:
     - if: $CI_COMMIT_TAG
   variables:
     RELEASE_VERSION: $CI_COMMIT_TAG
 
+.develop_or_tag: &develop_tag_commit
+  rules:
+    - if: "$CI_COMMIT_BRANCH == 'develop'"
+    - if: $CI_COMMIT_TAG
+
 stages:
+  - prepare
   - taskfile
+  - release-cli
   - build
   - deploy
   - release
 
+prepare:
+  <<: *develop_tag_commit
+  stage: prepare
+  script:
+    - ls -l /var/run/docker.sock
+    - docker --version
+
 taskfile:
+  <<: *develop_tag_commit
   stage: taskfile
   before_script:
     - apk add --no-cache curl
-    - docker --version
-    - ls -l /var/run/docker.sock
     - mkdir -p $TASKFILE_PATH
   script:
     - sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b $TASKFILE_PATH
   after_script:
-    - $TASKFILE_PATH/task --version | grep "Task version" || (echo "Taskfile not installed."; exit 1)
+    - $TASKFILE_PATH/task --version | grep "Task version" || (echo "Taskfile not
+      installed."; exit 1)
   artifacts:
     paths:
       - $TASKFILE_PATH
+  dependencies:
+    - prepare
+
+release-cli:
+  <<: *tag_commit
+  stage: release-cli
+  before_script:
+    - apk add --no-cache curl
+    - mkdir -p $RELEASE_CLI_PATH
+  script:
+    - curl --location --output $RELEASE_CLI_PATH/release-cli
+      "https://gitlab.com/api/v4/projects/gitlab-org%2Frelease-cli/packages/generic/release-cli/latest/release-cli-linux-amd64"
+    - sudo chmod +x $RELEASE_CLI_PATH/release-cli
+  after_script:
+    - $RELEASE_CLI_PATH/release-cli -v | grep "release-cli version" || (echo "release-cli
+      not installed."; exit 1)
+  artifacts:
+    paths:
+      - $RELEASE_CLI_PATH
+  dependencies:
+    - prepare
 
 build-staging:
-  <<: *develop
+  <<: *develop_commit
   stage: build
   script:
     - $TASKFILE_PATH/task docker:build
@@ -41,25 +78,27 @@ build-staging:
     - taskfile
 
 deploy-staging:
-  <<: *develop
+  <<: *develop_commit
   stage: deploy
   script:
     - $TASKFILE_PATH/task docker:compose:up
-#  after_script:
-#    - docker system prune -f
+  #  after_script:
+  #    - docker system prune -f
   dependencies:
     - taskfile
     - build-staging
 
 release:
-  <<: *master
+  <<: *tag_commit
   stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
   script:
-    - echo "test"
+    - $TASKFILE_PATH/task docker:push
   release:
     tag_name: $CI_COMMIT_TAG
     name: "Release $CI_COMMIT_TAG"
-    description: "Release of image-provider $CI_COMMIT_TAG"
+    description: >
+      # Release of image-provider $CI_COMMIT_TAG \n ## Docker images \n - [$CI_COMMIT_TAG]
+      (https://hub.docker.com/repository/docker/jav0032/retina/tags)
   dependencies:
     - taskfile
+    - release-cli

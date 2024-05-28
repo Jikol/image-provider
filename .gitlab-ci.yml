@@ -31,8 +31,10 @@ prepare:
   before_script:
     - mkdir -p $BIN_PATH
   script:
-    - apk add --no-cache --root $BIN_PATH curl
-    - apk add --no-cache --root BIN_PATH sudo
+    - apk add --no-cache curl
+    - cp $(which curl) $BIN_PATH
+    - apk add --no-cache sudo
+    - cp $(which sudo) $BIN_PATH
   after_script:
     - ls -l /var/run/docker.sock
     - docker --version | grep "Docker version" || (echo "Docker socket not binded."; exit 1)

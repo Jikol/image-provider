@@ -11,7 +11,7 @@ Primarily used for the Retina API.
 
 [API Documentation](http://vsrvfeia0h-86.vsb.cz/)
 
-## Servers
+## Environments
 
 - **Staging:** http://vsrvfeia0h-86.vsb.cz/
 

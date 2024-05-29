@@ -25,7 +25,7 @@ const config = {
   UPLOAD_SIZE: process.env.NODE_UPLOAD_SIZE
     ? +process.env.NODE_UPLOAD_SIZE * 1000
     : 1000000,
-  BASE_PATH: "/api/v1",
+  BASE_PATH: "/api",
   REDOC_PORT: process.env.NODE_REDOC_PORT ? +process.env.NODE_REDOC_PORT : 8080,
   REDOC_HOSTNAME: process.env.NODE_REDOC_HOSTNAME
     ? process.env.NODE_REDOC_HOSTNAME

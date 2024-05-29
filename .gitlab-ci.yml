@@ -99,15 +99,14 @@ release:
   variables:
     DATETIME_FORMAT: "%Y-%m-%d %H:%M:%S"
   script:
-    - DATETIME='$(date -d "$CI_COMMIT_TIMESTAMP" +"$DATETIME_FORMAT")'
+    - DATETIME="$(date -d "$CI_COMMIT_TIMESTAMP" +"$DATETIME_FORMAT")"
+    - echo "$DATETIME"
     - >-
       $BIN_PATH/release-cli create --tag-name "v0.0.0" --name "v0.0.0"
       --description "
       # 🚀 Release v0.0.0
       
       **Release Date:** $DATETIME 
-      
-      ---
       
       ### 🐳 Docker images
       

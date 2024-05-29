@@ -97,10 +97,13 @@ deploy-staging:
 release:
   stage: release
   variables:
-    DATETIME_FORMAT: "%Y-%m-%d %H:%M:%S"
+    DATETIME_FORMAT: "+%Y-%m-%d %H:%M:%S"
+  before_script:
+    - PUSH_OUTPUT=$($BIN_PATH/task docker:push RELEASE_VERSION=v0.0.0)
+    - IMAGE_NAME=$(echo $PUSH_OUTPUT | grep -o "image-provider[^ ]*" | tr -d ":" | sort -u)
+    - DIGEST_NAME=$(echo $PUSH_OUTPUT | grep -o "sha256[^ ]*" | tr ":" "-")
+    - DATETIME="$(date -d "$CI_COMMIT_TIMESTAMP" "$DATETIME_FORMAT")"
   script:
-    - DATETIME="$(date -d "$CI_COMMIT_TIMESTAMP" +"$DATETIME_FORMAT")"
-    - echo "$DATETIME"
     - >-
       $BIN_PATH/release-cli create --tag-name "v0.0.0" --name "v0.0.0"
       --description "
@@ -110,9 +113,8 @@ release:
       
       ### 🐳 Docker images
       
-      - [v0.0.0] ()
+      - [$IMAGE_NAME] (https://hub.docker.com/layers/jav0032/retina/$IMAGE_NAME/images/$DIGEST_NAME)
       "
-    - $BIN_PATH/task docker:push RELEASE_VERSION=v0.0.0
   dependencies:
     - taskfile
     - release-cli

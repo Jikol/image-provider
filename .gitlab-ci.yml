@@ -24,13 +24,14 @@ stages:
   - release
 
 prepare:
-  <<: *develop_tag_commit
   stage: prepare
   before_script:
     - mkdir -p $BIN_PATH
   script:
     - ls -l /var/run/docker.sock
     - docker --version | grep "Docker version" || (echo "Docker socket not binded."; exit 1)
+  only:
+    - develop
 
 taskfile:
   stage: taskfile
@@ -79,7 +80,6 @@ build-staging:
     - develop
 
 deploy-staging:
-  <<: *develop_commit
   stage: deploy
   script:
     - $BIN_PATH/task docker:compose:up

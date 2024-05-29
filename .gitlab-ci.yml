@@ -99,7 +99,7 @@ release:
   variables:
     DATETIME_FORMAT: "+%Y-%m-%d %H:%M:%S"
   before_script:
-    - echo $CI_COMMIT_TIMESTAMP
+    - apk add --no-cache coreutils
     - PUSH_OUTPUT=$($BIN_PATH/task docker:push RELEASE_VERSION=v0.0.0)
     - IMAGE_NAME=$(echo $PUSH_OUTPUT | grep -o "image-provider[^ ]*" | tr -d ":" | sort -u)
     - DIGEST_NAME=$(echo $PUSH_OUTPUT | grep -o "sha256[^ ]*" | tr ":" "-")

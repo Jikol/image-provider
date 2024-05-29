@@ -15,8 +15,5 @@ docs.use(
   },
   express.static(path.join(process.cwd(), "docs", "openapi.json"))
 );
-docs.post("/test", (req, res) => {
-  res.send("Hello World!");
-});
 
 export { docs };

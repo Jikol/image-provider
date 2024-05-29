@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
     profiles: [deploy, dev]
     environment:
-      SPEC_URL: "http://${NODE_HOSTNAME}:${NODE_PORT}/api/v1/docs"
+      SPEC_URL: "http://${NODE_HOSTNAME}:${NODE_PORT}/docs"
       PAGE_TITLE: "ReDoc - Image Provider"
     ports:
       - ${NODE_REDOC_PORT}:80

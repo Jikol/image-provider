@@ -4,6 +4,7 @@ import swaggerJsdoc from "swagger-jsdoc";
 
 import config from "@/config";
 import logger from "@/logger";
+import { versionedPaths } from "@/routers";
 
 const docsDir = path.join(process.cwd(), "docs");
 const docsLocation = path.resolve(docsDir, "openapi.json");
@@ -15,11 +16,11 @@ const options = {
       version: config.VERSION,
       description: "API for uploading and serving images for Retina API"
     },
-    servers: [
-      {
-        url: `http://${config.HOSTNAME}:${config.PORT}${config.BASE_PATH}`
-      }
-    ]
+    servers: versionedPaths.map((path) => {
+      return {
+        url: `http://${config.HOSTNAME}:${config.PORT}${path}`
+      };
+    })
   },
   apis: [path.resolve(__dirname, "router/*.ts")]
 };

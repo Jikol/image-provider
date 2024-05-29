@@ -7,7 +7,8 @@ import config from "@/config";
 import { generateDocs } from "@/docs";
 import logger from "@/logger";
 import { error, notFound, response } from "@/middleware";
-import { docs, images, upload } from "@/router";
+import { docs } from "@/router";
+import { versionedRouters } from "@/routers";
 
 const app: Express = express();
 
@@ -18,9 +19,8 @@ app.use(response);
 app.use(cors());
 
 /** Register routers */
-app.use(config.BASE_PATH, upload);
-app.use(config.BASE_PATH, images);
-app.use(config.BASE_PATH, docs);
+app.use(versionedRouters);
+app.use(docs);
 
 /** Add error middleware */
 app.use(error);

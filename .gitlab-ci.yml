@@ -101,6 +101,8 @@ release:
       $BIN_PATH/release-cli create --tag-name "v0.0.0" --name "v0.0.0"
       --description "
       # Test
+      
+      ### Test
       "
     - $BIN_PATH/task docker:push RELEASE_VERSION=v0.0.0
   dependencies:

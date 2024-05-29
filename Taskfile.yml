@@ -88,7 +88,7 @@ tasks:
     aliases: [d:p]
     cmds:
       - echo "{{.DOCKER_PASSWD}}" | docker login -u "{{.DOCKER_USER}}" --password-stdin
-      - >
+      - |
         {{if .RELEASE_VERSION}}
         docker tag jav0032/retina:image-provider-{{.NODE_VERSION}} jav0032/retina:image-provider-{{.RELEASE_VERSION}}
         docker push jav0032/retina:image-provider-{{.RELEASE_VERSION}}

@@ -24,16 +24,16 @@ stages:
   - release
 
 prepare:
+  <<: *develop_tag_commit
   stage: prepare
   before_script:
     - mkdir -p $BIN_PATH
   script:
     - ls -l /var/run/docker.sock
     - docker --version | grep "Docker version" || (echo "Docker socket not binded."; exit 1)
-  only:
-    - develop
 
 taskfile:
+  <<: *develop_tag_commit
   stage: taskfile
   before_script:
     - apk add --no-cache curl
@@ -46,10 +46,9 @@ taskfile:
   artifacts:
     paths:
       - $BIN_PATH
-  only:
-    - develop
 
 release-cli:
+  <<: *tag_commit
   stage: release-cli
   before_script:
     - apk add --no-cache curl
@@ -66,20 +65,18 @@ release-cli:
   artifacts:
     paths:
       - $BIN_PATH
-  only:
-    - develop
 
 build-staging:
+  <<: *develop_commit
   stage: build
   script:
     - $BIN_PATH/task docker:build
     - $BIN_PATH/task docker:push
   dependencies:
     - taskfile
-  only:
-    - develop
 
 deploy-staging:
+  <<: *develop_commit
   stage: deploy
   script:
     - $BIN_PATH/task docker:compose:up
@@ -91,8 +88,6 @@ deploy-staging:
   dependencies:
     - taskfile
     - build-staging
-  only:
-    - develop
 
 release:
   stage: release
@@ -100,15 +95,15 @@ release:
     DATETIME_FORMAT: "+%Y-%m-%d %H:%M:%S"
   before_script:
     - apk add --no-cache coreutils
-    - PUSH_OUTPUT=$($BIN_PATH/task docker:push RELEASE_VERSION=v0.0.0)
+    - PUSH_OUTPUT=$($BIN_PATH/task docker:push RELEASE_VERSION=$CI_COMMIT_TAG)
     - IMAGE_NAME=$(echo $PUSH_OUTPUT | grep -o "image-provider[^ ]*" | tr -d ":" | sort -u)
     - DIGEST_NAME=$(echo $PUSH_OUTPUT | grep -o "sha256[^ ]*" | tr ":" "-")
     - DATETIME="$(date -d "$CI_COMMIT_TIMESTAMP" "$DATETIME_FORMAT")"
   script:
     - >-
-      $BIN_PATH/release-cli create --tag-name "v0.0.0" --name "v0.0.0"
+      $BIN_PATH/release-cli create --tag-name "$CI_COMMIT_TAG" --name "$CI_COMMIT_TAG"
       --description "
-      # 🚀 Release v0.0.0
+      # 🚀 Release $CI_COMMIT_TAG
       
       **Release Date:** $DATETIME
       
@@ -123,5 +118,3 @@ release:
   dependencies:
     - taskfile
     - release-cli
-  only:
-    - develop

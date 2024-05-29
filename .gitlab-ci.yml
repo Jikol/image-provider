@@ -110,11 +110,15 @@ release:
       --description "
       # 🚀 Release v0.0.0
       
-      **Release Date:** $DATETIME 
+      **Release Date:** $DATETIME
+      
+      ### 🚧 Staging
+      
+      - [docs](http://vsrvfeia0h-86.vsb.cz/)
       
       ### 🐳 Docker images
       
-      - [$IMAGE_NAME] (https://hub.docker.com/layers/jav0032/retina/$IMAGE_NAME/images/$DIGEST_NAME)
+      - [$IMAGE_NAME](https://hub.docker.com/layers/jav0032/retina/$IMAGE_NAME/images/$DIGEST_NAME)
       "
   dependencies:
     - taskfile

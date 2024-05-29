@@ -90,6 +90,7 @@ deploy-staging:
     - build-staging
 
 release:
+  <<: *tag_commit
   stage: release
   variables:
     DATETIME_FORMAT: "+%Y-%m-%d %H:%M:%S"

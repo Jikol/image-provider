@@ -97,10 +97,11 @@ deploy-staging:
 release:
   stage: release
   script:
-    - $BIN_PATH/release-cli create
-      --tag-name "v0.0.0"
-      --name "v0.0.0" 
-      --description "-"
+    - >-
+      $BIN_PATH/release-cli create --tag-name "v0.0.0" --name "v0.0.0"
+      --description "
+      # Test
+      "
     - $BIN_PATH/task docker:push RELEASE_VERSION=v0.0.0
   dependencies:
     - taskfile

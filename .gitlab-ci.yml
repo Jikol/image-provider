@@ -80,8 +80,8 @@ deploy-staging:
   stage: deploy
   script:
     - $BIN_PATH/task docker:compose:up
-  #  after_script:
-  #    - docker system prune -f
+  after_script:
+    - docker system prune -f
   environment:
     name: staging
     url: http://vsrvfeia0h-86.vsb.cz/

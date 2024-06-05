@@ -41,7 +41,7 @@ WORKDIR /app
 
 EXPOSE 8000
 
-RUN apk add --update nodejs
+RUN apk add --no-cache --update nodejs
 
 COPY --from=base /app/dist/. .
 COPY --from=base /app/docs/. ./docs

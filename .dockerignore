@@ -11,6 +11,7 @@
 .env
 dist
 data
+docs
 node_modules
 Taskfile.yml
 Dockerfile

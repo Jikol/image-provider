@@ -57,7 +57,7 @@ LABEL org.opencontainers.image.vendor="VSB"
 LABEL org.opencontainers.image.base.name="node:alpine3.19"
 
 # for debug purpose only
-CMD ["/bin/sh"]
+# CMD ["/bin/sh"]
 
 
 

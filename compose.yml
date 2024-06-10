@@ -1,4 +1,4 @@
-name: image-provider${STAGE}
+name: image-provider
 
 services:
   image-provider:

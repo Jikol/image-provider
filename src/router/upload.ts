@@ -5,6 +5,7 @@ import multer, { MulterError } from "multer";
 import type { Multer, StorageEngine } from "multer";
 import path from "path";
 import { v4 } from "uuid";
+import { z } from "zod";
 
 import config from "@/config";
 import { UploadError } from "@/helper";
@@ -56,7 +57,7 @@ const fileUpload: Multer = multer({
  * @openapi
  * /upload:
  *   post:
- *     summary: Upload files
+ *     summary: Upload images
  *     description: Upload images to the server.
  *     requestBody:
  *       required: true
@@ -138,6 +139,99 @@ upload.all(
       },
       message: "File Uploaded Successfully"
     });
+  }
+);
+
+const requestSchema = z.object({
+  imageUrls: z.array(z.string().url())
+});
+
+/**
+ * @openapi
+ * /remove:
+ *   delete:
+ *     summary: Remove uploaded images
+ *     description: Remove files from filesystem which were uploaded.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               imageUrls:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: URLs of images to remove.
+ *     responses:
+ *       '200':
+ *         description: Provided URLs file representation has been deleted.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 context:
+ *                   type: object
+ *                   properties:
+ *                     removedImageUrls:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: URLs of the remove images.
+ *                 message:
+ *                   type: string
+ *                   description: Provided URLs has been deleted.
+ *                 code:
+ *                   type: integer
+ *                   description: HTTP status code.
+ *                   example: 200
+ *             example:
+ *               context:
+ *                 removedImageUrls:
+ *                   - "http://localhost:8000/api/v1/images/<imgId>.<imgExtension>"
+ *               message: "Provided URLs has been deleted"
+ *               code: 200
+ *       '400':
+ *         description: Bad Request.
+ *       '415':
+ *         description: Unsupported Media Type. The uploaded file format is not supported.
+ */
+upload.all(
+  "/remove",
+  request(["DELETE"], "application/json", requestSchema),
+  (req, res) => {
+    const { imageUrls } = req.body as z.infer<typeof requestSchema>;
+
+    let alreadyDeleted = true;
+    const deletedUrls: Array<string> = [];
+
+    imageUrls.forEach((imageUrl) => {
+      const imagePath = path.resolve(
+        config.UPLOAD_DIR,
+        imageUrl.substring(imageUrl.lastIndexOf("/") + 1)
+      );
+
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+        deletedUrls.push(imageUrl);
+        alreadyDeleted = false;
+      }
+    });
+
+    if (alreadyDeleted) {
+      return res.success({
+        message: "Provided URLs has its file representation already deleted"
+      });
+    } else {
+      return res.success({
+        context: {
+          removedImageUrls: deletedUrls
+        },
+        message: "Provided URLs has been deleted"
+      });
+    }
   }
 );
 

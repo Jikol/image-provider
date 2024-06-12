@@ -126,7 +126,7 @@ upload.all(
         `File ${file.originalname} uploaded to ${file.destination} as ${
           file.filename
         } as [${(req.files as Array<Express.Multer.File>).map(
-          (file) => `${reqBaseUrl(req)}/images/${file.filename}`
+          (file) => `${reqBaseUrl(req, 1)}/images/${file.filename}`
         )}] (${reqUrl(req)})`
       );
     });
@@ -134,7 +134,7 @@ upload.all(
     return res.success({
       context: {
         imageUrls: (req.files as Array<Express.Multer.File>).map(
-          (file) => `${reqBaseUrl(req)}/images/${file.filename}`
+          (file) => `${reqBaseUrl(req, 1)}/images/${file.filename}`
         )
       },
       message: "File Uploaded Successfully"

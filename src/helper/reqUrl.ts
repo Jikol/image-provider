@@ -6,8 +6,8 @@ const reqUrl = (req: Request): string => {
   return `${req.protocol}://${req.get("host")}${req.originalUrl}`;
 };
 
-const reqBaseUrl = (req: Request): string => {
-  return `${req.protocol}://${req.get("host")}${config.BASE_PATH}`;
+const reqBaseUrl = (req: Request, version: number): string => {
+  return `${req.protocol}://${req.get("host")}${config.BASE_PATH}/v${version}`;
 };
 
 export { reqUrl, reqBaseUrl };

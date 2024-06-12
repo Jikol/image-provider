@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from "express";
 const response = (_req: Request, res: Response, next: NextFunction): void => {
   res.unsupportedContentType = ({
     context,
-    message = "Unsupported Media Type",
+    message = "Unsupported Content Type",
     code = 415
   }): Response => {
     return res

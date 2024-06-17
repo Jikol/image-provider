@@ -29,7 +29,7 @@ const storage: StorageEngine = multer.diskStorage({
       .extname(file.originalname)
       .toLowerCase()}`;
 
-    if (req.query?.data_insert && req.query?.data_insert === "true") {
+    if (req.query?.data_private && req.query?.data_private === "true") {
       fileName = `_${fileName}`;
     }
 

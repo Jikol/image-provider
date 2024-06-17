@@ -63,6 +63,14 @@ const fileUpload: Multer = multer({
  *   post:
  *     summary: Upload images
  *     description: Upload images to the server.
+ *     parameters:
+ *       - name: data_private
+ *         in: query
+ *         required: false
+ *         description: Specifies if the data should be private.
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
  *     requestBody:
  *       required: true
  *       content:
@@ -255,8 +263,8 @@ upload.all(
  * @openapi
  * /upload/delete/private:
  *   delete:
- *     summary: Remove uploaded images from data migration process
- *     description: Removes all images that were uploaded during the data migration operation.
+ *     summary: Remove uploaded private images
+ *     description: Removes all images which has been uploaded with data_private=true query parameter.
  *     responses:
  *       '200':
  *         description: All private images has been deleted.

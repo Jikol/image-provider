@@ -55,7 +55,7 @@ tasks:
   dev:compose:down:
     desc: Stop compose for dependent service for development
     aliases: [d:c:d]
-    cmd: "{{.SHELL_START}}docker compose --profile dev down{{.SHELL_END}}"
+    cmd: "{{.SHELL_START}}docker compose --profile dev down {{.CLI_ARGS}}{{.SHELL_END}}"
   ## ----------------- ##
 
   ## deployment tasks ##

@@ -39,12 +39,15 @@ FROM alpine:3.19
 
 WORKDIR /app
 
-EXPOSE 8000
+EXPOSE ${NODE_PORT}
 
-RUN apk add --no-cache --update nodejs
+RUN apk add --no-cache --update nodejs curl
 
 COPY --from=base /app/dist/. .
 COPY --from=base /app/docs/. ./docs
+
+HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
+  CMD curl --silent --fail http://localhost:${NODE_PORT}/docs || exit 1
 
 CMD ["node", "index.js"]
 

@@ -1,6 +1,7 @@
 variables:
   BIN_PATH: '~/.local/bin'
   NODE_VERSION: 'latest'
+  PRUNE_DOCKER_CACHE: "true"
 
 .develop: &develop_commit
   rules:
@@ -81,7 +82,10 @@ deploy-staging:
   script:
     - $BIN_PATH/task docker:compose:up
   after_script:
-    - docker system prune -f
+    - |
+      if [ "$PRUNE_DOCKER_CACHE" = "true" ]; then
+        docker system prune -f
+      fi
   environment:
     name: staging
     url: http://vsrvfeia0h-86.vsb.cz/

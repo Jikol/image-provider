@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://prdel:8080/api/v1"
+      "url": "http://localhost:8080/api/v1"
     }
   ],
   "paths": {
@@ -133,11 +133,14 @@
           },
           "415": {
             "description": "Unsupported Media Type. The uploaded file format is not supported."
+          },
+          "500": {
+            "description": "Internal Server Error."
           }
         }
       }
     },
-    "/remove": {
+    "/upload/delete": {
       "delete": {
         "summary": "Remove uploaded images",
         "description": "Remove files from filesystem which were uploaded.",
@@ -208,6 +211,48 @@
           },
           "415": {
             "description": "Unsupported Media Type. The uploaded file format is not supported."
+          },
+          "500": {
+            "description": "Internal Server Error."
+          }
+        }
+      }
+    },
+    "/upload/delete/private": {
+      "delete": {
+        "summary": "Remove uploaded images from data migration process",
+        "description": "Removes all images that were uploaded during the data migration operation.",
+        "responses": {
+          "200": {
+            "description": "All private images has been deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "All private images has been deleted."
+                    },
+                    "code": {
+                      "type": "integer",
+                      "description": "HTTP status code.",
+                      "example": 200
+                    }
+                  }
+                },
+                "example": {
+                  "message": "All private images has been deleted",
+                  "code": 200
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "500": {
+            "description": "Internal Server Error."
           }
         }
       }

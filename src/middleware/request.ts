@@ -7,7 +7,7 @@ import logger from "@/logger";
 
 const request = (
   methods: Array<THttpMethod>,
-  contentType: string,
+  contentType?: string,
   bodySchema?: z.ZodSchema
 ) => {
   return (req: Request, res: Response, next: NextFunction): Response | undefined => {
@@ -16,7 +16,7 @@ const request = (
 
       return res.notAllowed({ context: { allowedMethods: methods } }) as Response;
     }
-    if (!req.is(contentType)) {
+    if (contentType && !req.is(contentType)) {
       logger.warn(
         `Invalid Content-Type: ${
           req.headers["content-type"]

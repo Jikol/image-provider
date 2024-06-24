@@ -29,7 +29,7 @@ app.use(notFound);
 /** Start express server & bind after start events */
 app.listen(config.PORT, () => {
   logger.info("Express started");
-  logger.info("Listening on port 8000");
+  logger.info(`Listening on port ${config.PORT}`);
   if (config.DEV) {
     generateDocs();
   }

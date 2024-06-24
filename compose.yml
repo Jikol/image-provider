@@ -1,4 +1,4 @@
-name: image-provider${STAGE}
+name: image-provider
 
 services:
   image-provider:
@@ -31,3 +31,6 @@ services:
       PAGE_TITLE: "ReDoc - Image Provider"
     ports:
       - ${NODE_REDOC_PORT}:80
+    depends_on:
+      image-provider:
+        condition: service_healthy

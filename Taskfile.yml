@@ -36,7 +36,6 @@ tasks:
     internal: true
     cmds:
       - "{{.SHELL_START}}rm -rf .yarn{{.SHELL_END}}"
-      - "{{.SHELL_START}}rm -rf .parcel-cache{{.SHELL_END}}"
       - "{{.SHELL_START}}rm -rf node_modules{{.SHELL_END}}"
 
   prune:
@@ -45,21 +44,18 @@ tasks:
     internal: true
     cmds:
       - "{{.SHELL_START}}rm -rf .yarn{{.SHELL_END}}"
-      - "{{.SHELL_START}}rm -rf .parcel-cache{{.SHELL_END}}"
       - "{{.SHELL_START}}rm -rf yarn.lock{{.SHELL_END}}"
       - "{{.SHELL_START}}rm -rf node_modules{{.SHELL_END}}"
 
   dev:compose:up:
     desc: Run compose for dependent service for development
-    aliases: [d:c:d]
-    dotenv: [".env"]
-    cmd: "{{.SHELL_START}}STAGE='-dev' docker compose --profile dev up{{.SHELL_END}}"
+    aliases: [d:c:u]
+    cmd: "{{.SHELL_START}}docker compose --profile dev up -d{{.SHELL_END}}"
 
   dev:compose:down:
     desc: Stop compose for dependent service for development
     aliases: [d:c:d]
-    dotenv: [".env"]
-    cmd: "{{.SHELL_START}}STAGE='-dev' docker compose --profile dev down{{.SHELL_END}}"
+    cmd: "{{.SHELL_START}}docker compose --profile dev down {{.CLI_ARGS}}{{.SHELL_END}}"
   ## ----------------- ##
 
   ## deployment tasks ##
@@ -68,7 +64,7 @@ tasks:
     aliases: [d:b]
     cmds:
       - >
-        docker build 
+        docker build
         --build-arg DATETIME='{{.DATETIME}}'
         --build-arg NODE_VERSION='{{.NODE_VERSION}}'
         --build-arg NODE_DEBUG='{{.NODE_DEBUG}}'
@@ -101,11 +97,11 @@ tasks:
     desc: Run compose for builded images
     aliases: [d:c]
     cmds:
-      - "{{.SHELL_START}}STAGE='' docker compose --profile deploy up -d{{.SHELL_END}}"
+      - "{{.SHELL_START}}docker compose --profile deploy up -d{{.SHELL_END}}"
 
   docker:compose:down:
     desc: Down compose for builded images
     aliases: [d:c]
     cmds:
-      - "{{.SHELL_START}}STAGE='' docker compose --profile deploy down{{.SHELL_END}}"
+      - "{{.SHELL_START}}docker compose --profile deploy down{{.SHELL_END}}"
   ## ---------------- ##

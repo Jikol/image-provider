@@ -1,3 +1,4 @@
+import { file } from "@babel/types";
 import express, { Router } from "express";
 import type { NextFunction, Request, Response } from "express";
 import fs from "fs";
@@ -5,6 +6,7 @@ import multer, { MulterError } from "multer";
 import type { Multer, StorageEngine } from "multer";
 import path from "path";
 import { v4 } from "uuid";
+import { z } from "zod";
 
 import config from "@/config";
 import { UploadError } from "@/helper";
@@ -22,13 +24,16 @@ const storage: StorageEngine = multer.diskStorage({
 
     return cb(null, config.UPLOAD_DIR);
   },
-  filename(_req, file, cb): void {
-    return cb(
-      null,
-      `${v4().substring(0, 9)}${Date.now()}${path
-        .extname(file.originalname)
-        .toLowerCase()}`
-    );
+  filename(req, file, cb): void {
+    let fileName = `${v4().substring(0, 9)}${Date.now()}${path
+      .extname(file.originalname)
+      .toLowerCase()}`;
+
+    if (req.query?.data_private && req.query?.data_private === "true") {
+      fileName = `_${fileName}`;
+    }
+
+    return cb(null, fileName);
   }
 });
 const fileUpload: Multer = multer({
@@ -56,8 +61,16 @@ const fileUpload: Multer = multer({
  * @openapi
  * /upload:
  *   post:
- *     summary: Upload files
+ *     summary: Upload images
  *     description: Upload images to the server.
+ *     parameters:
+ *       - name: data_private
+ *         in: query
+ *         required: false
+ *         description: Specifies if the data should be private.
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
  *     requestBody:
  *       required: true
  *       content:
@@ -106,6 +119,8 @@ const fileUpload: Multer = multer({
  *         description: Payload too large. The uploaded file exceeds the specified limit.
  *       '415':
  *         description: Unsupported Media Type. The uploaded file format is not supported.
+ *       '500':
+ *         description: Internal Server Error.
  */
 upload.all(
   "/upload",
@@ -125,7 +140,7 @@ upload.all(
         `File ${file.originalname} uploaded to ${file.destination} as ${
           file.filename
         } as [${(req.files as Array<Express.Multer.File>).map(
-          (file) => `${reqBaseUrl(req)}/images/${file.filename}`
+          (file) => `${reqBaseUrl(req, 1)}/images/${file.filename}`
         )}] (${reqUrl(req)})`
       );
     });
@@ -133,13 +148,171 @@ upload.all(
     return res.success({
       context: {
         imageUrls: (req.files as Array<Express.Multer.File>).map(
-          (file) => `${reqBaseUrl(req)}/images/${file.filename}`
+          (file) => `${reqBaseUrl(req, 1)}/images/${file.filename}`
         )
       },
       message: "File Uploaded Successfully"
     });
   }
 );
+
+const requestSchema = z.object({
+  imageUrls: z.array(z.string().url())
+});
+
+/**
+ * @openapi
+ * /upload/delete:
+ *   delete:
+ *     summary: Remove uploaded images
+ *     description: Remove files from filesystem which were uploaded.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               imageUrls:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: URLs of images to remove.
+ *     responses:
+ *       '200':
+ *         description: Provided URLs file representation has been deleted.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 context:
+ *                   type: object
+ *                   properties:
+ *                     removedImageUrls:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: URLs of the remove images.
+ *                 message:
+ *                   type: string
+ *                   description: Provided URLs has been deleted.
+ *                 code:
+ *                   type: integer
+ *                   description: HTTP status code.
+ *                   example: 200
+ *             example:
+ *               context:
+ *                 removedImageUrls:
+ *                   - "http://localhost:8000/api/v1/images/<imgId>.<imgExtension>"
+ *               message: "Provided URLs has been deleted"
+ *               code: 200
+ *       '400':
+ *         description: Bad Request.
+ *       '415':
+ *         description: Unsupported Media Type. The uploaded file format is not supported.
+ *       '500':
+ *         description: Internal Server Error.
+ */
+upload.all(
+  "/upload/delete",
+  request(["DELETE"], "application/json", requestSchema),
+  (req, res) => {
+    const { imageUrls } = req.body as z.infer<typeof requestSchema>;
+
+    let alreadyDeleted = true;
+    const deletedUrls: Array<string> = [];
+
+    try {
+      imageUrls.forEach((imageUrl) => {
+        const imagePath = path.resolve(
+          config.UPLOAD_DIR,
+          imageUrl.substring(imageUrl.lastIndexOf("/") + 1)
+        );
+
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+          deletedUrls.push(imageUrl);
+          alreadyDeleted = false;
+        }
+      });
+    } catch (err) {
+      logger.error(err);
+
+      return res.error({
+        message: "Error while perform i/o operations"
+      });
+    }
+
+    if (alreadyDeleted) {
+      return res.success({
+        message: "Provided URLs has its file representation already deleted"
+      });
+    } else {
+      return res.success({
+        context: {
+          removedImageUrls: deletedUrls
+        },
+        message: "Provided URLs has been deleted"
+      });
+    }
+  }
+);
+
+/**
+ * @openapi
+ * /upload/delete/private:
+ *   delete:
+ *     summary: Remove uploaded private images
+ *     description: Removes all images which has been uploaded with data_private=true query parameter.
+ *     responses:
+ *       '200':
+ *         description: All private images has been deleted.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: All private images has been deleted.
+ *                 code:
+ *                   type: integer
+ *                   description: HTTP status code.
+ *                   example: 200
+ *             example:
+ *               message: "All private images has been deleted"
+ *               code: 200
+ *       '400':
+ *         description: Bad Request.
+ *       '500':
+ *         description: Internal Server Error.
+ */
+upload.all("/upload/delete/private", request(["DELETE"]), (req, res) => {
+  try {
+    const files = fs.readdirSync(path.resolve(config.UPLOAD_DIR));
+
+    files
+      .filter((item) => item.startsWith("_"))
+      .forEach((fileName) => {
+        const filePath = path.join(config.UPLOAD_DIR, fileName);
+
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      });
+  } catch (err) {
+    logger.error(err);
+
+    return res.error({
+      message: "Error while perform i/o operations"
+    });
+  }
+
+  return res.success({
+    message: "All private images has been deleted"
+  });
+});
 
 /** Error handling */
 upload.use((err: Error, req: Request, res: Response, next: NextFunction) => {

@@ -1,6 +1,7 @@
 variables:
   BIN_PATH: '~/.local/bin'
   NODE_VERSION: 'latest'
+  PRUNE_DOCKER_CACHE: "true"
 
 .develop: &develop_commit
   rules:
@@ -19,15 +20,13 @@ stages:
   - prepare
   - taskfile
   - release-cli
-  - build
-  - deploy
+  - build-staging
+  - deploy-staging
   - release
 
 prepare:
   <<: *develop_tag_commit
   stage: prepare
-  before_script:
-    - mkdir -p $BIN_PATH
   script:
     - ls -l /var/run/docker.sock
     - docker --version | grep "Docker version" || (echo "Docker socket not binded."; exit 1)
@@ -68,8 +67,9 @@ release-cli:
 
 build-staging:
   <<: *develop_commit
-  stage: build
+  stage: build-staging
   script:
+    - $BIN_PATH/task docker:compose:down -- image-provider
     - $BIN_PATH/task docker:build
     - $BIN_PATH/task docker:push
   dependencies:
@@ -77,14 +77,17 @@ build-staging:
 
 deploy-staging:
   <<: *develop_commit
-  stage: deploy
+  stage: deploy-staging
   script:
     - $BIN_PATH/task docker:compose:up
-  #  after_script:
-  #    - docker system prune -f
+  after_script:
+    - |
+      if [ "$PRUNE_DOCKER_CACHE" = "true" ]; then
+        docker system prune -f
+      fi
   environment:
     name: staging
-    url: http://vsrvfeia0h-86.vsb.cz/
+    url: http://vsrvfeia0h-86.vsb.cz:$NODE_PORT/
   dependencies:
     - taskfile
     - build-staging

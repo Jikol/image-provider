@@ -9,10 +9,13 @@
 .eslintrc.json
 .gitignore
 .env
+.gitlab-ci.yml
 dist
 data
+docs
 node_modules
 Taskfile.yml
 Dockerfile
 README.md
+LICENSE
 compose.yml

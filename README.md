@@ -9,11 +9,11 @@ Primarily used for the Retina API.
 
 ## Documentation
 
-[API Documentation](http://vsrvfeia0h-86.vsb.cz/)
+[API Documentation](http://vsrvfeia0h-86.vsb.cz:8888)
 
 ## Environments
 
-- **Staging:** http://vsrvfeia0h-86.vsb.cz/
+- **Staging:** http://vsrvfeia0h-86.vsb.cz:8080
 
 ## Tech Stack
 
@@ -66,7 +66,10 @@ You should see docs on `http://localhost:$NODE_REDOC_PORT/`
 
 ### Commit messages
 
-All commit messages should be subject to the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) specification according to the following structure:
+All commit messages should be subject to
+the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) specification according to the
+following structure:
+
 ```
 <type>[<optional scope>]: <description>
 

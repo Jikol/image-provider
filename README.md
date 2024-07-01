@@ -61,6 +61,19 @@ You should see docs on `http://localhost:$NODE_REDOC_PORT/`
 - Use Conventional Commits messages
 - Use Semantic Versioning
 
+### Semantic Versioning
+
+Given a version number `MAJOR.MINOR.PATCH`, increment the:
+
+- *MAJOR* version when you make incompatible API changes
+- *MINOR* version when you add functionality in a backward compatible manner
+- *PATCH* version when you make backward compatible bug fixes
+
+A normal version number must take the form `X.Y.Z` where *X*, *Y*, and *Z* are non-negative integers. \
+*X* is the major version, *Y* is the minor version, and *Z* is the patch version.
+Each element must increase numerically. \
+For instance: 1.9.0 -> 1.10.0 -> 1.11.0.
+
 ### Commit messages
 
 All commit messages should be subject to

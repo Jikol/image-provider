@@ -5,7 +5,6 @@ import process from "process";
 dotenv.config();
 
 const config = {
-  VERSION: process.env.NODE_VERSION ? process.env.NODE_VERSION : "latest",
   DEBUG: ((): boolean => {
     return process.env.NODE_DEBUG === "true";
   })(),

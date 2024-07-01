@@ -111,10 +111,6 @@ release:
       
       **Release Date:** $DATETIME
       
-      ### 🚧 Staging
-      
-      - [docs](http://vsrvfeia0h-86.vsb.cz:$NODE_REDOC_PORT)
-      
       ### 🐳 Docker images
       
       - [$IMAGE_NAME](https://hub.docker.com/layers/jav0032/retina/$IMAGE_NAME/images/$DIGEST_NAME)

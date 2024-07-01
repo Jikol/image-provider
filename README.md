@@ -1,8 +1,9 @@
 # Image Provider
 
-![MIT License](https://img.shields.io/badge/License-MIT-blue)
-[![pipeline status](https://gitlab.vsb.cz/retina/image-provider/badges/develop/pipeline.svg)](https://gitlab.vsb.cz/retina/image-provider/-/pipelines)
-[![Latest Release](https://gitlab.vsb.cz/retina/image-provider/-/badges/release.svg)](https://gitlab.vsb.cz/retina/image-provider/-/releases)
+[![license](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/license/mit)
+[![pipeline](https://gitlab.vsb.cz/retina/image-provider/badges/develop/pipeline.svg)](https://gitlab.vsb.cz/retina/image-provider/-/pipelines)
+[![release](https://gitlab.vsb.cz/retina/image-provider/-/badges/release.svg)](https://gitlab.vsb.cz/retina/image-provider/-/releases)
+[![docker](https://img.shields.io/badge/Docker-jav0032%2Fretina-blue)](https://hub.docker.com/repository/docker/jav0032/retina/general)
 
 API service used to upload image files that can then be served using their URL. \
 Primarily used for the Retina API.
@@ -11,14 +12,10 @@ Primarily used for the Retina API.
 
 [API Documentation](http://vsrvfeia0h-86.vsb.cz:8888)
 
-## Environments
-
-- **Staging:** http://vsrvfeia0h-86.vsb.cz:8080
-
 ## Tech Stack
 
-- **Server:** [Node](https://nodejs.org/en), [Express](https://expressjs.com/)
-- **Docs:** [Redocly](https://redocly.com/), [OpenAPI](https://swagger.io/specification/)
+- Server: [Node](https://nodejs.org/en), [Express](https://expressjs.com/)
+- Docs: [Redocly](https://redocly.com/), [OpenAPI](https://swagger.io/specification/)
 
 ## Run Locally
 

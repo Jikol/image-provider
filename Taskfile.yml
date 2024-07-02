@@ -97,6 +97,7 @@ tasks:
       - echo "{{.DOCKER_PASSWD}}" | docker login -u "{{.DOCKER_USER}}" --password-stdin
       - |
         {{if .RELEASE_VERSION}}
+        docker pull jav0032/retina:image-provider-{{.VERSION}}
         docker tag jav0032/retina:image-provider-{{.VERSION}} jav0032/retina:image-provider-{{.RELEASE_VERSION}}
         docker push jav0032/retina:image-provider-{{.RELEASE_VERSION}}
         docker rmi -f jav0032/retina:image-provider-{{.RELEASE_VERSION}}

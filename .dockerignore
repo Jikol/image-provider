@@ -3,10 +3,6 @@
 .yarn
 .dockerignore
 .git
-.prettierignore
-.prettierrc.json
-.eslintignore
-.eslintrc.json
 .gitignore
 .env
 .gitlab-ci.yml

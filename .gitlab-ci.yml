@@ -19,6 +19,7 @@ stages:
   - prepare
   - taskfile
   - release-cli
+  - lint-staging
   - build-staging
   - deploy-staging
   - release
@@ -63,6 +64,14 @@ release-cli:
   artifacts:
     paths:
       - $BIN_PATH
+
+lint-staging:
+  <<: *develop
+  stage: lint-staging
+  script:
+    - $BIN_PATH/task docker:build -- lint
+  dependencies:
+    - taskfile
 
 build-staging:
   <<: *develop

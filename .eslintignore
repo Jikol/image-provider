@@ -1,3 +1,7 @@
 ## Ignored directory ##
+.yarn
+/config
+/data
 /dist
 /node_modules
+/docs

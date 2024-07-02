@@ -1,7 +1,7 @@
 ARG DATETIME
 ARG VERSION
 
-# base image
+# base stage
 FROM node:20.6.1 as base
 
 ARG NODE_DEBUG
@@ -24,17 +24,30 @@ ENV NODE_REDOC_PORT=$NODE_REDOC_PORT
 
 WORKDIR /app
 
-COPY . .
+COPY package.json yarn.lock ./
 
 RUN corepack enable
 RUN yarn set version stable
 RUN yarn config set nodeLinker node-modules
 RUN yarn install
+
+# linting stage
+FROM base AS lint
+
+COPY . .
+
+RUN yarn lint
+
+# build stage
+FROM base AS build
+
+COPY . .
+
 RUN yarn build
 RUN yarn docs
 
-# final image
-FROM alpine:3.19
+# prod stage
+FROM alpine:3.19 as prod
 
 WORKDIR /app
 
@@ -42,8 +55,10 @@ EXPOSE ${NODE_PORT}
 
 RUN apk add --no-cache --update nodejs curl
 
-COPY --from=base /app/dist/. .
-COPY --from=base /app/docs/. ./docs
+COPY --from=build /app/dist/. .
+COPY --from=build /app/docs/. ./docs
+
+RUN rm -rf .prettierignore .prettierrc.json .eslintignore .eslintrc.json
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
   CMD curl --silent --fail http://localhost:${NODE_PORT}/docs || exit 1

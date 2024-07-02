@@ -15,7 +15,7 @@ const config = {
     return false;
   })(),
   HOSTNAME: process.env.NODE_HOSTNAME ? process.env.NODE_HOSTNAME : "localhost",
-  PORT: process.env.NODE_PORT ? +process.env.NODE_PORT : 8000,
+  PORT: process.env.NODE_PORT ? +process.env.NODE_PORT : 8080,
   UPLOAD_DIR: ((): string => {
     if (!process.env.NODE_UPLOAD_DIR) throw new Error("NODE_UPLOAD_DIR env is undefined");
 
@@ -25,7 +25,7 @@ const config = {
     ? +process.env.NODE_UPLOAD_SIZE * 1000
     : 1000000,
   BASE_PATH: "/api",
-  REDOC_PORT: process.env.NODE_REDOC_PORT ? +process.env.NODE_REDOC_PORT : 8080,
+  REDOC_PORT: process.env.NODE_REDOC_PORT ? +process.env.NODE_REDOC_PORT : 8888,
   REDOC_HOSTNAME: process.env.NODE_REDOC_HOSTNAME
     ? process.env.NODE_REDOC_HOSTNAME
     : "localhost"

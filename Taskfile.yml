@@ -6,6 +6,8 @@ vars:
   SHELL_START: '{{if eq .OS "Windows_NT"}}wsl bash -c "{{end}}'
   SHELL_END: '{{if eq .OS "Windows_NT"}}"{{end}}'
   DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
+
+env:
   VERSION: 'staging'
 
 tasks:

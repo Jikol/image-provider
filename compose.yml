@@ -3,11 +3,10 @@ name: image-provider
 services:
   image-provider:
     container_name: image-provider
-    image: jav0032/retina:image-provider-${NODE_VERSION}
+    image: jav0032/retina:image-provider-${VERSION}
     restart: unless-stopped
     profiles: [deploy]
     environment:
-      NODE_VERSION: ${NODE_VERSION}
       NODE_DEBUG: ${NODE_DEBUG}
       NODE_ENV: ${NODE_ENV}
       NODE_HOSTNAME: ${NODE_HOSTNAME}

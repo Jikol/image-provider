@@ -1,17 +1,16 @@
 variables:
   BIN_PATH: '~/.local/bin'
-  NODE_VERSION: 'latest'
   PRUNE_DOCKER_CACHE: "true"
 
-.develop: &develop_commit
+.develop: &develop
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
 
-.tag: &tag_commit
+.tag: &tag
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
 
-.develop_or_tag: &develop_tag_commit
+.develop_tag: &develop_tag
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
@@ -20,19 +19,21 @@ stages:
   - prepare
   - taskfile
   - release-cli
+  - lint-staging
   - build-staging
   - deploy-staging
   - release
+  - deploy-prod
 
 prepare:
-  <<: *develop_tag_commit
+  <<: *develop_tag
   stage: prepare
   script:
     - ls -l /var/run/docker.sock
     - docker --version | grep "Docker version" || (echo "Docker socket not binded."; exit 1)
 
 taskfile:
-  <<: *develop_tag_commit
+  <<: *develop_tag
   stage: taskfile
   before_script:
     - apk add --no-cache curl
@@ -47,7 +48,7 @@ taskfile:
       - $BIN_PATH
 
 release-cli:
-  <<: *tag_commit
+  <<: *tag
   stage: release-cli
   before_script:
     - apk add --no-cache curl
@@ -65,8 +66,16 @@ release-cli:
     paths:
       - $BIN_PATH
 
+lint-staging:
+  <<: *develop
+  stage: lint-staging
+  script:
+    - $BIN_PATH/task docker:build -- lint
+  dependencies:
+    - taskfile
+
 build-staging:
-  <<: *develop_commit
+  <<: *develop
   stage: build-staging
   script:
     - $BIN_PATH/task docker:compose:down -- image-provider
@@ -76,7 +85,7 @@ build-staging:
     - taskfile
 
 deploy-staging:
-  <<: *develop_commit
+  <<: *develop
   stage: deploy-staging
   script:
     - $BIN_PATH/task docker:compose:up
@@ -93,7 +102,7 @@ deploy-staging:
     - build-staging
 
 release:
-  <<: *tag_commit
+  <<: *tag
   stage: release
   variables:
     DATETIME_FORMAT: "+%Y-%m-%d %H:%M:%S"
@@ -111,14 +120,18 @@ release:
       
       **Release Date:** $DATETIME
       
-      ### 🚧 Staging
-      
-      - [docs](http://vsrvfeia0h-86.vsb.cz:$NODE_REDOC_PORT)
-      
-      ### 🐳 Docker images
+      ### 🐳 Docker image
       
       - [$IMAGE_NAME](https://hub.docker.com/layers/jav0032/retina/$IMAGE_NAME/images/$DIGEST_NAME)
       "
   dependencies:
     - taskfile
     - release-cli
+
+deploy-prod:
+  <<: *tag
+  stage: deploy-prod
+  script:
+    - echo "Deploying to production... [TBD]"
+  dependencies:
+    - release

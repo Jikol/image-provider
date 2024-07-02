@@ -2,16 +2,16 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Image Provider",
-    "version": "latest",
+    "version": "staging",
     "description": "API for uploading and serving images for Retina API"
   },
   "servers": [
     {
-      "url": "http://localhost:8080/api/v1"
+      "url": "http://localhost:8080/api"
     }
   ],
   "paths": {
-    "/images": {
+    "/v1/images": {
       "get": {
         "summary": "List uploaded images",
         "description": "Retrieve images index listing from the server.",
@@ -25,7 +25,7 @@
         }
       }
     },
-    "/images/{imageName}": {
+    "/v1/images/{imageName}": {
       "get": {
         "summary": "Get a static image by name",
         "description": "Retrieve a specific static image from the server by its name.",
@@ -58,7 +58,7 @@
         }
       }
     },
-    "/upload": {
+    "/v1/upload": {
       "post": {
         "summary": "Upload images",
         "description": "Upload images to the server.",
@@ -155,7 +155,7 @@
         }
       }
     },
-    "/upload/delete": {
+    "/v1/upload/delete": {
       "delete": {
         "summary": "Remove uploaded images",
         "description": "Remove files from filesystem which were uploaded.",
@@ -233,9 +233,9 @@
         }
       }
     },
-    "/upload/delete/private": {
+    "/v1/upload/delete/private": {
       "delete": {
-        "summary": "Remove uploaded private images.",
+        "summary": "Remove uploaded private images",
         "description": "Removes all images which has been uploaded with data_private=true query parameter.",
         "responses": {
           "200": {

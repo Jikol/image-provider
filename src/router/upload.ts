@@ -1,4 +1,3 @@
-import { file } from "@babel/types";
 import express, { Router } from "express";
 import type { NextFunction, Request, Response } from "express";
 import fs from "fs";
@@ -15,7 +14,7 @@ import { reqBaseUrl } from "@/helper";
 import logger from "@/logger";
 import request from "@/middleware";
 
-const upload: Router = express.Router();
+const uploadV1: Router = express.Router();
 const storage: StorageEngine = multer.diskStorage({
   destination: (_req, _file, cb): void => {
     if (!fs.existsSync(config.UPLOAD_DIR)) {
@@ -59,7 +58,7 @@ const fileUpload: Multer = multer({
 
 /**
  * @openapi
- * /upload:
+ * /v1/upload:
  *   post:
  *     summary: Upload images
  *     description: Upload images to the server.
@@ -122,7 +121,7 @@ const fileUpload: Multer = multer({
  *       '500':
  *         description: Internal Server Error.
  */
-upload.all(
+uploadV1.all(
   "/upload",
   request(["POST"], "multipart/form-data"),
   fileUpload.array("file"),
@@ -162,7 +161,7 @@ const requestSchema = z.object({
 
 /**
  * @openapi
- * /upload/delete:
+ * /v1/upload/delete:
  *   delete:
  *     summary: Remove uploaded images
  *     description: Remove files from filesystem which were uploaded.
@@ -214,7 +213,7 @@ const requestSchema = z.object({
  *       '500':
  *         description: Internal Server Error.
  */
-upload.all(
+uploadV1.all(
   "/upload/delete",
   request(["DELETE"], "application/json", requestSchema),
   (req, res) => {
@@ -261,7 +260,7 @@ upload.all(
 
 /**
  * @openapi
- * /upload/delete/private:
+ * /v1/upload/delete/private:
  *   delete:
  *     summary: Remove uploaded private images
  *     description: Removes all images which has been uploaded with data_private=true query parameter.
@@ -288,7 +287,7 @@ upload.all(
  *       '500':
  *         description: Internal Server Error.
  */
-upload.all("/upload/delete/private", request(["DELETE"]), (req, res) => {
+uploadV1.all("/upload/delete/private", request(["DELETE"]), (req, res) => {
   try {
     const files = fs.readdirSync(path.resolve(config.UPLOAD_DIR));
 
@@ -315,7 +314,7 @@ upload.all("/upload/delete/private", request(["DELETE"]), (req, res) => {
 });
 
 /** Error handling */
-upload.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+uploadV1.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof MulterError || err instanceof UploadError) {
     if ((err as MulterError).code === "LIMIT_FILE_SIZE") {
       logger.warn(`${err.message} [${reqUrl(req)}]`);
@@ -353,4 +352,4 @@ upload.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   next(err);
 });
 
-export { upload };
+export { uploadV1 };

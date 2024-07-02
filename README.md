@@ -1,8 +1,9 @@
 # Image Provider
 
-![MIT License](https://img.shields.io/badge/License-MIT-blue)
-[![pipeline status](https://gitlab.vsb.cz/retina/image-provider/badges/develop/pipeline.svg)](https://gitlab.vsb.cz/retina/image-provider/-/pipelines)
-[![Latest Release](https://gitlab.vsb.cz/retina/image-provider/-/badges/release.svg)](https://gitlab.vsb.cz/retina/image-provider/-/releases)
+[![license](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/license/mit)
+[![pipeline](https://gitlab.vsb.cz/retina/image-provider/badges/develop/pipeline.svg)](https://gitlab.vsb.cz/retina/image-provider/-/pipelines)
+[![release](https://gitlab.vsb.cz/retina/image-provider/-/badges/release.svg)](https://gitlab.vsb.cz/retina/image-provider/-/releases)
+[![docker](https://img.shields.io/badge/Docker-jav0032%2Fretina-blue)](https://hub.docker.com/repository/docker/jav0032/retina/general)
 
 API service used to upload image files that can then be served using their URL. \
 Primarily used for the Retina API.
@@ -11,14 +12,10 @@ Primarily used for the Retina API.
 
 [API Documentation](http://vsrvfeia0h-86.vsb.cz:8888)
 
-## Environments
-
-- **Staging:** http://vsrvfeia0h-86.vsb.cz:8080
-
 ## Tech Stack
 
-- **Server:** [Node](https://nodejs.org/en), [Express](https://expressjs.com/)
-- **Docs:** [Redocly](https://redocly.com/), [OpenAPI](https://swagger.io/specification/)
+- Server: [Node](https://nodejs.org/en), [Express](https://expressjs.com/)
+- Docs: [Redocly](https://redocly.com/), [OpenAPI](https://swagger.io/specification/)
 
 ## Run Locally
 
@@ -63,6 +60,19 @@ You should see docs on `http://localhost:$NODE_REDOC_PORT/`
 - Use English language only
 - Use Conventional Commits messages
 - Use Semantic Versioning
+
+### Semantic Versioning
+
+Given a version number `MAJOR.MINOR.PATCH`, increment the:
+
+- *MAJOR* version when you make incompatible API changes
+- *MINOR* version when you add functionality in a backward compatible manner
+- *PATCH* version when you make backward compatible bug fixes
+
+A normal version number must take the form `X.Y.Z` where *X*, *Y*, and *Z* are non-negative integers. \
+*X* is the major version, *Y* is the minor version, and *Z* is the patch version.
+Each element must increase numerically. \
+For instance: 1.9.0 -> 1.10.0 -> 1.11.0.
 
 ### Commit messages
 

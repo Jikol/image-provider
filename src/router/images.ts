@@ -6,12 +6,12 @@ import config from "@/config";
 import { reqUrl } from "@/helper";
 import logger from "@/logger";
 
-const images: Router = express.Router();
+const imagesV1: Router = express.Router();
 
 /** Static files middleware */
 /**
  * @openapi
- * /images:
+ * /v1/images:
  *   get:
  *     summary: List uploaded images
  *     description: Retrieve images index listing from the server.
@@ -20,7 +20,7 @@ const images: Router = express.Router();
  *         description: Image listing retrieved successfully.
  *       '404':
  *         description: Image listing directory not found.
- * /images/{imageName}:
+ * /v1/images/{imageName}:
  *   get:
  *     summary: Get a static image by name
  *     description: Retrieve a specific static image from the server by its name.
@@ -42,8 +42,8 @@ const images: Router = express.Router();
  *       '404':
  *         description: Static image not found.
  */
-images.use(
-  "/images",
+imagesV1.use(
+  "/v1/images",
   (req, _res, next) => {
     logger.info(`Endpoint accesed (${reqUrl(req)})`);
     next();
@@ -61,4 +61,4 @@ images.use(
   })
 );
 
-export { images };
+export { imagesV1 };

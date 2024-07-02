@@ -69,15 +69,8 @@ tasks:
       - >
         docker build
         --build-arg DATETIME='{{.DATETIME}}'
-        --build-arg DATETIME='{{.VERSION}}'
-        --build-arg NODE_DEBUG='{{.NODE_DEBUG}}'
-        --build-arg NODE_ENV='{{.NODE_ENV}}'
-        --build-arg NODE_HOSTNAME='{{.NODE_HOSTNAME}}'
+        --build-arg VERSION='{{.VERSION}}'
         --build-arg NODE_PORT='{{.NODE_PORT}}'
-        --build-arg NODE_UPLOAD_DIR='{{.NODE_UPLOAD_DIR}}'
-        --build-arg NODE_UPLOAD_SIZE='{{.NODE_UPLOAD_SIZE}}'
-        --build-arg NODE_REDOC_HOSTNAME='{{.NODE_REDOC_HOSTNAME}}'
-        --build-arg NODE_REDOC_PORT='{{.NODE_REDOC_PORT}}'
         {{if .CLI_ARGS}}
         --target {{.CLI_ARGS}}
         -t jav0032/retina:image-provider-{{.CLI_ARGS}}

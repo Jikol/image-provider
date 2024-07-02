@@ -6,6 +6,15 @@ services:
     image: jav0032/retina:image-provider-${VERSION}
     restart: unless-stopped
     profiles: [deploy]
+    environment:
+      NODE_DEBUG: ${NODE_DEBUG}
+      NODE_ENV: ${NODE_ENV}
+      NODE_HOSTNAME: ${NODE_HOSTNAME}
+      NODE_PORT: ${NODE_PORT}
+      NODE_UPLOAD_DIR: ${NODE_UPLOAD_DIR}
+      NODE_UPLOAD_SIZE: ${NODE_UPLOAD_SIZE}
+      NODE_REDOC_HOSTNAME: ${NODE_REDOC_HOSTNAME}
+      NODE_REDOC_PORT: ${NODE_REDOC_PORT}
     ports:
       - ${NODE_PORT}:${NODE_PORT}
     volumes:

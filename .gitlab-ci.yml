@@ -78,7 +78,7 @@ build-staging:
   <<: *develop
   stage: build-staging
   script:
-    - $BIN_PATH/task docker:compose:down -- image-provider
+    - $BIN_PATH/task docker:compose -- down image-provider
     - $BIN_PATH/task docker:build
     - $BIN_PATH/task docker:push
   dependencies:
@@ -88,7 +88,7 @@ deploy-staging:
   <<: *develop
   stage: deploy-staging
   script:
-    - $BIN_PATH/task docker:compose:up
+    - $BIN_PATH/task docker:compose -- up -d --no-build
   after_script:
     - |
       if [ "$PRUNE_DOCKER_CACHE" = "true" ]; then
@@ -132,6 +132,6 @@ deploy-prod:
   <<: *tag
   stage: deploy-prod
   script:
-    - echo "Deploying to production... [TBD]"
+    - echo "Deploying to production... [WIP]"
   dependencies:
     - release

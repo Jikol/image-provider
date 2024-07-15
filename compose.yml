@@ -3,7 +3,7 @@ name: image-provider
 services:
   image-provider:
     container_name: image-provider
-    image: jav0032/retina:image-provider-$VERSION
+    image: jav0032/retina:image-provider-${VERSION}
     build:
       target: $TARGET
       args:
@@ -17,7 +17,6 @@ services:
         NODE_UPLOAD_SIZE: $NODE_UPLOAD_SIZE
         NODE_REDOC_HOSTNAME: NODE_REDOC_HOSTNAME
         NODE_REDOC_PORT: $NODE_REDOC_PORT
-    profiles: [prod]
     environment:
       NODE_DEBUG: $NODE_DEBUG
       NODE_ENV: $NODE_ENV
@@ -33,16 +32,15 @@ services:
     volumes:
       - $NODE_UPLOAD_DIR:$NODE_UPLOAD_DIR
 
-#  redoc:
-#    container_name: redoc
-#    image: redocly/redoc:v2.1.4
-#    restart: unless-stopped
-#    profiles: [prod, dev]
-#    environment:
-#      SPEC_URL: "http://${NODE_HOSTNAME}:${NODE_PORT}/docs"
-#      PAGE_TITLE: "ReDoc - Image Provider"
-#    ports:
-#      - ${NODE_REDOC_PORT}:80
-#    depends_on:
-#      image-provider:
-#        condition: service_healthy
+  redoc:
+    container_name: redoc
+    image: redocly/redoc:v2.1.4
+    environment:
+      SPEC_URL: "http://$NODE_HOSTNAME:$NODE_PORT/docs"
+      PAGE_TITLE: "ReDoc - Image Provider"
+    ports:
+      - ${NODE_REDOC_PORT}:80
+    restart: unless-stopped
+    depends_on:
+      image-provider:
+        condition: service_healthy

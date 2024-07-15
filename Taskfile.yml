@@ -2,7 +2,7 @@ version: 3
 
 vars:
   DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
-  VERSION: "latest"
+  VERSION: "staging"
 
 env:
   DATETIME: "{{.DATETIME}}"
@@ -16,23 +16,16 @@ tasks:
     desc: Initialize parcel project for development
     aliases: [i]
     cmds:
-      - corepack enable
-      - yarn install
-
-  prune:
-    desc: Prune node_modules of yarn installs with lock file
-    aliases: [p]
-    cmds:
-      - rm -rf .yarn
-      - rm -rf yarn.lock
+      - rm -rf bun.lockb
       - rm -rf node_modules
+      - bun install
 
-  dev:compose:
+  docker:dev:
     desc: Run compose for dependent service for development
-    aliases: [d:c]
+    aliases: [d:d]
     cmds:
-      - docker compose --profile dev up --force-recreate --build
-      - defer: docker compose --profile dev down
+      - docker compose -f $PWD/compose.dev.yml up --force-recreate --build
+      - defer: docker compose -f $PWD/compose.dev.yml down
       - defer: docker image prune -f
     interactive: true
   ## ----------------- ##
@@ -44,28 +37,21 @@ tasks:
     env:
       TARGET: "{{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}prod{{end}}"
     cmds:
-      - docker compose --profile prod build
+      - docker compose build
       - defer: docker image prune -f
-#      - >
-#        docker build
-#        --build-arg DATETIME='{{.DATETIME}}'
-#        --build-arg VERSION='{{.VERSION}}'
-#        --build-arg NODE_DEBUG='{{.NODE_DEBUG}}'
-#        --build-arg NODE_ENV='{{.NODE_ENV}}'
-#        --build-arg NODE_HOSTNAME='{{.NODE_HOSTNAME}}'
-#        --build-arg NODE_PORT='{{.NODE_PORT}}'
-#        --build-arg NODE_UPLOAD_DIR='{{.NODE_UPLOAD_DIR}}'
-#        --build-arg NODE_UPLOAD_SIZE='{{.NODE_UPLOAD_SIZE}}'
-#        --build-arg NODE_REDOC_HOSTNAME='{{.NODE_REDOC_HOSTNAME}}'
-#        --build-arg NODE_REDOC_PORT='{{.NODE_REDOC_PORT}}'
-#        {{if .CLI_ARGS}}
-#        --target {{.CLI_ARGS}}
-#        -t jav0032/retina:image-provider-{{.CLI_ARGS}}
-#        {{else}}
-#        --target prod
-#        -t jav0032/retina:image-provider-{{.VERSION}}
-#        {{end}}
-#        -f Dockerfile .
+      - defer: >
+          {{if .CLI_ARGS}}
+          docker image rm jav0032/retina:image-provider-{{.VERSION}}
+          {{end}}
+
+  docker:compose:
+    desc: Run compose for deployment with defined variables
+    aliases: [d:c]
+    cmds:
+      - docker compose {{.CLI_ARGS}}
+      - defer: docker image prune -f
+    requires:
+      vars: [CLI_ARGS]
 
   docker:push:
     desc: Push builded docker image to docker hub
@@ -81,14 +67,4 @@ tasks:
         {{else}}
         docker push jav0032/retina:image-provider-{{.VERSION}}
         {{end}}
-
-  docker:compose:up:
-    desc: Run compose for builded images
-    aliases: [d:c]
-    cmd: "{{.SHELL_START}}docker compose --profile prod up -d{{.SHELL_END}}"
-
-  docker:compose:down:
-    desc: Down compose for builded images
-    aliases: [d:c]
-    cmd: "{{.SHELL_START}}docker compose --profile prod down {{.CLI_ARGS}}{{.SHELL_END}}"
   ## ---------------- ##

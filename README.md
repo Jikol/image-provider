@@ -57,72 +57,7 @@ You should see docs on `http://localhost:$NODE_REDOC_PORT/`
 
 ## Conventions
 
-- Use English language only
-- Use Conventional Commits messages
-- Use Semantic Versioning
-
-### Semantic Versioning
-
-Given a version number `MAJOR.MINOR.PATCH`, increment the:
-
-- *MAJOR* version when you make incompatible API changes
-- *MINOR* version when you add functionality in a backward compatible manner
-- *PATCH* version when you make backward compatible bug fixes
-
-A normal version number must take the form `X.Y.Z` where *X*, *Y*, and *Z* are non-negative integers. \
-*X* is the major version, *Y* is the minor version, and *Z* is the patch version.
-Each element must increase numerically. \
-For instance: 1.9.0 -> 1.10.0 -> 1.11.0.
-
-### Commit messages
-
-All commit messages should be subject to
-the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) specification according to the
-following structure:
-
-```
-<type>[<optional scope>]: <description>
-
-<optional body>
-
-<optional footer(s)>
-```
-
-All text in a commit message should be in the **present simple tense** in the **imperative case**.
-
-<table style="width: 100%">
-<tr>
-<td>
-<code>feat</code>
-<br>
-<code>fix</code>
-<br>
-<code>refactor</code>
-<br>
-<code>ci</code>
-<br>
-<code>test</code>
-<br>
-<code>docs</code>
-<br>
-<code>chore</code>
-</td>
-<td>
-<span style="display: inline-flex; height: 23px;">when adds or remove a new feature</span>
-<br>
-<span style="display: inline-flex; height: 23px;">when fixes a bug</span>
-<br>
-<span style="display: inline-flex; height: 23px;">when rewrite your code which not affect functionality</span>
-<br>
-<span style="display: inline-flex; height: 23px;">when modify pipeline jobs</span>
-<br>
-<span style="display: inline-flex; height: 23px;">when ass missing test or correcting existing test</span>
-<br>
-<span style="display: inline-flex; height: 23px;">when modify documentation only</span>
-<br>
-<span style="display: inline-flex; height: 23px;">when none of above types suits your intent</span>
-</td>
-</tr>
-</table>
-
+- [Commit messages](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Commit-messages)
+- [Versioning](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Versioning)
+- [Docker](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Docker)
 

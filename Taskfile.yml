@@ -1,14 +1,14 @@
-version: '3'
-
-dotenv: ['.env']
+version: 3
 
 vars:
-  SHELL_START: '{{if eq .OS "Windows_NT"}}wsl bash -c "{{end}}'
-  SHELL_END: '{{if eq .OS "Windows_NT"}}"{{end}}'
   DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
+  VERSION: "latest"
 
 env:
-  VERSION: 'staging'
+  DATETIME: "{{.DATETIME}}"
+  VERSION: "{{.VERSION}}"
+
+dotenv: [".env"]
 
 tasks:
   ## development tasks ##
@@ -19,78 +19,53 @@ tasks:
       - corepack enable
       - yarn install
 
-  init:reinstall:
-    desc: Reinitialize parcel project for development (delete cache & node_modules)
-    aliases: [i:r]
-    cmds:
-      - task: clear
-      - task: init
-
-  init:reinit:
-    desc: Reinitialize parcel project for development (delete all)
-    aliases: [i:re]
-    cmds:
-      - task: prune
-      - task: init
-
-  clear:
-    desc: Clear node_modules of all yarn workspaces installs
-    aliases: [c]
-    internal: true
-    cmds:
-      - "{{.SHELL_START}}rm -rf .yarn{{.SHELL_END}}"
-      - "{{.SHELL_START}}rm -rf node_modules{{.SHELL_END}}"
-
   prune:
     desc: Prune node_modules of yarn installs with lock file
     aliases: [p]
-    internal: true
     cmds:
-      - "{{.SHELL_START}}rm -rf .yarn{{.SHELL_END}}"
-      - "{{.SHELL_START}}rm -rf yarn.lock{{.SHELL_END}}"
-      - "{{.SHELL_START}}rm -rf node_modules{{.SHELL_END}}"
+      - rm -rf .yarn
+      - rm -rf yarn.lock
+      - rm -rf node_modules
 
-  dev:compose:up:
+  dev:compose:
     desc: Run compose for dependent service for development
-    aliases: [d:c:u]
-    cmd: "{{.SHELL_START}}docker compose --profile dev up -d{{.SHELL_END}}"
-
-  dev:compose:down:
-    desc: Stop compose for dependent service for development
-    aliases: [d:c:d]
-    cmd: "{{.SHELL_START}}docker compose --profile dev down {{.CLI_ARGS}}{{.SHELL_END}}"
+    aliases: [d:c]
+    cmds:
+      - docker compose --profile dev up --force-recreate --build
+      - defer: docker compose --profile dev down
+      - defer: docker image prune -f
+    interactive: true
   ## ----------------- ##
 
   ## deployment tasks ##
   docker:build:
     desc: Build docker image for deployment
     aliases: [d:b]
+    env:
+      TARGET: "{{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}prod{{end}}"
     cmds:
-      - >
-        docker build
-        --build-arg DATETIME='{{.DATETIME}}'
-        --build-arg VERSION='{{.VERSION}}'
-        --build-arg NODE_DEBUG='{{.NODE_DEBUG}}'
-        --build-arg NODE_ENV='{{.NODE_ENV}}'
-        --build-arg NODE_HOSTNAME='{{.NODE_HOSTNAME}}'
-        --build-arg NODE_PORT='{{.NODE_PORT}}'
-        --build-arg NODE_UPLOAD_DIR='{{.NODE_UPLOAD_DIR}}'
-        --build-arg NODE_UPLOAD_SIZE='{{.NODE_UPLOAD_SIZE}}'
-        --build-arg NODE_REDOC_HOSTNAME='{{.NODE_REDOC_HOSTNAME}}'
-        --build-arg NODE_REDOC_PORT='{{.NODE_REDOC_PORT}}'
-        {{if .CLI_ARGS}}
-        --target {{.CLI_ARGS}}
-        -t jav0032/retina:image-provider-{{.CLI_ARGS}}
-        {{else}}
-        --target prod
-        -t jav0032/retina:image-provider-{{.VERSION}}
-        {{end}}
-        -f Dockerfile .
-      - >
-        {{if .CLI_ARGS}}
-        docker rmi -f jav0032/retina:image-provider-{{.CLI_ARGS}}
-        {{end}}
-      - docker image prune -f
+      - docker compose --profile prod build
+      - defer: docker image prune -f
+#      - >
+#        docker build
+#        --build-arg DATETIME='{{.DATETIME}}'
+#        --build-arg VERSION='{{.VERSION}}'
+#        --build-arg NODE_DEBUG='{{.NODE_DEBUG}}'
+#        --build-arg NODE_ENV='{{.NODE_ENV}}'
+#        --build-arg NODE_HOSTNAME='{{.NODE_HOSTNAME}}'
+#        --build-arg NODE_PORT='{{.NODE_PORT}}'
+#        --build-arg NODE_UPLOAD_DIR='{{.NODE_UPLOAD_DIR}}'
+#        --build-arg NODE_UPLOAD_SIZE='{{.NODE_UPLOAD_SIZE}}'
+#        --build-arg NODE_REDOC_HOSTNAME='{{.NODE_REDOC_HOSTNAME}}'
+#        --build-arg NODE_REDOC_PORT='{{.NODE_REDOC_PORT}}'
+#        {{if .CLI_ARGS}}
+#        --target {{.CLI_ARGS}}
+#        -t jav0032/retina:image-provider-{{.CLI_ARGS}}
+#        {{else}}
+#        --target prod
+#        -t jav0032/retina:image-provider-{{.VERSION}}
+#        {{end}}
+#        -f Dockerfile .
 
   docker:push:
     desc: Push builded docker image to docker hub
@@ -110,10 +85,10 @@ tasks:
   docker:compose:up:
     desc: Run compose for builded images
     aliases: [d:c]
-    cmd: "{{.SHELL_START}}docker compose --profile deploy up -d{{.SHELL_END}}"
+    cmd: "{{.SHELL_START}}docker compose --profile prod up -d{{.SHELL_END}}"
 
   docker:compose:down:
     desc: Down compose for builded images
     aliases: [d:c]
-    cmd: "{{.SHELL_START}}docker compose --profile deploy down {{.CLI_ARGS}}{{.SHELL_END}}"
+    cmd: "{{.SHELL_START}}docker compose --profile prod down {{.CLI_ARGS}}{{.SHELL_END}}"
   ## ---------------- ##

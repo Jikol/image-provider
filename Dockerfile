@@ -2,7 +2,7 @@ ARG DATETIME
 ARG VERSION
 
 # base stage
-FROM node:20.6.1 as base
+FROM oven/bun:1.1-alpine as base
 
 ARG NODE_DEBUG
 ARG NODE_ENV
@@ -24,34 +24,32 @@ ENV NODE_REDOC_PORT=$NODE_REDOC_PORT
 
 WORKDIR /app
 
-COPY package.json yarn.lock ./
+COPY package.json bun.lockb ./
 
-RUN corepack enable
-RUN yarn set version stable
-RUN yarn config set nodeLinker node-modules
-RUN yarn install
+RUN apk add --no-cache --update nodejs
+RUN bun install
 
 # linting stage
 FROM base AS lint
 
 COPY . .
 
-RUN yarn lint
+RUN bun run lint
 
 # build stage
 FROM base AS build
 
 COPY . .
 
-RUN yarn build
-RUN yarn docs
+RUN bun run build
+RUN bun run docs
 
 # prod stage
 FROM alpine:3.19 as prod
 
 WORKDIR /app
 
-EXPOSE ${NODE_PORT}
+EXPOSE $NODE_PORT
 
 RUN apk add --no-cache --update nodejs curl
 
@@ -61,20 +59,20 @@ COPY --from=build /app/docs/. ./docs
 RUN rm -rf .prettierignore .prettierrc.json .eslintignore .eslintrc.json
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
-  CMD curl --silent --fail http://localhost:${NODE_PORT}/docs || exit 1
+  CMD curl --silent --fail http://localhost:$NODE_PORT/docs || exit 1
 
 CMD ["node", "index.js"]
 
 # mata additions
 LABEL org.opencontainers.image.title="image-provider"
 LABEL org.opencontainers.image.description="Express API for upload and serve retina images"
-LABEL org.opencontainers.image.version=${VERSION}
-LABEL org.opencontainers.image.created=${DATETIME}
+LABEL org.opencontainers.image.version=$VERSION
+LABEL org.opencontainers.image.created=$DATETIME
 LABEL org.opencontainers.image.vendor="VSB"
 LABEL org.opencontainers.image.base.name="node:alpine3.19"
 
 # for debug purpose only
-# CMD ["/bin/sh"]
+# CMD ["sleep", "infinity"]
 
 
 

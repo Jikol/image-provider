@@ -2,18 +2,18 @@ version: 3
 
 vars:
   DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
-  VERSION: "staging"
+  VERSION: 'staging'
 
 env:
-  DATETIME: "{{.DATETIME}}"
-  VERSION: "{{.VERSION}}"
+  DATETIME: '{{.DATETIME}}'
+  VERSION: '{{.VERSION}}'
 
-dotenv: [".env"]
+dotenv: ['.env']
 
 tasks:
   ## development tasks ##
   init:
-    desc: Initialize parcel project for development
+    desc: Initialize nodejs project for development
     aliases: [i]
     cmds:
       - rm -rf bun.lockb
@@ -24,8 +24,8 @@ tasks:
     desc: Run compose for dependent service for development
     aliases: [d:d]
     cmds:
-      - docker compose -f $PWD/compose.dev.yml up --force-recreate --build
-      - defer: docker compose -f $PWD/compose.dev.yml down
+      - docker compose -f ${PWD}/compose.dev.yml up --force-recreate --build
+      - defer: docker compose -f ${PWD}/compose.dev.yml down
       - defer: docker image prune -f
     interactive: true
   ## ----------------- ##
@@ -35,7 +35,7 @@ tasks:
     desc: Build docker image for deployment
     aliases: [d:b]
     env:
-      TARGET: "{{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}prod{{end}}"
+      TARGET: '{{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}prod{{end}}'
     cmds:
       - docker compose build
       - defer: docker image prune -f

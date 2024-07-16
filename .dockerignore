@@ -1,4 +1,3 @@
-## Ignore files and dir for COPY ##
 .idea
 .yarn
 .dockerignore

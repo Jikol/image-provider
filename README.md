@@ -52,6 +52,7 @@ You should see Redoc docs on `http://localhost:$NODE_REDOC_PORT/`
 
 ## Conventions
 
+- [General](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions)
 - [Commit messages](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Commit-messages)
 - [Versioning](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Versioning)
 - [Docker](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Docker)

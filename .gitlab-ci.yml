@@ -78,7 +78,7 @@ build-staging:
   <<: *develop
   stage: build-staging
   script:
-    - ${BIN_PATH}/task docker:compose -- down image-provider
+    - ${BIN_PATH}/task docker:compose -- down
     - ${BIN_PATH}/task docker:build
     - ${BIN_PATH}/task docker:push
   dependencies:

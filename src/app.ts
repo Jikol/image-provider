@@ -3,6 +3,7 @@ import { execFileSync } from "child_process";
 import cors from "cors";
 import express from "express";
 import type { Express } from "express";
+import process from "process";
 
 import config from "@/config";
 import logger from "@/logger";
@@ -30,10 +31,12 @@ app.use(notFound);
 app.listen(config.NODE_PORT, () => {
   logger.info("Express started");
   logger.info(`Listening on port ${config.NODE_PORT}`);
-  try {
-    execFileSync("ts-node", ["src/scripts/generateDocs.ts"], { stdio: "inherit" });
-  } catch (err) {
-    logger.error(err);
-    process.exit(1);
+  if (process.env.NODE_DEV) {
+    try {
+      execFileSync("ts-node", ["src/scripts/generateDocs.ts"], { stdio: "inherit" });
+    } catch (err) {
+      logger.error(err);
+      process.exit(1);
+    }
   }
 });

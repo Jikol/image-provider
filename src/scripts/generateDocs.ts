@@ -30,7 +30,7 @@ const options = {
   if (!fs.existsSync(docsDir)) {
     fs.mkdirSync(docsDir);
   }
-  if (fs.existsSync(docsLocation) && process.env.NODE_DEV) return;
+  if (fs.existsSync(docsLocation)) return;
   fs.writeFile(
     docsLocation,
     JSON.stringify(swaggerJsdoc(options), null, 2),

@@ -25,7 +25,7 @@ const configSchema = z.object({
   NODE_UPLOAD_SIZE: z
     .string()
     .default("100")
-    .transform((size) => +size * 1000),
+    .transform((size) => parseInt(size) * 1000),
   // required envs
   VERSION: z.string(),
   REDOC_HOSTNAME: z.string().default("localhost"),

@@ -8,6 +8,8 @@ services:
       target: ${TARGET}
       args:
         NODE_PORT: ${NODE_PORT}
+        NODE_HOSTNAME: ${NODE_HOSTNAME}
+        VERSION: ${VERSION}
     environment:
       NODE_DEBUG: ${NODE_DEBUG}
       NODE_HOSTNAME: ${NODE_HOSTNAME}

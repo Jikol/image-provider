@@ -37,12 +37,12 @@ const options: BuildOptions = {
   logger.info("Building...");
   await build(options)
     .then((): void => {
-      try {
-        execFileSync("ts-node", ["src/scripts/generateDocs.ts"], { stdio: "inherit" });
-      } catch (err) {
-        logger.error(err);
-        process.exit(1);
-      }
+      // try {
+      //   execFileSync("ts-node", ["src/scripts/generateDocs.ts"], { stdio: "inherit" });
+      // } catch (err) {
+      //   logger.error(err);
+      //   process.exit(1);
+      // }
       logger.info("Builded successfully");
       process.exit(0);
     })

@@ -8,10 +8,10 @@ services:
       target: ${TARGET}
       args:
         NODE_PORT: ${NODE_PORT}
-        NODE_HOSTNAME: ${NODE_HOSTNAME}
-        VERSION: ${VERSION}
-        REDOC_HOSTNAME: ${REDOC_HOSTNAME}
-        REDOC_PORT: ${REDOC_PORT}
+#        NODE_HOSTNAME: ${NODE_HOSTNAME}
+#        VERSION: ${VERSION}
+#        REDOC_HOSTNAME: ${REDOC_HOSTNAME}
+#        REDOC_PORT: ${REDOC_PORT}
     environment:
       NODE_DEBUG: ${NODE_DEBUG}
       NODE_HOSTNAME: ${NODE_HOSTNAME}

@@ -13,7 +13,7 @@ const options = {
     openapi: "3.0.0",
     info: {
       title: "Image Provider",
-      version: config.NODE_VERSION,
+      version: config.VERSION,
       description: "API for uploading and serving images for Retina API"
     },
     servers: [
@@ -25,11 +25,10 @@ const options = {
   apis: [path.join(config.SRC_PATH, "router/*.ts")]
 };
 
-const generateDocs = (): void => {
+((): void => {
   if (!fs.existsSync(docsDir)) {
     fs.mkdirSync(docsDir);
   }
-  if (fs.existsSync(docsLocation)) return;
   fs.writeFile(
     docsLocation,
     JSON.stringify(swaggerJsdoc(options), null, 2),
@@ -44,6 +43,4 @@ const generateDocs = (): void => {
       logger.error(err.message);
     }
   );
-};
-
-export { generateDocs };
+})();

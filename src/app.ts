@@ -4,7 +4,6 @@ import express from "express";
 import type { Express } from "express";
 
 import config from "@/config";
-import { generateDocs } from "@/helper";
 import logger from "@/logger";
 import { error, notFound, response } from "@/middleware";
 import { docsRouter } from "@/router";
@@ -30,5 +29,4 @@ app.use(notFound);
 app.listen(config.NODE_PORT, () => {
   logger.info("Express started");
   logger.info(`Listening on port ${config.NODE_PORT}`);
-  generateDocs();
 });

@@ -1,11 +1,5 @@
 version: 3
 
-vars:
-  VERSION: 'staging'
-
-env:
-  VERSION: '{{.VERSION}}'
-
 tasks:
   ## development tasks ##
   init:

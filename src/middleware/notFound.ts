@@ -12,7 +12,7 @@ const notFound = (req: Request, res: Response): Response => {
     context: {
       docs: {
         openapi: `${reqUrl(req)}docs`,
-        redoc: `http://${config.NODE_REDOC_HOSTNAME}:${config.NODE_REDOC_PORT}`
+        redoc: `http://${config.REDOC_HOSTNAME}:${config.REDOC_PORT}`
       }
     }
   }) as Response;

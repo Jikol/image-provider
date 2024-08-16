@@ -3,6 +3,8 @@ variables:
   PRUNE_DOCKER_CACHE: 'true'
 
 .develop: &develop
+  variables:
+    VERSION: "0.1.0"
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
 

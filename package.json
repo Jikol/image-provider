@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon src/app.ts",
+    "docs": "ts-node src/scripts/generateDocs.ts",
     "lint": "eslint . && echo 'Success! No lint errors or warnings' | chalk --stdin green",
     "pret": "prettier . -w",
     "build": "rimraf dist && ts-node config/esbuild.prod.ts",

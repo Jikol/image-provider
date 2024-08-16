@@ -8,7 +8,7 @@ import { v4 } from "uuid";
 import { z } from "zod";
 
 import config from "@/config";
-import { UploadError } from "@/helper";
+import { UploadError } from "@/helpers";
 import logger from "@/logger";
 import { request } from "@/middleware";
 import { imagesV1Paths } from "@/router";

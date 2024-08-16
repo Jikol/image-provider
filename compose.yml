@@ -9,14 +9,14 @@ services:
       args:
         NODE_PORT: ${NODE_PORT}
     environment:
-      NODE_VERSION: ${VERSION}
       NODE_DEBUG: ${NODE_DEBUG}
       NODE_HOSTNAME: ${NODE_HOSTNAME}
       NODE_PORT: ${NODE_PORT}
       NODE_UPLOAD_DIR: ${NODE_UPLOAD_DIR}
       NODE_UPLOAD_SIZE: ${NODE_UPLOAD_SIZE}
-      NODE_REDOC_HOSTNAME: ${NODE_REDOC_HOSTNAME}
-      NODE_REDOC_PORT: ${NODE_REDOC_PORT}
+      VERSION: ${VERSION}
+      REDOC_HOSTNAME: ${REDOC_HOSTNAME}
+      REDOC_PORT: ${REDOC_PORT}
     ports:
       - ${NODE_PORT}:${NODE_PORT}
     restart: unless-stopped
@@ -30,7 +30,7 @@ services:
       SPEC_URL: 'http://${NODE_HOSTNAME}:${NODE_PORT}/docs'
       PAGE_TITLE: 'ReDoc - Image Provider'
     ports:
-      - ${NODE_REDOC_PORT}:80
+      - ${REDOC_PORT}:80
     restart: unless-stopped
     depends_on:
       image-provider:

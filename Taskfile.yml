@@ -1,6 +1,6 @@
 version: 3
 
-dotenv: ['.env.local']
+dotenv: [".env.local"]
 
 tasks:
   ## development tasks ##
@@ -20,13 +20,12 @@ tasks:
     aliases: [d:b]
     platforms: [linux]
     env:
-      TARGET: '{{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}prod{{end}}'
+      TARGET: "{{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}prod{{end}}"
     cmds:
       - docker compose build
       - defer: docker image prune -f
       - defer: >
-          {{if .CLI_ARGS}}
-          docker image rm jav0032/retina:image-provider-{{.VERSION}}
+          {{if .CLI_ARGS}} docker image rm jav0032/retina:image-provider-{{.VERSION}}
           {{end}}
 
   docker:compose:

@@ -1,7 +1,13 @@
 # base stage
-FROM oven/bun:1.1-alpine as base
+FROM oven/bun:1.1-alpine AS base
 
 ARG NODE_PORT
+ARG NODE_HOSTNAME
+ARG VERSION
+
+ENV NODE_PORT=${NODE_PORT}
+ENV NODE_HOSTNAME=${NODE_HOSTNAME}
+ENV VERSION=${VERSION}
 
 WORKDIR /app
 
@@ -25,7 +31,7 @@ COPY . .
 RUN bun run build
 
 # prod stage
-FROM alpine:3.19 as prod
+FROM alpine:3.19 AS prod
 
 WORKDIR /app
 

@@ -1,8 +1,6 @@
-import { exec, execFileSync } from "child_process";
+import { execFileSync } from "child_process";
 import { BuildOptions, build } from "esbuild";
 import path from "path";
-
-import logger from "@/logger";
 
 const projectRoot = process.cwd();
 const options: BuildOptions = {
@@ -34,20 +32,20 @@ const options: BuildOptions = {
 };
 
 (async (): Promise<void> => {
-  logger.info("Building...");
+  console.info("Building...");
   await build(options)
     .then((): void => {
-      // try {
-      //   execFileSync("ts-node", ["src/scripts/generateDocs.ts"], { stdio: "inherit" });
-      // } catch (err) {
-      //   logger.error(err);
-      //   process.exit(1);
-      // }
-      logger.info("Builded successfully");
+      try {
+        execFileSync("ts-node", ["src/scripts/generateDocs.ts"], { stdio: "inherit" });
+      } catch (err) {
+        console.error(err);
+        process.exit(1);
+      }
+      console.info("Builded successfully");
       process.exit(0);
     })
     .catch((): void => {
-      logger.error("Build failed");
+      console.error("Build failed");
       process.exit(1);
     });
 })();

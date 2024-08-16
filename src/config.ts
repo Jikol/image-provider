@@ -28,8 +28,11 @@ const configSchema = z.object({
     .transform((size) => +size * 1000),
   // required envs
   VERSION: z.string(),
-  REDOC_HOSTNAME: z.string(),
-  REDOC_PORT: z.string().transform((port) => +port),
+  REDOC_HOSTNAME: z.string().default("localhost"),
+  REDOC_PORT: z
+    .string()
+    .default("5000")
+    .transform((port) => +port),
   // static constants
   SRC_PATH: z.string().default(path.resolve(__dirname)),
   BASE_PATH: z.string().default("/api")

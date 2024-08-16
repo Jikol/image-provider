@@ -34,7 +34,6 @@ EXPOSE ${NODE_PORT}
 RUN apk add --no-cache --update nodejs curl
 
 COPY --from=build /app/dist/. .
-COPY --from=build /app/docs/. ./docs
 
 RUN rm -rf .prettierignore .prettierrc.json .eslintignore .eslintrc.json
 

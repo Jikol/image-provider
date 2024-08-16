@@ -1,2 +1,2 @@
-export { reqUrl, reqBaseUrl } from "./reqUrl";
-export { UploadError } from "./exception";
+export { generateDocs } from "./generateDocs";
+export { UploadError } from "./uploadError";

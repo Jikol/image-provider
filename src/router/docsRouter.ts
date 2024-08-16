@@ -1,14 +1,17 @@
 import express, { Router } from "express";
 import path from "path";
 
-import { reqUrl } from "@/helper";
 import logger from "@/logger";
+import { reqUrl } from "@/utils";
 
-const docs: Router = express.Router();
+const docsRouter: Router = express.Router();
+const docsPaths = {
+  docs: "/docs"
+};
 
 /** Static files middleware */
-docs.use(
-  "/docs",
+docsRouter.use(
+  docsPaths.docs,
   (req, _req, next) => {
     logger.info(`Endpoint accesed (${reqUrl(req)})`);
     next();
@@ -16,4 +19,4 @@ docs.use(
   express.static(path.join(process.cwd(), "docs", "openapi.json"))
 );
 
-export { docs };
+export { docsRouter, docsPaths };

@@ -6,22 +6,23 @@ import config from "@/config";
 import logger from "@/logger";
 
 const docsDir = path.join(process.cwd(), "docs");
-const docsLocation = path.resolve(docsDir, "openapi.json");
+const docsLocation = path.join(docsDir, "openapi.json");
+
 const options = {
   definition: {
     openapi: "3.0.0",
     info: {
       title: "Image Provider",
-      version: "staging",
+      version: config.NODE_VERSION,
       description: "API for uploading and serving images for Retina API"
     },
     servers: [
       {
-        url: `http://${config.HOSTNAME}:${config.PORT}${config.BASE_PATH}`
+        url: `http://${config.NODE_HOSTNAME}:${config.NODE_PORT}${config.BASE_PATH}`
       }
     ]
   },
-  apis: [path.resolve(__dirname, "router/*.ts")]
+  apis: [path.join(config.SRC_PATH, "router/*.ts")]
 };
 
 const generateDocs = (): void => {
@@ -44,7 +45,5 @@ const generateDocs = (): void => {
     }
   );
 };
-
-if (!config.DEV) generateDocs();
 
 export { generateDocs };

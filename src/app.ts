@@ -4,10 +4,10 @@ import express from "express";
 import type { Express } from "express";
 
 import config from "@/config";
-import { generateDocs } from "@/docs";
+import { generateDocs } from "@/helper";
 import logger from "@/logger";
 import { error, notFound, response } from "@/middleware";
-import { docs } from "@/router";
+import { docsRouter } from "@/router";
 import { versionedRouters } from "@/routers";
 
 const app: Express = express();
@@ -20,17 +20,15 @@ app.use(cors());
 
 /** Register routers */
 app.use(versionedRouters);
-app.use(docs);
+app.use(docsRouter);
 
 /** Add error middleware */
 app.use(error);
 app.use(notFound);
 
 /** Start express server & bind after start events */
-app.listen(config.PORT, () => {
+app.listen(config.NODE_PORT, () => {
   logger.info("Express started");
-  logger.info(`Listening on port ${config.PORT}`);
-  if (config.DEV) {
-    generateDocs();
-  }
+  logger.info(`Listening on port ${config.NODE_PORT}`);
+  generateDocs();
 });

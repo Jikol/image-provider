@@ -10,7 +10,7 @@ const stream = pretty({
 
 const logger: Logger = pino(
   {
-    level: config.DEBUG ? "debug" : "info"
+    level: config.NODE_DEBUG ? "debug" : "info"
   },
   stream
 );

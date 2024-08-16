@@ -1,7 +1,7 @@
 import { BuildOptions, build } from "esbuild";
 import path from "path";
 
-const projectRoot = path.join(path.resolve(__dirname), "..");
+const projectRoot = process.cwd();
 const options: BuildOptions = {
   bundle: true,
   platform: "node",

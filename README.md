@@ -48,7 +48,7 @@ _(it will start docker compose in attach mode)_
   bun dev
 ```
 
-You should see Redoc docs on `http://localhost:$NODE_REDOC_PORT/`
+You should see Redoc docsRouter on `http://localhost:$NODE_REDOC_PORT/`
 
 ## Conventions
 

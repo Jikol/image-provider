@@ -1,11 +1,12 @@
 import fs from "fs";
 import path from "path";
+import process from "process";
 import swaggerJsdoc from "swagger-jsdoc";
 
 import config from "@/config";
 import logger from "@/logger";
 
-const docsDir = path.join(process.cwd(), "docs");
+const docsDir = path.join(process.cwd(), process.env.NODE_DEV ? "" : "dist", "docs");
 const docsLocation = path.join(docsDir, "openapi.json");
 
 const options = {
@@ -29,6 +30,7 @@ const options = {
   if (!fs.existsSync(docsDir)) {
     fs.mkdirSync(docsDir);
   }
+  if (fs.existsSync(docsLocation) && process.env.NODE_DEV) return;
   fs.writeFile(
     docsLocation,
     JSON.stringify(swaggerJsdoc(options), null, 2),

@@ -23,7 +23,6 @@ FROM base AS build
 COPY . .
 
 RUN bun run build
-RUN bun run docs
 
 # prod stage
 FROM alpine:3.19 as prod
@@ -35,7 +34,6 @@ EXPOSE ${NODE_PORT}
 RUN apk add --no-cache --update nodejs curl
 
 COPY --from=build /app/dist/. .
-COPY --from=build /app/docs/. ./docs
 
 RUN rm -rf .prettierignore .prettierrc.json .eslintignore .eslintrc.json
 

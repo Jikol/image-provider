@@ -1,4 +1,5 @@
 import { json, urlencoded } from "body-parser";
+import { execFileSync } from "child_process";
 import cors from "cors";
 import express from "express";
 import type { Express } from "express";
@@ -29,4 +30,10 @@ app.use(notFound);
 app.listen(config.NODE_PORT, () => {
   logger.info("Express started");
   logger.info(`Listening on port ${config.NODE_PORT}`);
+  try {
+    execFileSync("ts-node", ["src/scripts/generateDocs.ts"], { stdio: "inherit" });
+  } catch (err) {
+    logger.error(err);
+    process.exit(1);
+  }
 });

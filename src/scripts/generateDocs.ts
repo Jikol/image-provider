@@ -4,9 +4,9 @@ import process from "process";
 import swaggerJsdoc from "swagger-jsdoc";
 
 import config from "@/config";
-import logger from "@/logger";
+import log from "@/logger";
 
-const docsDir = path.join(process.cwd(), process.env.NODE_DEV ? "" : "dist", "docs");
+const docsDir = path.join(config.ROOT_PATH, process.env.NODE_DEV ? "" : "dist", "docs");
 const docsLocation = path.join(docsDir, "openapi.json");
 
 const options = {
@@ -23,7 +23,7 @@ const options = {
       }
     ]
   },
-  apis: [path.join(config.SRC_PATH, "router/*.ts")]
+  apis: [path.join(config.ROOT_PATH, "src", "router/*.ts")]
 };
 
 ((): void => {
@@ -37,12 +37,12 @@ const options = {
     "utf8",
     (err) => {
       if (!err) {
-        logger.info(`OpenAPI docs generated successfully! (${docsLocation})`);
+        log.info(`OpenAPI docs generated successfully! (${docsLocation})`);
 
         return;
       }
 
-      logger.error(err.message);
+      log.error(err.message);
     }
   );
 })();

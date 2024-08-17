@@ -14,7 +14,7 @@ services:
       NODE_DEBUG: ${NODE_DEBUG}
       NODE_HOSTNAME: ${NODE_HOSTNAME}
       NODE_PORT: ${NODE_PORT}
-      NODE_UPLOAD_DIR: ${NODE_UPLOAD_DIR}
+      NODE_UPLOAD_PATH: ${NODE_UPLOAD_PATH}
       NODE_UPLOAD_SIZE: ${NODE_UPLOAD_SIZE}
       VERSION: ${VERSION}
       REDOC_HOSTNAME: ${REDOC_HOSTNAME}
@@ -23,7 +23,7 @@ services:
       - ${NODE_PORT}:${NODE_PORT}
     restart: unless-stopped
     volumes:
-      - ${NODE_UPLOAD_DIR}:${NODE_UPLOAD_DIR}
+      - ${NODE_UPLOAD_PATH}:${NODE_UPLOAD_PATH}
 
   redoc:
     container_name: redoc

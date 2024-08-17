@@ -2,7 +2,7 @@ import { execFileSync } from "child_process";
 import { BuildOptions, build } from "esbuild";
 import path from "path";
 
-const projectRoot = process.cwd();
+const projectRoot = path.resolve(process.cwd());
 const options: BuildOptions = {
   bundle: true,
   platform: "node",

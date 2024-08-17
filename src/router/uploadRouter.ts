@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import config from "@/config";
 import { UploadError } from "@/helpers";
-import logger from "@/logger";
+import log from "@/logger";
 import { request } from "@/middleware";
 import { imagesV1Paths } from "@/router";
 import { apiUrl, reqUrl } from "@/utils";
@@ -23,11 +23,11 @@ const uploadV1Paths = {
 
 const storage: StorageEngine = multer.diskStorage({
   destination: (_req, _file, cb): void => {
-    if (!fs.existsSync(config.NODE_UPLOAD_DIR)) {
-      fs.mkdirSync(config.NODE_UPLOAD_DIR);
+    if (!fs.existsSync(config.NODE_UPLOAD_PATH)) {
+      fs.mkdirSync(config.NODE_UPLOAD_PATH);
     }
 
-    return cb(null, config.NODE_UPLOAD_DIR);
+    return cb(null, config.NODE_UPLOAD_PATH);
   },
   filename(req, file, cb): void {
     let fileName = `${v4().substring(0, 9)}${Date.now()}${path
@@ -141,7 +141,7 @@ uploadV1Router.all(
     }
 
     (req.files as Array<Express.Multer.File>).forEach((file) => {
-      logger.info(
+      log.info(
         `File ${file.originalname} uploaded to ${file.destination} as ${
           file.filename
         } as [${(req.files as Array<Express.Multer.File>).map(
@@ -231,7 +231,7 @@ uploadV1Router.all(
     try {
       imageUrls.forEach((imageUrl) => {
         const imagePath = path.resolve(
-          config.NODE_UPLOAD_DIR,
+          config.NODE_UPLOAD_PATH,
           imageUrl.substring(imageUrl.lastIndexOf("/") + 1)
         );
 
@@ -242,7 +242,7 @@ uploadV1Router.all(
         }
       });
     } catch (err) {
-      logger.error(err);
+      log.error(err);
 
       return res.error({
         message: "Error while perform i/o operations"
@@ -295,19 +295,19 @@ uploadV1Router.all(
  */
 uploadV1Router.all(uploadV1Paths.deletePrivate, request(["DELETE"]), (req, res) => {
   try {
-    const files = fs.readdirSync(path.resolve(config.NODE_UPLOAD_DIR));
+    const files = fs.readdirSync(path.resolve(config.NODE_UPLOAD_PATH));
 
     files
       .filter((item) => item.startsWith("_"))
       .forEach((fileName) => {
-        const filePath = path.join(config.NODE_UPLOAD_DIR, fileName);
+        const filePath = path.join(config.NODE_UPLOAD_PATH, fileName);
 
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
         }
       });
   } catch (err) {
-    logger.error(err);
+    log.error(err);
 
     return res.error({
       message: "Error while perform i/o operations"
@@ -323,7 +323,7 @@ uploadV1Router.all(uploadV1Paths.deletePrivate, request(["DELETE"]), (req, res) 
 uploadV1Router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof MulterError || err instanceof UploadError) {
     if ((err as MulterError).code === "LIMIT_FILE_SIZE") {
-      logger.warn(`${err.message} [${reqUrl(req)}]`);
+      log.warn(`${err.message} [${reqUrl(req)}]`);
 
       return res.tooLarge({
         context: {
@@ -333,7 +333,7 @@ uploadV1Router.use((err: Error, req: Request, res: Response, next: NextFunction)
       });
     }
     if ((err as MulterError).code === "LIMIT_UNEXPECTED_FILE") {
-      logger.warn(`${err.message} [${reqUrl(req)}]`);
+      log.warn(`${err.message} [${reqUrl(req)}]`);
 
       return res.badRequest({
         context: {
@@ -343,7 +343,7 @@ uploadV1Router.use((err: Error, req: Request, res: Response, next: NextFunction)
       });
     }
     if ((err as UploadError).code === "LIMIT_FILE_TYPE") {
-      logger.warn(`${err.message} [${reqUrl(req)}]`);
+      log.warn(`${err.message} [${reqUrl(req)}]`);
 
       return res.unsupportedMedia({
         context: {

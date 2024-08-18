@@ -29,7 +29,7 @@ services:
     container_name: redoc
     image: redocly/redoc:v2.1.4
     environment:
-      SPEC_URL: "http://${NODE_HOSTNAME}:${NODE_PORT}/docs"
+      SPEC_URL: "http://${NODE_HOSTNAME}:${NODE_PORT}/api/openapi.json"
       PAGE_TITLE: "ReDoc - Image Provider"
     ports:
       - ${REDOC_PORT}:80

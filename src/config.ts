@@ -10,7 +10,7 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 const configSchema = z.object({
   // static constants
   ROOT_PATH: z.string().default(path.resolve(process.cwd())),
-  BASE_PATH: z.string().default("/api"),
+  API_BASE_PATH: z.string().default("/api"),
   // code envs
   NODE_DEBUG: z
     .string()
@@ -47,7 +47,6 @@ const result = configSchema.safeParse({
 });
 
 if (!result.success) {
-  console.log(result.error.issues);
   console.error(
     result.error.issues
       .map((item) => `Missing '${item.path[0]}' environment: ${item.message}`)

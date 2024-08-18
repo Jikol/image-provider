@@ -1,5 +1,6 @@
 import express, { Router } from "express";
 import fs from "fs";
+import path from "path";
 import serveIndex from "serve-index";
 
 import config from "@/config";
@@ -8,7 +9,7 @@ import { reqUrl } from "@/utils";
 
 const imagesV1Router: Router = express.Router();
 const imagesV1Paths = {
-  images: "/v1/images"
+  images: path.join("v1", "images")
 };
 
 /**

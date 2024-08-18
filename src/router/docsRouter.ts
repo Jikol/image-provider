@@ -7,7 +7,7 @@ import { reqUrl } from "@/utils";
 
 const docsRouter: Router = express.Router();
 const docsPaths = {
-  docs: "/docs"
+  docs: path.join(config.API_BASE_PATH, "openapi.json")
 };
 
 /** Static files middleware */

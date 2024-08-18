@@ -5,11 +5,11 @@ import path from "path";
 import config from "@/config";
 
 const reqUrl = (req: Request): string => {
-  return `${req.protocol}://${req.get("host")}${req.originalUrl}`;
+  return new URL(`${req.protocol}://${req.get("host")}${req.originalUrl}`).toString();
 };
 
 const apiUrl = (req: Request): string => {
-  return `${req.protocol}://${req.get("host")}${config.NODE_PORT}`;
+  return new URL(`${req.protocol}://${req.get("host")}${config.NODE_PORT}`).toString();
 };
 
 const resolvePath = (filePath: string | undefined): string | undefined => {

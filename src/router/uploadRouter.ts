@@ -16,9 +16,9 @@ import { apiUrl, reqUrl } from "@/utils";
 
 const uploadV1Router: Router = express.Router();
 const uploadV1Paths = {
-  upload: "/v1/upload",
-  delete: "/v1/upload/delete",
-  deletePrivate: "/v1/upload/delete/private"
+  upload: path.join("v1", "upload"),
+  delete: path.join("v1", "upload", "delete"),
+  deletePrivate: path.join("v1", "upload", "delete", "private")
 };
 
 const storage: StorageEngine = multer.diskStorage({
@@ -144,16 +144,16 @@ uploadV1Router.all(
       log.info(
         `File ${file.originalname} uploaded to ${file.destination} as ${
           file.filename
-        } as [${(req.files as Array<Express.Multer.File>).map(
-          (file) => `${apiUrl(req)}${imagesV1Paths.images}/${file.filename}`
+        } as [${(req.files as Array<Express.Multer.File>).map((file) =>
+          new URL(path.join(imagesV1Paths.images, file.filename), apiUrl(req)).toString()
         )}] (${reqUrl(req)})`
       );
     });
 
     return res.success({
       context: {
-        imageUrls: (req.files as Array<Express.Multer.File>).map(
-          (file) => `${apiUrl(req)}${imagesV1Paths.images}/${file.filename}`
+        imageUrls: (req.files as Array<Express.Multer.File>).map((file) =>
+          new URL(path.join(imagesV1Paths.images, file.filename), apiUrl(req)).toString()
         )
       },
       message: "File Uploaded Successfully"

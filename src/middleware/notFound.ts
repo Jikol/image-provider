@@ -1,5 +1,4 @@
 import type { Request, Response } from "express";
-import path from "path";
 
 import config from "@/config";
 import log from "@/logger";

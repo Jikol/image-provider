@@ -29,13 +29,10 @@ const configSchema = z.object({
     .string()
     .default("100")
     .transform((size) => parseInt(size) * 1000),
-  // external envs
+  // external required envs
   VERSION: z.string(),
-  REDOC_HOSTNAME: z.string().default("localhost"),
-  REDOC_PORT: z
-    .string()
-    .default("5000")
-    .transform((port) => +port)
+  REDOC_HOSTNAME: z.string(),
+  REDOC_PORT: z.string().transform((port) => +port)
 });
 
 const result = configSchema.safeParse({
@@ -50,9 +47,10 @@ const result = configSchema.safeParse({
 });
 
 if (!result.success) {
+  console.log(result.error.issues);
   console.error(
     result.error.issues
-      .map((item) => `missing '${item.path[0]}' environment: ${item.message}`)
+      .map((item) => `Missing '${item.path[0]}' environment: ${item.message}`)
       .flat()
       .join(" \n")
   );

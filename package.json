@@ -6,8 +6,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_DEV=true nodemon src/app.ts",
-    "lint": "eslint . && echo 'Success! No lint errors or warnings' | chalk --stdin green",
     "pret": "prettier . -w",
+    "lint": "eslint . && echo 'Success! No lint errors or warnings' | chalk --stdin green",
     "build": "rimraf dist && ts-node config/esbuild.prod.ts",
     "prev": "bun run build && node --enable-source-maps dist/index.js"
   },

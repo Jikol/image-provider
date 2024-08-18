@@ -33,6 +33,8 @@ tasks:
     desc: Run compose for deployment with defined variables
     aliases: [d:c]
     platforms: [linux]
+    env:
+      TARGET: "prod"
     cmds:
       - docker compose {{.CLI_ARGS}}
       - defer: docker image prune -f

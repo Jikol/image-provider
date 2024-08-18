@@ -51,6 +51,7 @@ CMD ["node", "index.js"]
 # meta additions
 LABEL org.opencontainers.image.title="image-provider"
 LABEL org.opencontainers.image.description="Express API for upload and serve retina images"
+LABEL org.opencontainers.image.version=${VERSION}
 LABEL org.opencontainers.image.vendor="VSB"
 LABEL org.opencontainers.image.base.name="node:alpine3.19"
 

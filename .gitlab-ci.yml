@@ -95,7 +95,7 @@ deploy-staging:
   after_script:
     - |
       if [ "${PRUNE_DOCKER_CACHE}" = "true" ]; then
-        docker system prune -f
+        docker system prune -f && docker builder prune --all --force
       fi
   environment:
     name: staging

@@ -43,8 +43,8 @@ COPY --from=build /app/dist/. .
 
 RUN rm -rf .prettierignore .prettierrc.json .eslintignore .eslintrc.json
 
-HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
-  CMD ["/bin/sh", "-c", "curl --silent --fail http://localhost:${NODE_PORT}/api/openapi.json || exit 1"]
+#HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
+#  CMD ["/bin/sh", "-c", "curl --silent --fail http://localhost:${NODE_PORT}/api/openapi.json || exit 1"]
 
 CMD ["node", "index.js"]
 

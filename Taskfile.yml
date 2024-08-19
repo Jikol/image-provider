@@ -22,7 +22,7 @@ tasks:
     env:
       TARGET: "{{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}prod{{end}}"
     cmds:
-      - docker compose build
+      - docker compose build --no-cache
       - defer: docker image prune -f
       - defer: >
           {{if .CLI_ARGS}} 

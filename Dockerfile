@@ -1,26 +1,17 @@
-ARG DATETIME
-ARG VERSION
-
 # base stage
-FROM oven/bun:1.1-alpine as base
+FROM oven/bun:1.1-alpine AS base
 
-ARG NODE_DEBUG
-ARG NODE_ENV
-ARG NODE_HOSTNAME
 ARG NODE_PORT
-ARG NODE_UPLOAD_DIR
-ARG NODE_UPLOAD_SIZE
-ARG NODE_REDOC_HOSTNAME
-ARG NODE_REDOC_PORT
+ARG NODE_HOSTNAME
+ARG VERSION
+ARG REDOC_HOSTNAME
+ARG REDOC_PORT
 
-ENV NODE_DEBUG=$NODE_DEBUG
-ENV NODE_ENV=$NODE_ENV
-ENV NODE_HOSTNAME=$NODE_HOSTNAME
-ENV NODE_PORT=$NODE_PORT
-ENV NODE_UPLOAD_DIR=$NODE_UPLOAD_DIR
-ENV NODE_UPLOAD_SIZE=$NODE_UPLOAD_SIZE
-ENV NODE_REDOC_HOSTNAME=$NODE_REDOC_HOSTNAME
-ENV NODE_REDOC_PORT=$NODE_REDOC_PORT
+ENV NODE_PORT=${NODE_PORT}
+ENV NODE_HOSTNAME=${NODE_HOSTNAME}
+ENV VERSION=${VERSION}
+ENV REDOC_HOSTNAME=${REDOC_HOSTNAME}
+ENV REDOC_PORT=${REDOC_PORT}
 
 WORKDIR /app
 
@@ -42,32 +33,29 @@ FROM base AS build
 COPY . .
 
 RUN bun run build
-RUN bun run docs
 
 # prod stage
-FROM alpine:3.19 as prod
+FROM alpine:3.19 AS prod
 
 WORKDIR /app
 
-EXPOSE $NODE_PORT
+EXPOSE ${NODE_PORT}
 
 RUN apk add --no-cache --update nodejs curl
 
 COPY --from=build /app/dist/. .
-COPY --from=build /app/docs/. ./docs
 
 RUN rm -rf .prettierignore .prettierrc.json .eslintignore .eslintrc.json
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
-  CMD curl --silent --fail http://localhost:$NODE_PORT/docs || exit 1
+  CMD ["/bin/sh", "-c", "curl --silent --fail http://localhost:${NODE_PORT}/api/openapi.json || exit 1"]
 
 CMD ["node", "index.js"]
 
-# mata additions
+# meta additions
 LABEL org.opencontainers.image.title="image-provider"
 LABEL org.opencontainers.image.description="Express API for upload and serve retina images"
-LABEL org.opencontainers.image.version=$VERSION
-LABEL org.opencontainers.image.created=$DATETIME
+LABEL org.opencontainers.image.version=${VERSION}
 LABEL org.opencontainers.image.vendor="VSB"
 LABEL org.opencontainers.image.base.name="node:alpine3.19"
 

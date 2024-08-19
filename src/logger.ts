@@ -8,13 +8,11 @@ const stream = pretty({
   colorize: true
 });
 
-const logger: Logger = pino(
+const log: Logger = pino(
   {
-    level: config.DEBUG ? "debug" : "info"
+    level: config.NODE_DEBUG ? "debug" : "info"
   },
   stream
 );
 
-logger.debug(config);
-
-export default logger;
+export default log;

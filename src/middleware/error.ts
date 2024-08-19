@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 
-import logger from "@/logger";
+import log from "@/logger";
 
 const error = (
   err: Error,
@@ -10,7 +10,7 @@ const error = (
 ): Response => {
   next(err);
 
-  logger.error(err);
+  log.error(err);
 
   return res.error({
     context: {

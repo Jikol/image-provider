@@ -1,52 +1,40 @@
 version: 3
 
-vars:
-  DATETIME: '{{now | date "2006-01-02 15:04:05"}}'
-  VERSION: "staging"
-
-env:
-  DATETIME: "{{.DATETIME}}"
-  VERSION: "{{.VERSION}}"
-
-dotenv: [".env"]
+dotenv: [".env.local"]
 
 tasks:
   ## development tasks ##
   init:
-    desc: Initialize parcel project for development
+    desc: Initialize nodejs project for development
     aliases: [i]
+    platforms: [linux]
     cmds:
-      - rm -rf bun.lockb
+      - '{{if eq .CLI_ARGS "hard"}}rm -rf bun.lockb{{end}}'
       - rm -rf node_modules
       - bun install
-
-  docker:dev:
-    desc: Run compose for dependent service for development
-    aliases: [d:d]
-    cmds:
-      - docker compose -f $PWD/compose.dev.yml up --force-recreate --build
-      - defer: docker compose -f $PWD/compose.dev.yml down
-      - defer: docker image prune -f
-    interactive: true
   ## ----------------- ##
 
   ## deployment tasks ##
   docker:build:
-    desc: Build docker image for deployment
+    desc: Build docker image for stage or deployment
     aliases: [d:b]
+    platforms: [linux]
     env:
       TARGET: "{{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}prod{{end}}"
     cmds:
       - docker compose build
       - defer: docker image prune -f
       - defer: >
-          {{if .CLI_ARGS}}
+          {{if .CLI_ARGS}} 
           docker image rm jav0032/retina:image-provider-{{.VERSION}}
           {{end}}
 
   docker:compose:
     desc: Run compose for deployment with defined variables
     aliases: [d:c]
+    platforms: [linux]
+    env:
+      TARGET: "prod"
     cmds:
       - docker compose {{.CLI_ARGS}}
       - defer: docker image prune -f
@@ -56,6 +44,7 @@ tasks:
   docker:push:
     desc: Push builded docker image to docker hub
     aliases: [d:p]
+    platforms: [linux]
     cmds:
       - echo "{{.DOCKER_PASSWD}}" | docker login -u "{{.DOCKER_USER}}" --password-stdin
       - |

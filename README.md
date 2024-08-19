@@ -19,9 +19,12 @@
 
 ## Development
 
-Required programs: [Taskfile](https://taskfile.dev/installation/) • [Bun](https://bun.sh/) • [Node.js](https://nodejs.org/en) • [Git](https://git-scm.com/)
+Required programs: [Taskfile](https://taskfile.dev/installation/) • [Bun](https://bun.sh/)
+• [Node.js](https://nodejs.org/en) • [Git](https://git-scm.com/)
 
-Clone the project from [GitLab - image-provider](https://gitlab.vsb.cz/retina/image-provider/-/tree/develop?ref_type=heads) repository with
+Clone the project from
+[GitLab - image-provider](https://gitlab.vsb.cz/retina/image-provider/-/tree/develop?ref_type=heads)
+repository with
 
 ```bash
   git clone https://gitlab.vsb.cz/retina/image-provider.git
@@ -33,7 +36,8 @@ Go to the project directory and install JavaScript runtime dependencies with
   cd image-provider && task init
 ```
 
-Create `.env` file from `template.env` file and fill the *Development Environment* section it in as needed.
+Create `.env` file from `template.env` file and fill the _Development Environment_ section
+it in as needed.
 
 Run compose for dependent service for development with
 
@@ -48,11 +52,11 @@ _(it will start docker compose in attach mode)_
   bun dev
 ```
 
-You should see Redoc docs on `http://localhost:$NODE_REDOC_PORT/`
+You should see Redoc docsRouter on `http://localhost:$REDOC_PORT/`
 
 ## Conventions
 
+- [General](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions)
 - [Commit messages](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Commit-messages)
 - [Versioning](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Versioning)
 - [Docker](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Docker)
-

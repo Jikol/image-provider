@@ -1,10 +1,7 @@
-## Ignore directory ##
 .idea
 .yarn
-.env
+.env.local
 node_modules
 dist
-
-## Production data ##
 data/**/*
 !data/.gitkeep

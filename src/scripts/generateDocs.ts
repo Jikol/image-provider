@@ -1,30 +1,35 @@
 import fs from "fs";
 import path from "path";
+import process from "process";
 import swaggerJsdoc from "swagger-jsdoc";
 
 import config from "@/config";
-import logger from "@/logger";
+import log from "@/logger";
 
-const docsDir = path.join(process.cwd(), "docs");
-const docsLocation = path.resolve(docsDir, "openapi.json");
+const docsDir = path.join(config.ROOT_PATH, process.env.NODE_DEV ? "" : "dist", "docs");
+const docsLocation = path.join(docsDir, "openapi.json");
+
 const options = {
   definition: {
     openapi: "3.0.0",
     info: {
       title: "Image Provider",
-      version: "staging",
+      version: config.VERSION,
       description: "API for uploading and serving images for Retina API"
     },
     servers: [
       {
-        url: `http://${config.HOSTNAME}:${config.PORT}${config.BASE_PATH}`
+        url: new URL(
+          config.API_BASE_PATH,
+          `http://${config.NODE_HOSTNAME}:${config.NODE_PORT}`
+        ).toString()
       }
     ]
   },
-  apis: [path.resolve(__dirname, "router/*.ts")]
+  apis: [path.join(config.ROOT_PATH, "src", "router/*.ts")]
 };
 
-const generateDocs = (): void => {
+((): void => {
   if (!fs.existsSync(docsDir)) {
     fs.mkdirSync(docsDir);
   }
@@ -35,16 +40,12 @@ const generateDocs = (): void => {
     "utf8",
     (err) => {
       if (!err) {
-        logger.info(`OpenAPI docs generated successfully! (${docsLocation})`);
+        log.info(`OpenAPI docs generated successfully! (${docsLocation})`);
 
         return;
       }
 
-      logger.error(err.message);
+      log.error(err.message);
     }
   );
-};
-
-if (!config.DEV) generateDocs();
-
-export { generateDocs };
+})();

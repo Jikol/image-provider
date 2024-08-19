@@ -8,20 +8,26 @@ import { v4 } from "uuid";
 import { z } from "zod";
 
 import config from "@/config";
-import { UploadError } from "@/helper";
-import { reqUrl } from "@/helper";
-import { reqBaseUrl } from "@/helper";
-import logger from "@/logger";
-import request from "@/middleware";
+import { UploadError } from "@/helpers";
+import log from "@/logger";
+import { request } from "@/middleware";
+import { imagesV1Paths } from "@/router";
+import { apiUrl, reqUrl } from "@/utils";
 
-const uploadV1: Router = express.Router();
+const uploadV1Router: Router = express.Router();
+const uploadV1Paths = {
+  upload: path.join("v1", "upload"),
+  delete: path.join("v1", "upload", "delete"),
+  deletePrivate: path.join("v1", "upload", "delete", "private")
+};
+
 const storage: StorageEngine = multer.diskStorage({
   destination: (_req, _file, cb): void => {
-    if (!fs.existsSync(config.UPLOAD_DIR)) {
-      fs.mkdirSync(config.UPLOAD_DIR);
+    if (!fs.existsSync(config.NODE_UPLOAD_PATH)) {
+      fs.mkdirSync(config.NODE_UPLOAD_PATH);
     }
 
-    return cb(null, config.UPLOAD_DIR);
+    return cb(null, config.NODE_UPLOAD_PATH);
   },
   filename(req, file, cb): void {
     let fileName = `${v4().substring(0, 9)}${Date.now()}${path
@@ -38,7 +44,7 @@ const storage: StorageEngine = multer.diskStorage({
 const fileUpload: Multer = multer({
   storage,
   limits: {
-    fileSize: config.UPLOAD_SIZE
+    fileSize: config.NODE_UPLOAD_SIZE
   },
   fileFilter: (_req, file, cb): void => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
@@ -121,8 +127,8 @@ const fileUpload: Multer = multer({
  *       '500':
  *         description: Internal Server Error.
  */
-uploadV1.all(
-  "/upload",
+uploadV1Router.all(
+  uploadV1Paths.upload,
   request(["POST"], "multipart/form-data"),
   fileUpload.array("file"),
   (req, res) => {
@@ -135,19 +141,19 @@ uploadV1.all(
     }
 
     (req.files as Array<Express.Multer.File>).forEach((file) => {
-      logger.info(
+      log.info(
         `File ${file.originalname} uploaded to ${file.destination} as ${
           file.filename
-        } as [${(req.files as Array<Express.Multer.File>).map(
-          (file) => `${reqBaseUrl(req, 1)}/images/${file.filename}`
+        } as [${(req.files as Array<Express.Multer.File>).map((file) =>
+          new URL(path.join(imagesV1Paths.images, file.filename), apiUrl(req)).toString()
         )}] (${reqUrl(req)})`
       );
     });
 
     return res.success({
       context: {
-        imageUrls: (req.files as Array<Express.Multer.File>).map(
-          (file) => `${reqBaseUrl(req, 1)}/images/${file.filename}`
+        imageUrls: (req.files as Array<Express.Multer.File>).map((file) =>
+          new URL(path.join(imagesV1Paths.images, file.filename), apiUrl(req)).toString()
         )
       },
       message: "File Uploaded Successfully"
@@ -155,7 +161,7 @@ uploadV1.all(
   }
 );
 
-const requestSchema = z.object({
+const uploadDeleteSchema = z.object({
   imageUrls: z.array(z.string().url())
 });
 
@@ -213,11 +219,11 @@ const requestSchema = z.object({
  *       '500':
  *         description: Internal Server Error.
  */
-uploadV1.all(
-  "/upload/delete",
-  request(["DELETE"], "application/json", requestSchema),
+uploadV1Router.all(
+  uploadV1Paths.delete,
+  request(["DELETE"], "application/json", uploadDeleteSchema),
   (req, res) => {
-    const { imageUrls } = req.body as z.infer<typeof requestSchema>;
+    const { imageUrls } = req.body as z.infer<typeof uploadDeleteSchema>;
 
     let alreadyDeleted = true;
     const deletedUrls: Array<string> = [];
@@ -225,7 +231,7 @@ uploadV1.all(
     try {
       imageUrls.forEach((imageUrl) => {
         const imagePath = path.resolve(
-          config.UPLOAD_DIR,
+          config.NODE_UPLOAD_PATH,
           imageUrl.substring(imageUrl.lastIndexOf("/") + 1)
         );
 
@@ -236,7 +242,7 @@ uploadV1.all(
         }
       });
     } catch (err) {
-      logger.error(err);
+      log.error(err);
 
       return res.error({
         message: "Error while perform i/o operations"
@@ -287,21 +293,21 @@ uploadV1.all(
  *       '500':
  *         description: Internal Server Error.
  */
-uploadV1.all("/upload/delete/private", request(["DELETE"]), (req, res) => {
+uploadV1Router.all(uploadV1Paths.deletePrivate, request(["DELETE"]), (req, res) => {
   try {
-    const files = fs.readdirSync(path.resolve(config.UPLOAD_DIR));
+    const files = fs.readdirSync(path.resolve(config.NODE_UPLOAD_PATH));
 
     files
       .filter((item) => item.startsWith("_"))
       .forEach((fileName) => {
-        const filePath = path.join(config.UPLOAD_DIR, fileName);
+        const filePath = path.join(config.NODE_UPLOAD_PATH, fileName);
 
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
         }
       });
   } catch (err) {
-    logger.error(err);
+    log.error(err);
 
     return res.error({
       message: "Error while perform i/o operations"
@@ -314,20 +320,20 @@ uploadV1.all("/upload/delete/private", request(["DELETE"]), (req, res) => {
 });
 
 /** Error handling */
-uploadV1.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+uploadV1Router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof MulterError || err instanceof UploadError) {
     if ((err as MulterError).code === "LIMIT_FILE_SIZE") {
-      logger.warn(`${err.message} [${reqUrl(req)}]`);
+      log.warn(`${err.message} [${reqUrl(req)}]`);
 
       return res.tooLarge({
         context: {
           message: err.message,
-          maxFileSize: `${config.UPLOAD_SIZE / 1000} kB`
+          maxFileSize: `${config.NODE_UPLOAD_SIZE / 1000} kB`
         }
       });
     }
     if ((err as MulterError).code === "LIMIT_UNEXPECTED_FILE") {
-      logger.warn(`${err.message} [${reqUrl(req)}]`);
+      log.warn(`${err.message} [${reqUrl(req)}]`);
 
       return res.badRequest({
         context: {
@@ -337,7 +343,7 @@ uploadV1.use((err: Error, req: Request, res: Response, next: NextFunction) => {
       });
     }
     if ((err as UploadError).code === "LIMIT_FILE_TYPE") {
-      logger.warn(`${err.message} [${reqUrl(req)}]`);
+      log.warn(`${err.message} [${reqUrl(req)}]`);
 
       return res.unsupportedMedia({
         context: {
@@ -352,4 +358,4 @@ uploadV1.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   next(err);
 });
 
-export { uploadV1 };
+export { uploadV1Router, uploadV1Paths };

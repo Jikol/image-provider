@@ -1,10 +1,9 @@
 variables:
   BIN_PATH: "~/.local/bin"
   PRUNE_DOCKER_CACHE: "true"
+  VERSION: "latest"
 
 .develop: &develop
-  variables:
-    VERSION: "latest"
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
 

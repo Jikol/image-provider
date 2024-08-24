@@ -29,8 +29,8 @@ const configSchema = z.object({
     .string()
     .default("100")
     .transform((size) => parseInt(size) * 1000),
-  // external required envs
-  VERSION: z.string(),
+  // external envs
+  VERSION: z.string().default("latest"),
   REDOC_HOSTNAME: z.string(),
   REDOC_PORT: z.string().transform((port) => +port)
 });

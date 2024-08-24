@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Image Provider",
-    "version": "latest",
+    "version": "test",
     "description": "API for uploading and serving images for Retina API"
   },
   "servers": [

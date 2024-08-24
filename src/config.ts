@@ -16,7 +16,7 @@ const configSchema = z.object({
     .string()
     .default("false")
     .transform((debug) => debug === "true"),
-  NODE_HOSTNAME: z.string().default("localhost"),
+  NODE_HOSTNAME: z.string().default("0.0.0.0"),
   NODE_PORT: z
     .string()
     .default("8000")
@@ -29,10 +29,11 @@ const configSchema = z.object({
     .string()
     .default("100")
     .transform((size) => parseInt(size) * 1000),
-  // external envs
-  VERSION: z.string().default("latest"),
+  // external required envs
   REDOC_HOSTNAME: z.string(),
-  REDOC_PORT: z.string().transform((port) => +port)
+  REDOC_PORT: z.string().transform((port) => +port),
+  // deployment envs
+  VERSION: z.string().default("latest")
 });
 
 const result = configSchema.safeParse({

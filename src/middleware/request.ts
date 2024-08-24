@@ -11,6 +11,7 @@ const request = (
   bodySchema?: ZodSchema
 ) => {
   return (req: Request, res: Response, next: NextFunction): Response | undefined => {
+    log.info(`Endpoint accesed (${reqUrl(req)})`);
     if (!methods.includes(req.method as THttpMethod)) {
       log.warn(`Method not allowed [${reqUrl(req)}]`);
 

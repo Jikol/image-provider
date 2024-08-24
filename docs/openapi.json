@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Image Provider",
-    "version": "test",
+    "version": "latest",
     "description": "API for uploading and serving images for Retina API"
   },
   "servers": [
@@ -11,6 +11,58 @@
     }
   ],
   "paths": {
+    "/openapi.json": {
+      "get": {
+        "summary": "Serve OpenAPI documentation",
+        "description": "Serves the OpenAPI documentation as a JSON file.",
+        "responses": {
+          "200": {
+            "description": "The OpenAPI documentation in JSON format.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The OpenAPI schema document."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The documentation file was not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Checks if the API is up and functional.",
+        "responses": {
+          "200": {
+            "description": "API is up and functional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "API is up and functional"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
     "/v1/images": {
       "get": {
         "summary": "List uploaded images",

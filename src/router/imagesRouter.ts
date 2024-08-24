@@ -1,11 +1,8 @@
 import express, { Router } from "express";
-import fs from "fs";
 import path from "path";
 import serveIndex from "serve-index";
 
 import config from "@/config";
-import log from "@/logger";
-import { reqUrl } from "@/utils";
 
 const imagesV1Router: Router = express.Router();
 const imagesV1Paths = {
@@ -47,17 +44,7 @@ const imagesV1Paths = {
  */
 imagesV1Router.use(
   imagesV1Paths.images,
-  (req, _res, next) => {
-    log.info(`Endpoint accesed (${reqUrl(req)})`);
-    next();
-  },
   express.static(config.NODE_UPLOAD_PATH),
-  (_req, _res, next) => {
-    if (!fs.existsSync(config.NODE_UPLOAD_PATH)) {
-      fs.mkdirSync(config.NODE_UPLOAD_PATH);
-    }
-    next();
-  },
   serveIndex(config.NODE_UPLOAD_PATH, {
     icons: true,
     view: "details"

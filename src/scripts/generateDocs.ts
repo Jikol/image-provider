@@ -21,7 +21,7 @@ const options = {
       {
         url: new URL(
           config.API_BASE_PATH,
-          `http://${config.NODE_HOSTNAME}:${config.NODE_PORT}`
+          `http://${config.HOSTNAME}:${config.NODE_PORT}`
         ).toString()
       }
     ]

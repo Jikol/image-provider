@@ -2,14 +2,14 @@
 FROM oven/bun:1.1-alpine AS base
 
 ARG NODE_PORT
-ARG NODE_HOSTNAME
 ARG VERSION
+ARG HOSTNAME
 ARG REDOC_HOSTNAME
 ARG REDOC_PORT
 
 ENV NODE_PORT=${NODE_PORT}
-ENV NODE_HOSTNAME=${NODE_HOSTNAME}
 ENV VERSION=${VERSION}
+ENV HOSTNAME=${HOSTNAME}
 ENV REDOC_HOSTNAME=${REDOC_HOSTNAME}
 ENV REDOC_PORT=${REDOC_PORT}
 
@@ -48,7 +48,7 @@ COPY --from=build /app/dist/. .
 RUN rm -rf .prettierignore .prettierrc.json .eslintignore .eslintrc.json
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
-  CMD /bin/sh -c curl --silent --fail http://${NODE_HOSTNAME}:${NODE_PORT}/api/health || exit 1
+  CMD /bin/sh -c "curl --silent --fail http://localhost:${NODE_PORT}/api/health || exit 1"
 
 CMD ["node", "index.js"]
 

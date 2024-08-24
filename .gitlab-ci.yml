@@ -1,7 +1,7 @@
 variables:
   BIN_PATH: '~/.local/bin'
   PRUNE_DOCKER_CACHE: 'true'
-  VERSION: '${CI_COMMIT_TAG#v:-latest}'
+  VERSION: 'latest'
 
 .develop: &develop
   rules:

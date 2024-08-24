@@ -46,7 +46,6 @@ tasks:
     aliases: [d:p]
     platforms: [linux]
     cmds:
-      - "echo {{.VERSION}}"
       - echo "{{.DOCKER_PASSWD}}" | docker login -u "{{.DOCKER_USER}}" --password-stdin
       - |
         {{if eq .VERSION "latest"}}

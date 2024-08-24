@@ -1,13 +1,16 @@
 variables:
   BIN_PATH: '~/.local/bin'
   PRUNE_DOCKER_CACHE: 'true'
-  VERSION: 'latest'
 
 .develop: &develop
+  variables:
+    VERSION: 'latest'
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
 
 .tag: &tag
+  variables:
+    VERSION: '$CI_COMMIT_TAG'
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
 
@@ -80,8 +83,6 @@ build-staging:
   <<: *develop
   stage: build-staging
   script:
-    - echo ${VERSION}
-    - echo ${CI_COMMIT_TAG}
     - ${BIN_PATH}/task docker:compose -- down
     - ${BIN_PATH}/task docker:build
     - ${BIN_PATH}/task docker:push

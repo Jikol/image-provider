@@ -11,7 +11,7 @@ const healthPaths = {
 
 /**
  * @openapi
- * /health:
+ * /api/health:
  *   get:
  *     summary: Health Check
  *     description: Checks if the API is up and functional.

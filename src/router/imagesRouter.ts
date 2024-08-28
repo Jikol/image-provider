@@ -11,7 +11,7 @@ const imagesV1Paths = {
 
 /**
  * @openapi
- * /v1/images:
+ * /api/v1/images:
  *   get:
  *     summary: List uploaded images
  *     description: Retrieve images index listing from the server.

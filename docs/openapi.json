@@ -7,11 +7,11 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8000/api"
+      "url": "http://localhost:8080"
     }
   ],
   "paths": {
-    "/openapi.json": {
+    "/api/openapi.json": {
       "get": {
         "summary": "Serve OpenAPI documentation",
         "description": "Serves the OpenAPI documentation as a JSON file.",
@@ -36,7 +36,7 @@
         }
       }
     },
-    "/health": {
+    "/api/health": {
       "get": {
         "summary": "Health Check",
         "description": "Checks if the API is up and functional.",
@@ -63,7 +63,7 @@
         }
       }
     },
-    "/v1/images": {
+    "/api/v1/images": {
       "get": {
         "summary": "List uploaded images",
         "description": "Retrieve images index listing from the server.",
@@ -110,7 +110,7 @@
         }
       }
     },
-    "/v1/upload": {
+    "/api/v1/upload": {
       "post": {
         "summary": "Upload images",
         "description": "Upload images to the server.",
@@ -207,7 +207,7 @@
         }
       }
     },
-    "/v1/upload/delete": {
+    "/api/v1/upload/delete": {
       "delete": {
         "summary": "Remove uploaded images",
         "description": "Remove files from filesystem which were uploaded.",
@@ -285,7 +285,7 @@
         }
       }
     },
-    "/v1/upload/delete/private": {
+    "/api/v1/upload/delete/private": {
       "delete": {
         "summary": "Remove uploaded private images",
         "description": "Removes all images which has been uploaded with data_private=true query parameter.",

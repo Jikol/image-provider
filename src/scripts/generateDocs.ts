@@ -19,10 +19,7 @@ const options = {
     },
     servers: [
       {
-        url: new URL(
-          config.API_BASE_PATH,
-          `http://${config.HOSTNAME}:${config.NODE_PORT}`
-        ).toString()
+        url: `http://${config.HOSTNAME}:${config.NODE_PORT}`
       }
     ]
   },

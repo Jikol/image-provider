@@ -64,7 +64,7 @@ const fileUpload: Multer = multer({
 
 /**
  * @openapi
- * /v1/upload:
+ * /api/v1/upload:
  *   post:
  *     summary: Upload images
  *     description: Upload images to the server.
@@ -167,7 +167,7 @@ const uploadDeleteSchema = z.object({
 
 /**
  * @openapi
- * /v1/upload/delete:
+ * /api/v1/upload/delete:
  *   delete:
  *     summary: Remove uploaded images
  *     description: Remove files from filesystem which were uploaded.
@@ -266,7 +266,7 @@ uploadV1Router.all(
 
 /**
  * @openapi
- * /v1/upload/delete/private:
+ * /api/v1/upload/delete/private:
  *   delete:
  *     summary: Remove uploaded private images
  *     description: Removes all images which has been uploaded with data_private=true query parameter.

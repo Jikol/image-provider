@@ -11,7 +11,7 @@ const docsPaths = {
 
 /**
  * @openapi
- * /openapi.json:
+ * /api/openapi.json:
  *   get:
  *     summary: Serve OpenAPI documentation
  *     description: Serves the OpenAPI documentation as a JSON file.

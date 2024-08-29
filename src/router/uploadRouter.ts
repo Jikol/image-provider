@@ -16,9 +16,9 @@ import { apiUrl, reqUrl } from "@/utils";
 
 const uploadV1Router: Router = express.Router();
 const uploadV1Paths = {
-  upload: path.join("v1", "upload"),
-  delete: path.join("v1", "upload", "delete"),
-  deletePrivate: path.join("v1", "upload", "delete", "private")
+  upload: path.join("/v1", "upload"),
+  delete: path.join("/v1", "upload", "delete"),
+  deletePrivate: path.join("/v1", "upload", "delete", "private")
 };
 
 const storage: StorageEngine = multer.diskStorage({
@@ -293,7 +293,7 @@ uploadV1Router.all(
  *       '500':
  *         description: Internal Server Error.
  */
-uploadV1Router.all(uploadV1Paths.deletePrivate, request(["DELETE"]), (req, res) => {
+uploadV1Router.all(uploadV1Paths.deletePrivate, request(["DELETE"]), (_, res) => {
   try {
     const files = fs.readdirSync(path.resolve(config.NODE_UPLOAD_PATH));
 

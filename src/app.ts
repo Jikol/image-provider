@@ -9,7 +9,7 @@ import process from "process";
 import config from "@/config";
 import log from "@/logger";
 import { error, notFound, response } from "@/middleware";
-import { docsRouter, healthRouter } from "@/router";
+import { docsRouter, healthRouter, imagesV1Paths } from "@/router";
 import { versionedRouters } from "@/routers";
 
 const app: Express = express();

@@ -6,7 +6,7 @@ import config from "@/config";
 
 const imagesV1Router: Router = express.Router();
 const imagesV1Paths = {
-  images: path.join("v1", "images")
+  images: path.join("/v1", "images")
 };
 
 /**

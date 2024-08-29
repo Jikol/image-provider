@@ -7,12 +7,14 @@ services:
     build:
       target: ${TARGET}
       args:
-        NODE_PORT: ${NODE_PORT}
         VERSION: ${VERSION}
         HOSTNAME: ${HOSTNAME}
+        NODE_PORT: ${NODE_PORT}
         REDOC_HOSTNAME: ${REDOC_HOSTNAME}
         REDOC_PORT: ${REDOC_PORT}
     environment:
+      VERSION: ${VERSION}
+      HOSTNAME: ${HOSTNAME}
       NODE_DEBUG: ${NODE_DEBUG}
       NODE_PORT: ${NODE_PORT}
       NODE_UPLOAD_PATH: ${NODE_UPLOAD_PATH}

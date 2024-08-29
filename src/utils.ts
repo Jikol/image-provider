@@ -2,14 +2,12 @@ import { Request } from "express";
 import * as process from "node:process";
 import path from "path";
 
-import config from "@/config";
-
 const reqUrl = (req: Request): string => {
   return new URL(`${req.protocol}://${req.get("host")}${req.originalUrl}`).toString();
 };
 
 const apiUrl = (req: Request): string => {
-  return new URL(`${req.protocol}://${req.get("host")}${config.NODE_PORT}`).toString();
+  return new URL(`${req.protocol}://${req.get("host")}`).toString();
 };
 
 const resolvePath = (filePath: string | undefined): string | undefined => {

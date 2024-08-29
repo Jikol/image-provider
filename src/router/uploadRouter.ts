@@ -156,7 +156,10 @@ uploadV1Router.all(
     return res.success({
       context: {
         imageUrls: (req.files as Array<Express.Multer.File>).map((file) =>
-          new URL(path.join(imagesV1Paths.images, file.filename), apiUrl(req)).toString()
+          new URL(
+            path.join(config.API_BASE_PATH, imagesV1Paths.images, file.filename),
+            apiUrl(req)
+          ).toString()
         )
       },
       message: "File Uploaded Successfully"

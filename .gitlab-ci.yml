@@ -9,8 +9,6 @@ variables:
     - if: '$CI_COMMIT_BRANCH == "develop"'
 
 .tag: &tag
-  variables:
-    VERSION: '$CI_COMMIT_TAG'
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
 
@@ -111,9 +109,12 @@ release:
   stage: release
   variables:
     DATETIME_FORMAT: '+%Y-%m-%d %H:%M:%S'
+    VERSION: ${CI_COMMIT_TAG}
   before_script:
+    - export TEST=$CI_COMMIT_TAG
     - apk add --no-cache coreutils
     - echo $VERSION
+    - echo $TEST
     - echo $CI_COMMIT_TAG
     - PUSH_OUTPUT=$(${BIN_PATH}/task docker:push)
     - IMAGE_NAME=$(echo ${PUSH_OUTPUT} | grep -o "image-provider[^ ]*" | tr -d ":" | sort

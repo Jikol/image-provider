@@ -7,18 +7,18 @@ services:
     build:
       target: ${TARGET}
       args:
-        NODE_PORT: ${NODE_PORT}
-        NODE_HOSTNAME: ${NODE_HOSTNAME}
         VERSION: ${VERSION}
+        HOSTNAME: ${HOSTNAME}
+        NODE_PORT: ${NODE_PORT}
         REDOC_HOSTNAME: ${REDOC_HOSTNAME}
         REDOC_PORT: ${REDOC_PORT}
     environment:
+      VERSION: ${VERSION}
+      HOSTNAME: ${HOSTNAME}
       NODE_DEBUG: ${NODE_DEBUG}
-      NODE_HOSTNAME: ${NODE_HOSTNAME}
       NODE_PORT: ${NODE_PORT}
       NODE_UPLOAD_PATH: ${NODE_UPLOAD_PATH}
       NODE_UPLOAD_SIZE: ${NODE_UPLOAD_SIZE}
-      VERSION: ${VERSION}
       REDOC_HOSTNAME: ${REDOC_HOSTNAME}
       REDOC_PORT: ${REDOC_PORT}
     ports:
@@ -31,7 +31,7 @@ services:
     container_name: redoc
     image: redocly/redoc:v2.1.4
     environment:
-      SPEC_URL: "http://${NODE_HOSTNAME}:${NODE_PORT}/api/openapi.json"
+      SPEC_URL: "http://${HOSTNAME}:${NODE_PORT}/api/openapi.json"
       PAGE_TITLE: "ReDoc - Image Provider"
     ports:
       - ${REDOC_PORT}:80

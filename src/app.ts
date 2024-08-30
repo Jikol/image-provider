@@ -3,18 +3,24 @@ import { execFileSync } from "child_process";
 import cors from "cors";
 import express from "express";
 import type { Express } from "express";
+import fs from "fs";
 import process from "process";
 
 import config from "@/config";
 import log from "@/logger";
 import { error, notFound, response } from "@/middleware";
-import { docsRouter } from "@/router";
+import { docsRouter, healthRouter } from "@/router";
 import { versionedRouters } from "@/routers";
 
 const app: Express = express();
 
 /** Output global config */
 log.debug(config);
+
+/** Preparation of required system locations */
+if (!fs.existsSync(config.NODE_UPLOAD_PATH)) {
+  fs.mkdirSync(config.NODE_UPLOAD_PATH);
+}
 
 /** Add helper middleware */
 app.use(json());
@@ -25,6 +31,7 @@ app.use(cors());
 /** Register routers */
 app.use(versionedRouters);
 app.use(docsRouter);
+app.use(healthRouter);
 
 /** Add error middleware */
 app.use(error);

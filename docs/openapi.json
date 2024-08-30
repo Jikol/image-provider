@@ -7,11 +7,63 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8000/api"
+      "url": "http://localhost:8080"
     }
   ],
   "paths": {
-    "/v1/images": {
+    "/api/openapi.json": {
+      "get": {
+        "summary": "Serve OpenAPI documentation",
+        "description": "Serves the OpenAPI documentation as a JSON file.",
+        "responses": {
+          "200": {
+            "description": "The OpenAPI documentation in JSON format.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The OpenAPI schema document."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The documentation file was not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Checks if the API is up and functional.",
+        "responses": {
+          "200": {
+            "description": "API is up and functional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "API is up and functional"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/api/v1/images": {
       "get": {
         "summary": "List uploaded images",
         "description": "Retrieve images index listing from the server.",
@@ -58,7 +110,7 @@
         }
       }
     },
-    "/v1/upload": {
+    "/api/v1/upload": {
       "post": {
         "summary": "Upload images",
         "description": "Upload images to the server.",
@@ -155,7 +207,7 @@
         }
       }
     },
-    "/v1/upload/delete": {
+    "/api/v1/upload/delete": {
       "delete": {
         "summary": "Remove uploaded images",
         "description": "Remove files from filesystem which were uploaded.",
@@ -233,7 +285,7 @@
         }
       }
     },
-    "/v1/upload/delete/private": {
+    "/api/v1/upload/delete/private": {
       "delete": {
         "summary": "Remove uploaded private images",
         "description": "Removes all images which has been uploaded with data_private=true query parameter.",

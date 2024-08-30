@@ -16,7 +16,6 @@ const configSchema = z.object({
     .string()
     .default("false")
     .transform((debug) => debug === "true"),
-  NODE_HOSTNAME: z.string().default("localhost"),
   NODE_PORT: z
     .string()
     .default("8000")
@@ -28,23 +27,16 @@ const configSchema = z.object({
   NODE_UPLOAD_SIZE: z
     .string()
     .default("100")
-    .transform((size) => parseInt(size) * 1000),
+    .transform((size) => parseInt(size) * 1000000),
   // external required envs
-  VERSION: z.string(),
   REDOC_HOSTNAME: z.string(),
-  REDOC_PORT: z.string().transform((port) => +port)
+  REDOC_PORT: z.string().transform((port) => +port),
+  // deployment envs
+  VERSION: z.string().default("latest"),
+  HOSTNAME: z.string().default("localhost")
 });
 
-const result = configSchema.safeParse({
-  NODE_DEBUG: process.env.NODE_DEBUG,
-  NODE_HOSTNAME: process.env.NODE_HOSTNAME,
-  NODE_PORT: process.env.NODE_PORT,
-  NODE_UPLOAD_PATH: process.env.NODE_UPLOAD_PATH,
-  NODE_UPLOAD_SIZE: process.env.NODE_UPLOAD_SIZE,
-  VERSION: process.env.VERSION,
-  REDOC_HOSTNAME: process.env.REDOC_HOSTNAME,
-  REDOC_PORT: process.env.REDOC_PORT
-});
+const result = configSchema.safeParse(process.env);
 
 if (!result.success) {
   console.error(

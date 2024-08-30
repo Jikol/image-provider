@@ -16,9 +16,9 @@ import { apiUrl, reqUrl } from "@/utils";
 
 const uploadV1Router: Router = express.Router();
 const uploadV1Paths = {
-  upload: path.join("v1", "upload"),
-  delete: path.join("v1", "upload", "delete"),
-  deletePrivate: path.join("v1", "upload", "delete", "private")
+  upload: path.join("/v1", "upload"),
+  delete: path.join("/v1", "upload", "delete"),
+  deletePrivate: path.join("/v1", "upload", "delete", "private")
 };
 
 const storage: StorageEngine = multer.diskStorage({
@@ -64,7 +64,7 @@ const fileUpload: Multer = multer({
 
 /**
  * @openapi
- * /v1/upload:
+ * /api/v1/upload:
  *   post:
  *     summary: Upload images
  *     description: Upload images to the server.
@@ -145,7 +145,10 @@ uploadV1Router.all(
         `File ${file.originalname} uploaded to ${file.destination} as ${
           file.filename
         } as [${(req.files as Array<Express.Multer.File>).map((file) =>
-          new URL(path.join(imagesV1Paths.images, file.filename), apiUrl(req)).toString()
+          new URL(
+            path.join(config.API_BASE_PATH, imagesV1Paths.images, file.filename),
+            apiUrl(req)
+          ).toString()
         )}] (${reqUrl(req)})`
       );
     });
@@ -153,7 +156,10 @@ uploadV1Router.all(
     return res.success({
       context: {
         imageUrls: (req.files as Array<Express.Multer.File>).map((file) =>
-          new URL(path.join(imagesV1Paths.images, file.filename), apiUrl(req)).toString()
+          new URL(
+            path.join(config.API_BASE_PATH, imagesV1Paths.images, file.filename),
+            apiUrl(req)
+          ).toString()
         )
       },
       message: "File Uploaded Successfully"
@@ -167,7 +173,7 @@ const uploadDeleteSchema = z.object({
 
 /**
  * @openapi
- * /v1/upload/delete:
+ * /api/v1/upload/delete:
  *   delete:
  *     summary: Remove uploaded images
  *     description: Remove files from filesystem which were uploaded.
@@ -266,7 +272,7 @@ uploadV1Router.all(
 
 /**
  * @openapi
- * /v1/upload/delete/private:
+ * /api/v1/upload/delete/private:
  *   delete:
  *     summary: Remove uploaded private images
  *     description: Removes all images which has been uploaded with data_private=true query parameter.
@@ -293,7 +299,7 @@ uploadV1Router.all(
  *       '500':
  *         description: Internal Server Error.
  */
-uploadV1Router.all(uploadV1Paths.deletePrivate, request(["DELETE"]), (req, res) => {
+uploadV1Router.all(uploadV1Paths.deletePrivate, request(["DELETE"]), (_, res) => {
   try {
     const files = fs.readdirSync(path.resolve(config.NODE_UPLOAD_PATH));
 

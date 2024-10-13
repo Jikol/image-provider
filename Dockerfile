@@ -1,5 +1,5 @@
 # base stage
-FROM oven/bun:1 AS base
+FROM oven/bun:1.1-slim AS base
 
 ARG VERSION
 ARG HOSTNAME
@@ -19,8 +19,8 @@ WORKDIR /app
 
 COPY package.json bun.lockb ./
 
-RUN apk add nodejs
-RUN bun install --frozen-lockfile
+RUN apt update && apt install nodejs -y
+RUN bun install
 
 # linting stage
 FROM base AS lint

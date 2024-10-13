@@ -25,8 +25,7 @@ tasks:
       - docker compose build
       - defer: docker image prune -f
       - defer: >
-          {{if .CLI_ARGS}} 
-          docker image rm jav0032/retina:image-provider-{{.VERSION}}
+          {{if .CLI_ARGS}}  docker image rm jav0032/retina:image-provider-{{.VERSION}}
           {{end}}
 
   docker:compose:
@@ -35,7 +34,7 @@ tasks:
     platforms: [linux]
     env:
       TARGET: "prod"
-      PROFILE: '{{if .PROFILE}}{{.PROFILE}}{{else}}all{{end}}'
+      PROFILE: "{{if .PROFILE}}{{.PROFILE}}{{else}}all{{end}}"
     cmds:
       - docker compose {{.CLI_ARGS}}
       - defer: docker image prune -f

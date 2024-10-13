@@ -122,10 +122,7 @@
             "description": "Specifies if the data should be private.",
             "schema": {
               "type": "string",
-              "enum": [
-                true,
-                false
-              ]
+              "enum": [true, false]
             }
           }
         ],

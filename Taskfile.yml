@@ -35,11 +35,20 @@ tasks:
     platforms: [linux]
     env:
       TARGET: "prod"
+      PROFILE: '{{if .PROFILE}}{{.PROFILE}}{{else}}all{{end}}'
     cmds:
       - docker compose {{.CLI_ARGS}}
       - defer: docker image prune -f
     requires:
       vars: [CLI_ARGS]
+
+  docker:dev:
+    desc: Run compose for development with defined variables
+    aliases: [d:d]
+    platforms: [linux]
+    cmds:
+      - docker compose up redoc-dev
+      - defer: docker image prune -f
 
   docker:push:
     desc: Push builded docker image to docker hub

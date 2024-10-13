@@ -1,5 +1,12 @@
 name: image-provider
 
+x-redoc-common: &redoc-common
+  container_name: redoc
+  image: redocly/redoc:v2.1.4
+  ports:
+    - ${REDOC_PORT}:80
+  restart: unless-stopped
+
 services:
   image-provider:
     container_name: image-provider
@@ -27,15 +34,18 @@ services:
     volumes:
       - ${NODE_UPLOAD_PATH}:${NODE_UPLOAD_PATH}
 
+  redoc-dev:
+    <<: *redoc-common
+    environment:
+      SPEC_URL: "http://localhost:${NODE_PORT}/api/openapi.json"
+      PAGE_TITLE: "ReDoc - Image Provider"
+
   redoc:
-    container_name: redoc
-    image: redocly/redoc:v2.1.4
+    <<: *redoc-common
     environment:
       SPEC_URL: "http://${HOSTNAME}:${NODE_PORT}/api/openapi.json"
       PAGE_TITLE: "ReDoc - Image Provider"
-    ports:
-      - ${REDOC_PORT}:80
-    restart: unless-stopped
     depends_on:
       image-provider:
-        condition: service_healthy
+        condition: service_started
+

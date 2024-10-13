@@ -1,6 +1,6 @@
 variables:
   BIN_PATH: '~/.local/bin'
-  PRUNE_DOCKER_CACHE: 'true'
+  PRUNE_DOCKER_CACHE: 'false'
 
 .develop: &develop
   variables:

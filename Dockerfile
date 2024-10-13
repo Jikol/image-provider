@@ -1,5 +1,5 @@
 # base stage
-FROM oven/bun:1.1.30-alpine AS base
+FROM oven/bun:1.1-alpine AS base
 
 ARG VERSION
 ARG HOSTNAME
@@ -19,7 +19,6 @@ WORKDIR /app
 
 COPY package.json bun.lockb ./
 
-RUN apk add --no-cache --update nodejs
 RUN bun install
 
 # linting stage

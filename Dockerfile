@@ -19,7 +19,7 @@ WORKDIR /app
 
 COPY package.json bun.lockb ./
 
-RUN apk add --no-cache --update nodejs
+RUN apk add nodejs
 RUN bun install
 
 # linting stage

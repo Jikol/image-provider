@@ -1,5 +1,5 @@
 # base stage
-FROM oven/bun:1.1-alpine AS base
+FROM oven/bun:1 AS base
 
 ARG VERSION
 ARG HOSTNAME
@@ -20,7 +20,7 @@ WORKDIR /app
 COPY package.json bun.lockb ./
 
 RUN apk add nodejs
-RUN bun install
+RUN bun install --frozen-lockfile
 
 # linting stage
 FROM base AS lint

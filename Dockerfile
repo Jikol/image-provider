@@ -1,5 +1,5 @@
 # base stage
-FROM oven/bun:1.1-slim AS base
+FROM oven/bun:1.1-apline AS base
 
 ARG VERSION
 ARG HOSTNAME
@@ -19,8 +19,8 @@ WORKDIR /app
 
 COPY package.json bun.lockb ./
 
-RUN apt update && apt install nodejs -y
-RUN bun install
+RUN apk add --no-cache --update nodejs
+RUN bun install --frozen-lockfile
 
 # linting stage
 FROM base AS lint
@@ -49,8 +49,8 @@ COPY --from=build /app/dist/. .
 
 RUN rm -rf .prettierignore .prettierrc.json .eslintignore .eslintrc.json
 
-#HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
-#  CMD /bin/sh -c "curl --silent --fail http://localhost:${NODE_PORT}/api/health || exit 1"
+HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
+  CMD /bin/sh -c "curl --silent --fail http://localhost:${NODE_PORT}/api/health || exit 1"
 
 CMD ["node", "index.js"]
 

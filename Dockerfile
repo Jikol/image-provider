@@ -1,5 +1,5 @@
 # base stage
-FROM oven/bun:1.1-apline AS base
+FROM oven/bun:1.1-alpine AS base
 
 ARG VERSION
 ARG HOSTNAME

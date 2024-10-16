@@ -1,10 +1,10 @@
 variables:
+  REPO_NAME: 'jav0032/retina'
+  IMAGE_NAME: 'image-provider'
   BIN_PATH: '~/.local/bin'
-  PRUNE_DOCKER_CACHE: 'false'
+  PRUNE_DOCKER_CACHE: 'true'
 
 .develop: &develop
-  variables:
-    VERSION: 'latest'
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
 
@@ -73,7 +73,7 @@ lint-staging:
   <<: *develop
   stage: lint-staging
   script:
-    - ${BIN_PATH}/task docker:build -- lint
+    - ${BIN_PATH}/task docker:build TARGET=lint
   dependencies:
     - taskfile
 
@@ -91,7 +91,7 @@ deploy-staging:
   <<: *develop
   stage: deploy-staging
   script:
-    - ${BIN_PATH}/task docker:compose -- up -d --no-build
+    - ${BIN_PATH}/task docker:compose
   after_script:
     - |
       if [ "${PRUNE_DOCKER_CACHE}" = "true" ]; then

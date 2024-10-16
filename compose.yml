@@ -3,48 +3,51 @@ name: image-provider
 x-redoc-common: &redoc-common
   image: redocly/redoc:v2.1.4
   ports:
-    - ${REDOC_PORT}:80
+    - ${REDOC_PORT?:error}:80
   restart: unless-stopped
 
 services:
   image-provider:
     container_name: image-provider
-    image: jav0032/retina:image-provider-${VERSION}
+    profiles: [prod]
+    image: jav0032/retina:image-provider-${VERSION:-latest}
     build:
-      target: ${TARGET}
+      target: ${TARGET:-prod}
       args:
-        VERSION: ${VERSION}
-        HOSTNAME: ${HOSTNAME}
-        NODE_PORT: ${NODE_PORT}
-        REDOC_HOSTNAME: ${REDOC_HOSTNAME}
-        REDOC_PORT: ${REDOC_PORT}
+        VERSION: ${VERSION:-latest}
+        HOSTNAME: ${HOSTNAME:-localhost}
+        NODE_PORT: ${NODE_PORT:?error}
+        REDOC_HOSTNAME: ${REDOC_HOSTNAME:?error}
+        REDOC_PORT: ${REDOC_PORT:?error}
     environment:
-      VERSION: ${VERSION}
-      HOSTNAME: ${HOSTNAME}
-      NODE_DEBUG: ${NODE_DEBUG}
-      NODE_PORT: ${NODE_PORT}
-      NODE_UPLOAD_PATH: ${NODE_UPLOAD_PATH}
-      NODE_UPLOAD_SIZE: ${NODE_UPLOAD_SIZE}
-      REDOC_HOSTNAME: ${REDOC_HOSTNAME}
-      REDOC_PORT: ${REDOC_PORT}
+      VERSION: ${VERSION:-latest}
+      HOSTNAME: ${HOSTNAME:-localhost}
+      NODE_DEBUG: ${NODE_DEBUG:?error}
+      NODE_PORT: ${NODE_PORT:?error}
+      NODE_UPLOAD_PATH: ${NODE_UPLOAD_PATH:?error}
+      NODE_UPLOAD_SIZE: ${NODE_UPLOAD_SIZE:?error}
+      REDOC_HOSTNAME: ${REDOC_HOSTNAME:?error}
+      REDOC_PORT: ${REDOC_PORT:?error}
     ports:
-      - ${NODE_PORT}:${NODE_PORT}
+      - ${NODE_PORT:?error}:${NODE_PORT:?error}
     restart: unless-stopped
     volumes:
-      - ${NODE_UPLOAD_PATH}:${NODE_UPLOAD_PATH}
+      - ${NODE_UPLOAD_PATH:?error}:${NODE_UPLOAD_PATH:?error}
 
   redoc-dev:
-    container_name: redoc-dev
     <<: *redoc-common
+    container_name: redoc-dev
+    profiles: [dev]
     environment:
-      SPEC_URL: "http://localhost:${NODE_PORT}/api/openapi.json"
+      SPEC_URL: "http://localhost:${NODE_PORT:?error}/api/openapi.json"
       PAGE_TITLE: "ReDoc - Image Provider"
 
   redoc:
-    container_name: redoc
     <<: *redoc-common
+    container_name: redoc
+    profiles: [prod]
     environment:
-      SPEC_URL: "http://${HOSTNAME}:${NODE_PORT}/api/openapi.json"
+      SPEC_URL: "http://${HOSTNAME:-localhost}:${NODE_PORT?:error}/api/openapi.json"
       PAGE_TITLE: "ReDoc - Image Provider"
     depends_on:
       image-provider:

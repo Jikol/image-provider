@@ -9,8 +9,8 @@ x-redoc-common: &redoc-common
 services:
   image-provider:
     container_name: image-provider
-    profiles: [prod]
     image: jav0032/retina:image-provider-${VERSION:-latest}
+    profiles: [prod]
     build:
       target: ${TARGET:-prod}
       args:

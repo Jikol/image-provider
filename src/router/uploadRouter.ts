@@ -30,15 +30,18 @@ const storage: StorageEngine = multer.diskStorage({
     return cb(null, config.NODE_UPLOAD_PATH);
   },
   filename(req, file, cb): void {
-    let fileName = `${v4().substring(0, 9)}${Date.now()}${path
-      .extname(file.originalname)
-      .toLowerCase()}`;
+    const fileAppend = path.extname(file.originalname).toLowerCase();
 
-    if (req.query?.data_private && req.query?.data_private === "true") {
-      fileName = `_${fileName}`;
+    if (req.query?.file_name) {
+      return cb(null, `${req.query.file_name}${fileAppend}`);
     }
 
-    return cb(null, fileName);
+    return cb(
+      null,
+      `${
+        req.query?.data_private && req.query?.data_private === "true" ? "_" : ""
+      }${v4().substring(0, 9)}${Date.now()}${fileAppend}`
+    );
   }
 });
 const fileUpload: Multer = multer({
@@ -76,6 +79,12 @@ const fileUpload: Multer = multer({
  *         schema:
  *           type: string
  *           enum: [true, false]
+ *       - name: file_name
+ *         in: query
+ *         required: false
+ *         description: Specifies the custom name of the data file.
+ *         schema:
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:

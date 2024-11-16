@@ -12,12 +12,12 @@
     "prev": "bun run build && node --enable-source-maps dist/index.js"
   },
   "dependencies": {
-    "body-parser": "^1.20.2",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "emitter": "^0.0.5",
     "env-cmd": "^10.1.0",
-    "express": "^4.19.1",
+    "express": "^4.21.1",
     "jest": "^29.7.0",
     "multer": "^1.4.5-lts.1",
     "pino": "^8.20.0",

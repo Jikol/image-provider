@@ -127,6 +127,15 @@
                 false
               ]
             }
+          },
+          {
+            "name": "file_name",
+            "in": "query",
+            "required": false,
+            "description": "Specifies the custom name of the data file.",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {

@@ -20,7 +20,7 @@ WORKDIR /app
 COPY package.json bun.lockb ./
 
 RUN apk add --no-cache --update nodejs
-RUN bun install
+RUN bun install --frozen-lockfile
 
 # linting stage
 FROM base AS lint

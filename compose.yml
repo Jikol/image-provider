@@ -9,10 +9,10 @@ x-redoc-common: &redoc-common
 services:
   image-provider:
     container_name: image-provider
-    image: jav0032/retina:image-provider-${VERSION:-latest}
+    image: ${REPO_NAME:?error}:${TAG_NAME:?error}-${VERSION:-latest}
     profiles: [prod]
     build:
-      target: ${TARGET:-prod}
+      target: ${TARGET:-final}
       args:
         VERSION: ${VERSION:-latest}
         HOSTNAME: ${HOSTNAME:-localhost}
@@ -34,14 +34,6 @@ services:
     volumes:
       - ${NODE_UPLOAD_PATH:?error}:${NODE_UPLOAD_PATH:?error}
 
-  redoc-dev:
-    <<: *redoc-common
-    container_name: redoc-dev
-    profiles: [dev]
-    environment:
-      SPEC_URL: "http://localhost:${NODE_PORT:?error}/api/openapi.json"
-      PAGE_TITLE: "ReDoc - Image Provider"
-
   redoc:
     <<: *redoc-common
     container_name: redoc
@@ -52,4 +44,12 @@ services:
     depends_on:
       image-provider:
         condition: service_healthy
+
+  redoc-dev:
+    <<: *redoc-common
+    container_name: redoc-dev
+    profiles: [dev]
+    environment:
+      SPEC_URL: "http://localhost:${NODE_PORT:?error}/api/openapi.json"
+      PAGE_TITLE: "ReDoc - Image Provider"
 

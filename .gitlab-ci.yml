@@ -1,6 +1,4 @@
 variables:
-  REPO_NAME: 'jav0032/retina'
-  IMAGE_NAME: 'image-provider'
   BIN_PATH: '~/.local/bin'
   PRUNE_DOCKER_CACHE: 'true'
 
@@ -81,7 +79,7 @@ build-staging:
   <<: *develop
   stage: build-staging
   script:
-    - ${BIN_PATH}/task docker:compose -- down
+    - ${BIN_PATH}/task docker:deploy MODE=down
     - ${BIN_PATH}/task docker:build
     - ${BIN_PATH}/task docker:push
   dependencies:
@@ -91,7 +89,7 @@ deploy-staging:
   <<: *develop
   stage: deploy-staging
   script:
-    - ${BIN_PATH}/task docker:compose
+    - ${BIN_PATH}/task docker:deploy
   after_script:
     - |
       if [ "${PRUNE_DOCKER_CACHE}" = "true" ]; then
@@ -99,7 +97,7 @@ deploy-staging:
       fi
   environment:
     name: staging
-    url: http://vsrvfeia0h-86.vsb.cz:${NODE_PORT}/
+    url: http://${HOSTNAME}:${NODE_PORT}/
   dependencies:
     - taskfile
     - build-staging

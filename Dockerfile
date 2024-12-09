@@ -37,7 +37,7 @@ COPY . .
 RUN bun run build
 
 # prod stage
-FROM alpine:3.19 AS prod
+FROM alpine:3.19 AS final
 
 WORKDIR /app
 

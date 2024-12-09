@@ -1,15 +1,14 @@
 version: 3
 
-dotenv: [".env.local"]
+dotenv: ['.env.local']
 
 env:
-  TARGET: "{{if .TARGET}}{{.TARGET}}{{else}}prod{{end}}"
-  VERSION: "{{if .VERSION}}{{.VERSION}}{{else}}latest{{end}}"
-
-vars:
-  PROFILE: "{{if .PROFILE}}{{.PROFILE}}{{else}}prod{{end}}"
-  REPO_NAME: "{{if .REPO_NAME}}{{.REPO_NAME}}{{end}}"
-  IMAGE_NAME: "{{if .IMAGE_NAME}}{{.IMAGE_NAME}}{{end}}"
+  VERSION: '{{if .VERSION}}{{.VERSION}}{{else}}latest{{end}}'
+  HOSTNAME: '{{if .HOSTNAME}}{{.HOSTNAME}}{{else}}localhost{{end}}'
+  TARGET: '{{if .TARGET}}{{.TARGET}}{{else}}final{{end}}'
+  MODE: '{{if .MODE}}{{.MODE}}{{else}}up{{end}}'
+  REPO_NAME: jav0032/retina
+  TAG_NAME: image-provider
 
 tasks:
   ## development tasks ##
@@ -23,50 +22,50 @@ tasks:
       - bun install
 
   docker:dev:
-    desc: Run compose for development with defined variables
+    desc: Run compose for local development with defined variables
     aliases: [d:d]
     platforms: [linux]
     cmds:
-      - task: docker:compose
-        vars: { PROFILE: dev, CLI_ARGS: up, DEFER: true }
+      - trap 'docker compose --profile dev up --build' EXIT
+      - defer: docker compose --profile dev down --remove-orphans
   ## ----------------- ##
 
   ## deployment tasks ##
   docker:build:
-    desc: Build docker image for stage or deployment
-    aliases: [d:b]
+    desc: Build docker image for deployment
+    aliases: [d:bld]
     platforms: [linux]
-    cmds:
-      - docker compose --profile {{.PROFILE}} build
-      - defer: docker image prune -f
-
-  docker:compose:
-    desc: Run compose with defined variables
-    aliases: [d:c]
-    platforms: [linux]
-    vars:
-      CLI_ARGS: "{{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}up -d --no-build{{end}}"
-      DEFER: "{{if .DEFER}}{{.DEFER}}{{else}}false{{end}}"
-    cmds:
-      - docker compose --profile {{.PROFILE}} {{.CLI_ARGS}}
-      - |
-        {{if eq .DEFER "true"}}
-        docker compose --profile {{.PROFILE}} down --remove-orphans
+    cmd: |
+        {{if eq .TARGET "final"}}
+          docker compose --profile prod build
+        {{else}}
+          docker compose --profile prod build | grep 'writing image sha256' | awk '{print $4}' | xargs docker rmi 2>/dev/null
         {{end}}
 
+  docker:deploy:
+    desc: Run builded docker images in containers
+    aliases: [d:dpl]
+    platforms: [linux]
+    cmd: |
+      {{if eq .MODE "up"}}
+        docker compose --profile prod up -d --no-build --pull never
+      {{else}}
+        docker compose --profile prod down --remove-orphans
+      {{end}}
+
   docker:push:
-    desc: Push builded docker image to docker hub
+    desc: Push builded or tag latest docker image to docker hub
     aliases: [d:p]
     platforms: [linux]
     cmds:
       - echo "{{.DOCKER_PASSWD}}" | docker login -u "{{.DOCKER_USER}}" --password-stdin
       - |
         {{if eq .VERSION "latest"}}
-        docker push {{.REPO_NAME}}:{{.IMAGE_NAME}}-latest
+          docker push {{.REPO_NAME}}:{{.TAG_NAME}}-latest
         {{else}}
-        docker pull {{.REPO_NAME}}:{{.IMAGE_NAME}}-latest
-        docker tag {{.REPO_NAME}}:{{.IMAGE_NAME}}-latest {{.REPO_NAME}}:{{.IMAGE_NAME}}-{{.VERSION}}
-        docker push {{.REPO_NAME}}:{{.IMAGE_NAME}}-{{.VERSION}}
-        docker rmi -f {{.REPO_NAME}}:{{.IMAGE_NAME}}-{{.VERSION}}
+          docker pull {{.REPO_NAME}}:{{.TAG_NAME}}-latest
+          docker tag {{.REPO_NAME}}:{{.TAG_NAME}}-latest {{.REPO_NAME}}:{{.TAG_NAME}}-{{.VERSION}}
+          docker push {{.REPO_NAME}}:{{.TAG_NAME}}-{{.VERSION}}
+          docker rmi -f {{.REPO_NAME}}:{{.TAG_NAME}}-{{.VERSION}}
         {{end}}
   ## ---------------- ##

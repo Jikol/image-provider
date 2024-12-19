@@ -1,12 +1,12 @@
 version: 3
 
-dotenv: ['.env.local']
+dotenv: [".env.local"]
 
 env:
-  VERSION: '{{if .VERSION}}{{.VERSION}}{{else}}latest{{end}}'
-  HOSTNAME: '{{if .HOSTNAME}}{{.HOSTNAME}}{{else}}localhost{{end}}'
-  TARGET: '{{if .TARGET}}{{.TARGET}}{{else}}final{{end}}'
-  MODE: '{{if .MODE}}{{.MODE}}{{else}}up{{end}}'
+  VERSION: "{{if .VERSION}}{{.VERSION}}{{else}}latest{{end}}"
+  HOSTNAME: "{{if .HOSTNAME}}{{.HOSTNAME}}{{else}}localhost{{end}}"
+  TARGET: "{{if .TARGET}}{{.TARGET}}{{else}}final{{end}}"
+  MODE: "{{if .MODE}}{{.MODE}}{{else}}up{{end}}"
   REPO_NAME: jav0032/retina
   TAG_NAME: image-provider
 
@@ -36,11 +36,11 @@ tasks:
     aliases: [d:bld]
     platforms: [linux]
     cmd: |
-        {{if eq .TARGET "final"}}
-          docker compose --profile prod build
-        {{else}}
-          docker compose --profile prod build | grep 'writing image sha256' | awk '{print $4}' | xargs docker rmi 2>/dev/null
-        {{end}}
+      {{if eq .TARGET "final"}}
+        docker compose --profile prod build
+      {{else}}
+        docker compose --profile prod build | grep 'writing image sha256' | awk '{print $4}' | xargs docker rmi 2>/dev/null
+      {{end}}
 
   docker:deploy:
     desc: Run builded docker images in containers

@@ -52,4 +52,3 @@ services:
     environment:
       SPEC_URL: "http://localhost:${NODE_PORT:?error}/api/openapi.json"
       PAGE_TITLE: "ReDoc - Image Provider"
-

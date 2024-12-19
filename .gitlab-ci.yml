@@ -81,7 +81,6 @@ build-staging:
   script:
     - ${BIN_PATH}/task docker:deploy MODE=down
     - ${BIN_PATH}/task docker:build
-    - ${BIN_PATH}/task docker:push
   dependencies:
     - taskfile
 
@@ -90,6 +89,7 @@ deploy-staging:
   stage: deploy-staging
   script:
     - ${BIN_PATH}/task docker:deploy
+    - ${BIN_PATH}/task docker:push
   after_script:
     - |
       if [ "${PRUNE_DOCKER_CACHE}" = "true" ]; then

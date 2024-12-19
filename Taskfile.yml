@@ -22,7 +22,7 @@ tasks:
       - bun install
 
   docker:dev:
-    desc: Run compose for local development with defined variables
+    desc: Run compose for local development
     aliases: [d:d]
     platforms: [linux]
     cmds:

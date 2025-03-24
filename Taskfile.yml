@@ -2,70 +2,64 @@ version: 3
 
 dotenv: [".env.local"]
 
-env:
-  VERSION: "{{if .VERSION}}{{.VERSION}}{{else}}latest{{end}}"
-  HOSTNAME: "{{if .HOSTNAME}}{{.HOSTNAME}}{{else}}localhost{{end}}"
-  TARGET: "{{if .TARGET}}{{.TARGET}}{{else}}final{{end}}"
-  MODE: "{{if .MODE}}{{.MODE}}{{else}}up{{end}}"
-  REPO_NAME: jav0032/retina
-  TAG_NAME: image-provider
-
 tasks:
   ## development tasks ##
   init:
-    desc: Initialize nodejs project for development
+    desc: >
+      Initialize express project for development |
+      Usage: task init (i) [-- hard]
     aliases: [i]
     platforms: [linux]
     cmds:
-      - '{{if eq .CLI_ARGS "hard"}}rm -rf bun.lockb{{end}}'
+      - >
+        {{if eq .CLI_ARGS "hard"}}
+          rm -rf bun.lock
+        {{end}}
       - rm -rf node_modules
       - bun install
-
-  docker:dev:
-    desc: Run compose for local development
-    aliases: [d:d]
-    platforms: [linux]
-    cmds:
-      - trap 'docker compose --profile dev up --build' EXIT
-      - defer: docker compose --profile dev down --remove-orphans
   ## ----------------- ##
 
   ## deployment tasks ##
   docker:build:
-    desc: Build docker image for deployment
-    aliases: [d:bld]
+    desc: >
+      Build docker image for deployment |
+      Usage: task docker:build (d:b) [DOCKER_TARGET=lint/final, default final]
+    summary: |
+      Usage: task docker:build (d:b) [DOCKER_TARGET=lint/final, default final]
+      
+      Build docker image for deployment
+      
+      Optional variables:
+        DOCKER_TARGET     Defines target for docker image stage
+      
+      Examples:
+        task docker:build
+        task docker:build DOCKER_TARGET=lint
+        task docker:build DOCKER_TARGET=final
+    aliases: [d:b]
     platforms: [linux]
-    cmd: |
-      {{if eq .TARGET "final"}}
-        docker compose --profile prod build
-      {{else}}
-        docker compose --profile prod build | grep 'writing image sha256' | awk '{print $4}' | xargs docker rmi 2>/dev/null
-      {{end}}
+    env:
+      DOCKER_TARGET: '{{.DOCKER_TARGET}}' # pass taskfile variable to environment
+      COMPOSE_BAKE: 'true'
+    cmds:
+      - docker compose --profile prod build
+      - defer: |
+          {{if and (ne .DOCKER_TARGET "final") (not (or (eq .DOCKER_TARGET nil) (eq .DOCKER_TARGET "")))}}
+            docker rmi -f retina/image-provider
+          {{end}}
 
   docker:deploy:
-    desc: Run builded docker images in containers
-    aliases: [d:dpl]
+    desc: >
+      Run builded docker image in container |
+      Usage: task docker:deploy (d:d)
+    summary: |
+      Usage: task docker:deploy (d:d)
+      
+      Run builded docker image in container 
+      
+      Examples:
+        task docker:deploy
+    aliases: [d:d]
     platforms: [linux]
-    cmd: |
-      {{if eq .MODE "up"}}
-        docker compose --profile prod up -d --no-build --pull never
-      {{else}}
-        docker compose --profile prod down --remove-orphans
-      {{end}}
-
-  docker:push:
-    desc: Push builded or tag latest docker image to docker hub
-    aliases: [d:p]
-    platforms: [linux]
-    cmds:
-      - echo "{{.DOCKER_PASSWD}}" | docker login -u "{{.DOCKER_USER}}" --password-stdin
-      - |
-        {{if eq .VERSION "latest"}}
-          docker push {{.REPO_NAME}}:{{.TAG_NAME}}-latest
-        {{else}}
-          docker pull {{.REPO_NAME}}:{{.TAG_NAME}}-latest
-          docker tag {{.REPO_NAME}}:{{.TAG_NAME}}-latest {{.REPO_NAME}}:{{.TAG_NAME}}-{{.VERSION}}
-          docker push {{.REPO_NAME}}:{{.TAG_NAME}}-{{.VERSION}}
-          docker rmi -f {{.REPO_NAME}}:{{.TAG_NAME}}-{{.VERSION}}
-        {{end}}
+    cmd: docker compose --profile prod up -d --no-build --pull never
   ## ---------------- ##

@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 
-import log from "@/logger";
+import log from "/logger";
 
 const error = (
   err: Error,

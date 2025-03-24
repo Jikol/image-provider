@@ -1,4 +1,3 @@
-import { execFileSync } from "child_process";
 import { BuildOptions, build } from "esbuild";
 import path from "path";
 
@@ -35,12 +34,12 @@ const options: BuildOptions = {
   console.info("Building...");
   await build(options)
     .then((): void => {
-      try {
-        execFileSync("ts-node", ["src/scripts/generateDocs.ts"], { stdio: "inherit" });
-      } catch (err) {
-        console.error(err);
-        process.exit(1);
-      }
+      // try {
+      //   execFileSync("ts-node", ["scripts/generateDocs.ts"], { stdio: "inherit" });
+      // } catch (err) {
+      //   console.error(err);
+      //   process.exit(1);
+      // }
       console.info("Builded successfully");
       process.exit(0);
     })

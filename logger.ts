@@ -2,7 +2,7 @@ import pino from "pino";
 import type { Logger } from "pino";
 import pretty from "pino-pretty";
 
-import config from "@/config";
+import config from "/config";
 
 const stream = pretty({
   colorize: true
@@ -10,7 +10,7 @@ const stream = pretty({
 
 const log: Logger = pino(
   {
-    level: config.NODE_DEBUG ? "debug" : "info"
+    level: config.IMAGE_PROVIDER_DEBUG ? "debug" : "info"
   },
   stream
 );

@@ -2,7 +2,7 @@ import express, { Router } from "express";
 import path from "path";
 import serveIndex from "serve-index";
 
-import config from "@/config";
+import config from "/config";
 
 const imagesV1Router: Router = express.Router();
 const imagesV1Paths = {
@@ -13,6 +13,7 @@ const imagesV1Paths = {
  * @openapi
  * /api/v1/images:
  *   get:
+ *     operationId: getImages
  *     summary: List uploaded images
  *     description: Retrieve images index listing from the server.
  *     responses:
@@ -20,8 +21,9 @@ const imagesV1Paths = {
  *         description: Image listing retrieved successfully.
  *       '404':
  *         description: Image listing directory not found.
- * /v1/images/{imageName}:
+ * /api/v1/images/{imageName}:
  *   get:
+ *     operationId: getImagesName
  *     summary: Get a static image by name
  *     description: Retrieve a specific static image from the server by its name.
  *     parameters:
@@ -44,8 +46,8 @@ const imagesV1Paths = {
  */
 imagesV1Router.use(
   imagesV1Paths.images,
-  express.static(config.NODE_UPLOAD_PATH),
-  serveIndex(config.NODE_UPLOAD_PATH, {
+  express.static(config.IMAGE_PROVIDER_UPLOAD_PATH),
+  serveIndex(config.IMAGE_PROVIDER_UPLOAD_PATH, {
     icons: true,
     view: "details"
   })

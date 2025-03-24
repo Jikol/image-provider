@@ -1,54 +1,21 @@
 name: image-provider
 
-x-redoc-common: &redoc-common
-  image: redocly/redoc:v2.1.4
-  ports:
-    - ${REDOC_PORT?:error}:80
-  restart: unless-stopped
-
 services:
   image-provider:
     container_name: image-provider
-    image: ${REPO_NAME:?error}:${TAG_NAME:?error}-${VERSION:-latest}
+    image: retina/image-provider
     profiles: [prod]
     build:
-      target: ${TARGET:-final}
+      target: ${DOCKER_TARGET:-final}
       args:
-        VERSION: ${VERSION:-latest}
-        HOSTNAME: ${HOSTNAME:-localhost}
-        NODE_PORT: ${NODE_PORT:?error}
-        REDOC_HOSTNAME: ${REDOC_HOSTNAME:?error}
-        REDOC_PORT: ${REDOC_PORT:?error}
+        IMAGE_PROVIDER_PORT: ${IMAGE_PROVIDER_PORT:?error}
     environment:
-      VERSION: ${VERSION:-latest}
-      HOSTNAME: ${HOSTNAME:-localhost}
-      NODE_DEBUG: ${NODE_DEBUG:?error}
-      NODE_PORT: ${NODE_PORT:?error}
-      NODE_UPLOAD_PATH: ${NODE_UPLOAD_PATH:?error}
-      NODE_UPLOAD_SIZE: ${NODE_UPLOAD_SIZE:?error}
-      REDOC_HOSTNAME: ${REDOC_HOSTNAME:?error}
-      REDOC_PORT: ${REDOC_PORT:?error}
+      IMAGE_PROVIDER_DEBUG: true
+      IMAGE_PROVIDER_PORT: ${IMAGE_PROVIDER_PORT:?error}
+      IMAGE_PROVIDER_UPLOAD_PATH: ${IMAGE_PROVIDER_UPLOAD_PATH:?error}
+      IMAGE_PROVIDER_UPLOAD_SIZE: ${IMAGE_PROVIDER_UPLOAD_SIZE:?error}
     ports:
-      - ${NODE_PORT:?error}:${NODE_PORT:?error}
+      - ${IMAGE_PROVIDER_PORT:?error}:${IMAGE_PROVIDER_PORT:?error}
     restart: unless-stopped
     volumes:
-      - ${NODE_UPLOAD_PATH:?error}:${NODE_UPLOAD_PATH:?error}
-
-  redoc:
-    <<: *redoc-common
-    container_name: redoc
-    profiles: [prod]
-    environment:
-      SPEC_URL: "http://${HOSTNAME:-localhost}:${NODE_PORT?:error}/api/openapi.json"
-      PAGE_TITLE: "ReDoc - Image Provider"
-    depends_on:
-      image-provider:
-        condition: service_healthy
-
-  redoc-dev:
-    <<: *redoc-common
-    container_name: redoc-dev
-    profiles: [dev]
-    environment:
-      SPEC_URL: "http://localhost:${NODE_PORT:?error}/api/openapi.json"
-      PAGE_TITLE: "ReDoc - Image Provider"
+      - ${IMAGE_PROVIDER_UPLOAD_PATH:?error}:${IMAGE_PROVIDER_UPLOAD_PATH:?error}

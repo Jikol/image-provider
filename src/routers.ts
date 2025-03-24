@@ -1,7 +1,8 @@
 import express, { Router } from "express";
 
-import config from "@/config";
 import { imagesV1Router, uploadV1Router } from "@/router";
+
+import config from "/config";
 
 const versionedRouters: Router = express.Router();
 

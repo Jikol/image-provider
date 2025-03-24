@@ -1,8 +1,7 @@
 import { Request } from "express";
-import * as process from "node:process";
 import path from "path";
 
-const reqUrl = (req: Request): string => {
+const reqBaseUrl = (req: Request): string => {
   return new URL(`${req.protocol}://${req.get("host")}${req.originalUrl}`).toString();
 };
 
@@ -21,4 +20,4 @@ const resolvePath = (filePath: string | undefined): string | undefined => {
   }
 };
 
-export { reqUrl, apiUrl, resolvePath };
+export { reqBaseUrl, apiUrl, resolvePath };

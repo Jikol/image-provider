@@ -6,7 +6,7 @@ docs
 node_modules
 .dockerignore
 .gitattributes
-.gitlab-ci.yml
+.gitlab-ci_.yml
 .gitignore
 compose-dev.yml
 compose.yml

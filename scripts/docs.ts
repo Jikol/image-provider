@@ -1,27 +1,32 @@
 import fs from "fs";
 import path from "path";
-import process from "process";
 import swaggerJsdoc from "swagger-jsdoc";
+import { Options } from "swagger-jsdoc";
 
-import config from "@/config";
-import log from "@/logger";
+import config from "/config";
+import log from "/logger";
 
-const docsDir = path.join(config.ROOT_PATH, process.env.NODE_DEV ? "" : "dist", "docs");
+const docsDir = path.join(config.ROOT_PATH, "docs");
 const docsLocation = path.join(docsDir, "openapi.json");
 
-const options = {
+const options: Options = {
   definition: {
     openapi: "3.0.0",
     info: {
       title: "Image Provider",
-      version: config.VERSION,
-      description: "API for uploading and serving images for Retina API"
+      version: "", // TODO: from arguments
+      description: "API for uploading and serving images for Retina API",
+      license: {
+        name: "MIT",
+        url: "https://opensource.org/license/mit"
+      }
     },
     servers: [
       {
-        url: `http://${config.HOSTNAME}:${config.NODE_PORT}`
+        url: `http://_:${config.IMAGE_PROVIDER_PORT}`
       }
-    ]
+    ],
+    security: []
   },
   apis: [path.join(config.ROOT_PATH, "src", "router/*.ts")]
 };
@@ -30,7 +35,6 @@ const options = {
   if (!fs.existsSync(docsDir)) {
     fs.mkdirSync(docsDir);
   }
-  if (fs.existsSync(docsLocation)) return;
   fs.writeFile(
     docsLocation,
     JSON.stringify(swaggerJsdoc(options), null, 2),

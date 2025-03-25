@@ -41,7 +41,7 @@ COPY --from=build /app/dist/. .
 RUN rm -rf .prettierignore .prettierrc.json .eslintignore .eslintrc.json
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
-  CMD /bin/sh -c "curl --silent --fail https://localhost:${IMAGE_PROVIDER_PORT}/api/health || exit 1"
+  CMD /bin/sh -c "curl --silent --fail --insecure https://localhost:${IMAGE_PROVIDER_PORT}/api/health || exit 1"
 
 CMD ["node", "index.js"]
 

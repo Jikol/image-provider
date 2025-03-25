@@ -48,18 +48,26 @@ tasks:
             docker rmi -f retina/image-provider
           {{end}}
 
-  docker:deploy:
+  docker:compose:
     desc: >
       Run builded docker image in container |
-      Usage: task docker:deploy (d:d)
+      Usage: task docker:compose (d:c) [-- up/down, default up]
     summary: |
-      Usage: task docker:deploy (d:d)
+      Usage: task docker:compose (d:c) [-- up/down, default up]
       
       Run builded docker image in container 
       
       Examples:
-        task docker:deploy
-    aliases: [d:d]
+        task docker:compose
+        task docker:compose -- down
+    aliases: [d:c]
     platforms: [linux]
-    cmd: docker compose --profile prod up -d --no-build --pull never
+    cmd: >
+      {{if or (eq .CLI_ARGS "up") (eq .CLI_ARGS "")}}
+        sh -c 'docker compose --profile prod up -d --no-build --pull missing || (docker compose --profile prod down)'
+      {{else if eq .CLI_ARGS "down"}}
+        docker compose --profile prod down --remove-orphans
+      {{else}}
+        echo 'Invalid argument: "{{.CLI_ARGS}}". Consult task summary'
+      {{end}}
   ## ---------------- ##

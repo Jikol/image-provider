@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "bun run docs && NODE_OPTIONS='--no-deprecation' NODE_ENV=development nodemon src/app.ts",
     "prev": "bun run prod && node --enable-source-maps --no-deprecation dist/index.js",
-    "prod": "rimraf dist && ts-node scripts/esbuild.prod.ts",
-    "docs": "ts-node scripts/docs.ts && redocly build-docs --title 'ReDoc - Image Provider' -o static/redoc.html docs/openapi.json",
+    "prod": "rimraf dist && ts-node config/scripts/esbuild.prod.ts",
+    "docs": "ts-node config/scripts/docs.ts && redocly build-docs --title 'ReDoc - Image Provider' -o static/redoc.html docs/openapi.json",
     "lint": "eslint . && redocly lint docs/openapi.json && echo 'Success! No lint errors or warnings' | chalk --stdin green",
     "pret": "prettier . -w"
   },

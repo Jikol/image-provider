@@ -10,7 +10,7 @@ import { z } from "zod";
 import { UploadError } from "@/helpers";
 import { request } from "@/middleware";
 import { imagesV1Paths } from "@/router";
-import { apiUrl, reqBaseUrl } from "@/utils";
+import { apiUrl, reqUrl } from "@/utils";
 
 import config from "/config";
 import log from "/logger";
@@ -160,7 +160,7 @@ uploadV1Router.all(
             path.join(config.API_BASE_PATH, imagesV1Paths.images, file.filename),
             apiUrl(req)
           ).toString()
-        )}] (${reqBaseUrl(req)})`
+        )}] (${reqUrl(req)})`
       );
     });
 
@@ -342,7 +342,7 @@ uploadV1Router.all(uploadV1Paths.deletePrivate, request(["DELETE"]), (_, res) =>
 uploadV1Router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof MulterError || err instanceof UploadError) {
     if ((err as MulterError).code === "LIMIT_FILE_SIZE") {
-      log.warn(`${err.message} [${reqBaseUrl(req)}]`);
+      log.warn(`${err.message} [${reqUrl(req)}]`);
 
       return res.tooLarge({
         context: {
@@ -352,7 +352,7 @@ uploadV1Router.use((err: Error, req: Request, res: Response, next: NextFunction)
       });
     }
     if ((err as MulterError).code === "LIMIT_UNEXPECTED_FILE") {
-      log.warn(`${err.message} [${reqBaseUrl(req)}]`);
+      log.warn(`${err.message} [${reqUrl(req)}]`);
 
       return res.badRequest({
         context: {
@@ -362,7 +362,7 @@ uploadV1Router.use((err: Error, req: Request, res: Response, next: NextFunction)
       });
     }
     if ((err as UploadError).code === "LIMIT_FILE_TYPE") {
-      log.warn(`${err.message} [${reqBaseUrl(req)}]`);
+      log.warn(`${err.message} [${reqUrl(req)}]`);
 
       return res.unsupportedMedia({
         context: {

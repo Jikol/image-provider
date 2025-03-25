@@ -19,3 +19,13 @@ services:
     restart: unless-stopped
     volumes:
       - ${IMAGE_PROVIDER_UPLOAD_PATH:?error}:${IMAGE_PROVIDER_UPLOAD_PATH:?error}
+
+  healthcheck:
+    container_name: healthcheck
+    image: alpine
+    profiles: [prod]
+    restart: no
+    depends_on:
+      image-provider:
+        condition: service_healthy
+    command: ["sh", "-c", "echo 'All services are healthy, exiting.'"]

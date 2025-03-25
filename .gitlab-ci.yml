@@ -67,7 +67,7 @@ deploy-staging:
   <<: *develop
   stage: deploy-staging
   script:
-    - ${BIN_PATH}/task docker:deploy
+    - ${BIN_PATH}/task docker:compose
   environment:
     name: staging
     url: http://${STAGING_HOSTNAME}:${IMAGE_PROVIDER_PORT}/

@@ -27,7 +27,15 @@ const configSchema = z.object({
   IMAGE_PROVIDER_UPLOAD_SIZE: z
     .string()
     .default("100")
-    .transform((size) => parseInt(size) * 1000000)
+    .transform((size) => parseInt(size) * 1000000),
+  IMAGE_PROVIDER_SSL_CERT_PATH: z
+    .string()
+    .default("./config/ssl/selfsigned-cert.pem")
+    .transform((path) => resolvePath(path) as string),
+  IMAGE_PROVIDER_SSL_KEY_PATH: z
+    .string()
+    .default("./config/ssl/selfsigned-key.pem")
+    .transform((path) => resolvePath(path) as string)
 });
 
 const parseResult = configSchema.safeParse(

@@ -2,6 +2,10 @@ import { Request } from "express";
 import path from "path";
 
 const reqBaseUrl = (req: Request): string => {
+  return new URL(`${req.get("host")}${req.originalUrl}`).toString();
+};
+
+const reqUrl = (req: Request): string => {
   return new URL(`${req.protocol}://${req.get("host")}${req.originalUrl}`).toString();
 };
 
@@ -20,4 +24,4 @@ const resolvePath = (filePath: string | undefined): string | undefined => {
   }
 };
 
-export { reqBaseUrl, apiUrl, resolvePath };
+export { reqBaseUrl, reqUrl, apiUrl, resolvePath };

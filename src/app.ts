@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import type { Express } from "express";
 import fs from "fs";
+import https from "https";
 
 import { error, notFound, response } from "@/middleware";
 import { docsRouter, healthRouter } from "@/router";
@@ -37,7 +38,15 @@ app.use(error);
 app.use(notFound);
 
 /** Start express server & bind after start events */
-app.listen(config.IMAGE_PROVIDER_PORT, () => {
+const server = https.createServer(
+  {
+    key: fs.readFileSync(config.IMAGE_PROVIDER_SSL_KEY_PATH, "utf8"),
+    cert: fs.readFileSync(config.IMAGE_PROVIDER_SSL_CERT_PATH, "utf8")
+  },
+  app
+);
+
+server.listen(config.IMAGE_PROVIDER_PORT, () => {
   log.info("Express started");
   log.info(`Listening on port ${config.IMAGE_PROVIDER_PORT}`);
 });

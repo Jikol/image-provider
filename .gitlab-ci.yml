@@ -32,6 +32,12 @@ prepare:
   script:
     - ls -l /var/run/docker.sock
     - docker --version | grep "Docker version" || (echo "Docker socket not binded."; exit 1)
+    - |
+      docker run --rm \
+      -v /etc/letsencrypt:/etc/letsencrypt \
+      -v /var/log/letsencrypt:/var/log/letsencrypt \
+      --env STAGING_HOSTNAME="$STAGING_HOSTNAME" \
+      certbot/certbot certonly --standalone -d "$STAGING_HOSTNAME" --non-interactive --agree-tos -m foo@bar.com
 
 taskfile:
   stage: taskfile

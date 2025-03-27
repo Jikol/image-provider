@@ -26,6 +26,7 @@ stages:
   - lint-staging
   - build-staging
   - deploy-staging
+  - push-staging
 
 prepare:
   stage: prepare
@@ -82,3 +83,31 @@ deploy-staging:
   dependencies:
     - taskfile
     - build-staging
+
+push-staging:
+  <<: *master
+  stage: push-staging
+  before_script:
+    - |
+      export AWS_CREDENTIALS=$(docker run --rm \
+        -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+        -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+        amazon/aws-cli:latest sts assume-role --role-arn "$AWS_ROLE_ARN" \
+        --role-session-name "GitlabCIJobSession" \
+        --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
+        --output text)
+      export AWS_SESSION_ACCESS_KEY_ID=$(echo $AWS_CREDENTIALS | awk '{print $1}')
+      export AWS_SESSION_SECRET_ACCESS_KEY=$(echo $AWS_CREDENTIALS | awk '{print $2}')
+      export AWS_SESSION_TOKEN=$(echo $AWS_CREDENTIALS | awk '{print $3}')
+    - |
+      echo $(docker run --rm \
+        -e AWS_ACCESS_KEY_ID="$AWS_SESSION_ACCESS_KEY_ID" \
+        -e AWS_SECRET_ACCESS_KEY="$AWS_SESSION_SECRET_ACCESS_KEY" \
+        -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
+        amazon/aws-cli:latest ecr-public get-login-password --region us-east-1) | \
+      docker login -u AWS --password-stdin public.ecr.aws/k7u6f6n6
+  script:
+    - docker tag retina/image-provider:latest public.ecr.aws/k7u6f6n6/retina/image-provider:latest
+    - docker push public.ecr.aws/k7u6f6n6/retina/image-provider:latest
+  after_script:
+    - docker rmi -f public.ecr.aws/k7u6f6n6/retina/image-provider:latest

@@ -8,24 +8,24 @@ WORKDIR /app
 
 COPY package.json bun.lock ./
 
-RUN apk add --no-cache --update nodejs
-RUN bun install --frozen-lockfile --no-save
+RUN apk add --no-cache --update nodejs && \
+    bun install --frozen-lockfile --no-save
 
 # linting stage
 FROM base AS lint
 
 COPY . .
 
-RUN bun run docs
-RUN bun run lint
+RUN bun run docs && \
+    bun run lint
 
 # build stage
 FROM base AS build
 
 COPY . .
 
-RUN bun run docs
-RUN bun run prod
+RUN bun run docs && \
+    bun run prod
 
 # prod stage
 FROM alpine:3.19 AS final
@@ -37,8 +37,6 @@ EXPOSE ${IMAGE_PROVIDER_PORT}
 RUN apk add --no-cache --update nodejs curl
 
 COPY --from=build /app/dist/. .
-
-RUN rm -rf .prettierignore .prettierrc.json .eslintignore .eslintrc.json
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
   CMD /bin/sh -c "curl --silent --fail --insecure https://localhost:${IMAGE_PROVIDER_PORT}/api/health || exit 1"

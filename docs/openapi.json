@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Image Provider",
-    "version": "",
+    "version": "{{VERSION}}",
     "description": "API for uploading and serving images for Retina API",
     "license": {
       "name": "MIT",
@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "http://_:8000"
+      "url": "https://{{HOST}}"
     }
   ],
   "security": [],
@@ -232,7 +232,7 @@
                 "example": {
                   "context": {
                     "imageUrls": [
-                      "http://localhost:8000/api/v1/images/<imgId>.<imgExtension>"
+                      "https://{{HOST}}/api/v1/images/<imgId>.<imgExtension>"
                     ]
                   },
                   "message": "File Uploaded Successfully",
@@ -314,7 +314,7 @@
                 "example": {
                   "context": {
                     "removedImageUrls": [
-                      "http://localhost:8000/api/v1/images/<imgId>.<imgExtension>"
+                      "https://{{HOST}}/api/v1/images/<imgId>.<imgExtension>"
                     ]
                   },
                   "message": "Provided URLs has been deleted",

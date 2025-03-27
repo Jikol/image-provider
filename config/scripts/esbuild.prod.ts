@@ -12,15 +12,15 @@ const options: BuildOptions = {
   entryPoints: [
     { out: "index", in: path.join(config.ROOT_PATH, "src/app.ts") },
     {
-      out: "static/style",
+      out: "public/style",
       in: path.join(config.ROOT_PATH, "node_modules/serve-index/public/style.css")
     },
     {
-      out: "static/directory",
+      out: "public/directory",
       in: path.join(config.ROOT_PATH, "node_modules/serve-index/public/directory.html")
     },
     {
-      out: "static/icons/image",
+      out: "public/icons/image",
       in: path.join(config.ROOT_PATH, "node_modules/serve-index/public/icons/image.png")
     },
     {
@@ -41,14 +41,6 @@ const copyFiles: Array<Record<"src" | "dest", string>> = [
   {
     src: path.join(config.ROOT_PATH, "docs/openapi.json"),
     dest: path.join(options.outdir as string, "docs/openapi.json")
-  },
-  {
-    src: path.join(config.ROOT_PATH, "config/ssl/selfsigned-cert.pem"),
-    dest: path.join(options.outdir as string, "config/ssl/selfsigned-cert.pem")
-  },
-  {
-    src: path.join(config.ROOT_PATH, "config/ssl/selfsigned-key.pem"),
-    dest: path.join(options.outdir as string, "config/ssl/selfsigned-key.pem")
   }
 ];
 

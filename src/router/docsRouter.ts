@@ -1,4 +1,6 @@
 import express, { Router } from "express";
+import fs from "fs";
+import handlebars from "handlebars";
 import path from "path";
 
 import { request } from "@/middleware";
@@ -31,11 +33,33 @@ const docsPaths = {
  *       '500':
  *         description: Internal server error.
  */
-docsRouter.use(
-  docsPaths.openapi,
-  request(["GET"]),
-  express.static(path.join(config.ROOT_PATH, "docs", "openapi.json"))
-);
+docsRouter.use(docsPaths.openapi, request(["GET"]), (req, res) => {
+  fs.readFile(
+    path.join(config.ROOT_PATH, "docs", "openapi.json"),
+    "utf8",
+    (err, data) => {
+      if (!err) {
+        return res.json(
+          JSON.parse(
+            data
+              .replaceAll("{{HOST}}", req.get("host") ?? "localhost")
+              .replaceAll("{{VERSION}}", "latest")
+          )
+        );
+      }
+
+      if (err.code === "ENOENT") {
+        return res.notFound({
+          message: "The requested openapi file was not found"
+        });
+      }
+
+      return res.error({
+        message: err.message
+      });
+    }
+  );
+});
 
 /**
  * @openapi
@@ -58,10 +82,30 @@ docsRouter.use(
  *       '500':
  *         description: Internal server error.
  */
-docsRouter.use(
-  docsPaths.redoc,
-  request(["GET"]),
-  express.static(path.join(config.ROOT_PATH, "static", "redoc.html"))
-);
+docsRouter.use(docsPaths.redoc, request(["GET"]), (req, res) => {
+  fs.readFile(
+    path.join(config.ROOT_PATH, "static", "redoc.html"),
+    "utf8",
+    (err, data) => {
+      if (!err) {
+        const parsedHtml = handlebars.compile(data);
+
+        return res.send(
+          parsedHtml({ HOST: req.get("host") ?? "localhost", VERSION: "latest" })
+        );
+      }
+
+      if (err.code === "ENOENT") {
+        return res.notFound({
+          message: "The requested ReDoc HTML file was not found"
+        });
+      }
+
+      return res.error({
+        message: err.message
+      });
+    }
+  );
+});
 
 export { docsRouter, docsPaths };

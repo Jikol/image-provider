@@ -30,7 +30,7 @@ const storage: StorageEngine = multer.diskStorage({
 
     return cb(null, config.IMAGE_PROVIDER_UPLOAD_PATH);
   },
-  filename(req, file, cb): void {
+  filename: (req, file, cb): void => {
     const fileAppend = path.extname(file.originalname).toLowerCase();
 
     if (req.query?.file_name) {
@@ -126,7 +126,7 @@ const fileUpload: Multer = multer({
  *             example:
  *               context:
  *                 imageUrls:
- *                   - "http://localhost:8000/api/v1/images/<imgId>.<imgExtension>"
+ *                   - "https://{{HOST}}/api/v1/images/<imgId>.<imgExtension>"
  *               message: "File Uploaded Successfully"
  *               code: 200
  *       '400':
@@ -147,6 +147,14 @@ uploadV1Router.all(
       return res.badRequest({
         context: {
           message: "Files have not been provided"
+        }
+      });
+    }
+
+    if (req.query?.file_name && (req.files as Array<Express.Multer.File>).length > 1) {
+      return res.badRequest({
+        context: {
+          message: "When defining a file name, only one file can be supplied"
         }
       });
     }
@@ -227,7 +235,7 @@ const uploadDeleteSchema = z.object({
  *             example:
  *               context:
  *                 removedImageUrls:
- *                   - "http://localhost:8000/api/v1/images/<imgId>.<imgExtension>"
+ *                   - "https://{{HOST}}/api/v1/images/<imgId>.<imgExtension>"
  *               message: "Provided URLs has been deleted"
  *               code: 200
  *       '400':

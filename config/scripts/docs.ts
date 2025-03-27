@@ -14,7 +14,7 @@ const options: Options = {
     openapi: "3.0.0",
     info: {
       title: "Image Provider",
-      version: "", // TODO: from arguments
+      version: "{{VERSION}}",
       description: "API for uploading and serving images for Retina API",
       license: {
         name: "MIT",
@@ -23,7 +23,7 @@ const options: Options = {
     },
     servers: [
       {
-        url: `http://_:${config.IMAGE_PROVIDER_PORT}`
+        url: "https://{{HOST}}"
       }
     ],
     security: []

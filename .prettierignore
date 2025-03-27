@@ -2,3 +2,4 @@ dist
 docs
 static
 node_modules
+**/*.yml

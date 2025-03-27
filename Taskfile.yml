@@ -21,7 +21,8 @@ tasks:
   ## deployment tasks ##
   docker:build:
     desc: >
-      Build docker image for deployment | Usage: task docker:build (d:b) [
+      Build docker images for deployment according to compose.yml definition | 
+      Usage: task docker:build (d:b) [
         DOCKER_TARGET=lint/final, default final;
         DOCKER_FILE=<string>, default Dockerfile;
         DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest
@@ -36,7 +37,9 @@ tasks:
       Build docker image for deployment
 
       Optional variables:
-        DOCKER_TARGET     Defines target for docker image stage
+        DOCKER_TARGET   Defines target for docker image stage
+        DOCKER_FILE     Defines the name of the file used for the build
+        DOCKER_TAG      Defines the tag of the resulting image representing the version
 
       Examples:
         task docker:build
@@ -59,15 +62,23 @@ tasks:
 
   docker:compose:
     desc: >
-      Run builded docker image in container | Usage: task docker:compose (d:c) [--
-      up/down, default up; DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest]
+      Create and start builded docker images containers according to compose.yml definition | 
+      Usage: task docker:compose (d:c) [-- attach; -- down; DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest]
     summary: |
-      Usage: task docker:compose (d:c) [-- up/down, default up; DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest]
+      Usage: task docker:compose (d:c) [-- attach; -- down; DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest]
 
-      Run builded docker image in container 
+      Run builded docker image in container
+      
+      Optional arguments:
+        attach          Attaches logs of all docker containers when they started
+        down            Stop and remove running containers and their associated networks       
+      
+      Optional variables:
+        DOCKER_TAG      Defines the tag of the image used to run in the container
 
       Examples:
         task docker:compose
+        task docker:compose -- attach      
         task docker:compose -- down
         task docker:compose DOCKER_TAG=1.2.3
     aliases: [d:c]
@@ -75,11 +86,15 @@ tasks:
     env:
       DOCKER_TAG: "{{.DOCKER_TAG}}" # pass taskfile variable to environment
     cmd: |
-      export IMAGE_PROVIDER_UPLOAD_PATH=$(realpath ${IMAGE_PROVIDER_UPLOAD_PATH})
-      export IMAGE_PROVIDER_SSL_CERT_PATH=$(realpath ${IMAGE_PROVIDER_SSL_CERT_PATH})
-      export IMAGE_PROVIDER_SSL_KEY_PATH=$(realpath ${IMAGE_PROVIDER_SSL_KEY_PATH})
-      {{if or (eq .CLI_ARGS "up") (eq .CLI_ARGS "")}}
+      {{if ne .GITLAB_CI "true"}}
+        export IMAGE_PROVIDER_UPLOAD_PATH=$(realpath ${IMAGE_PROVIDER_UPLOAD_PATH})
+        export IMAGE_PROVIDER_SSL_CERT_PATH=$(realpath ${IMAGE_PROVIDER_SSL_CERT_PATH})
+        export IMAGE_PROVIDER_SSL_KEY_PATH=$(realpath ${IMAGE_PROVIDER_SSL_KEY_PATH})
+      {{end}}
+      {{if eq .CLI_ARGS ""}}
         sh -c 'docker compose --profile prod up -d --no-build --force-recreate --pull missing || (docker compose --profile prod down; exit 1)'
+      {{else if eq .CLI_ARGS "attach"}}
+        sh -c 'docker compose --profile prod up --no-build --force-recreate --pull missing || (docker compose --profile prod down; exit 1)'
       {{else if eq .CLI_ARGS "down"}}
         docker compose --profile prod down --remove-orphans
       {{else}}

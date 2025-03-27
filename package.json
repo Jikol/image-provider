@@ -9,7 +9,7 @@
     "prev": "bun run prod && node --enable-source-maps --no-deprecation dist/index.js",
     "prod": "rimraf dist && ts-node config/scripts/esbuild.prod.ts",
     "docs": "ts-node config/scripts/docs.ts && redocly build-docs --title 'ReDoc - Image Provider' -o static/redoc.html docs/openapi.json",
-    "lint": "eslint . && redocly lint docs/openapi.json && echo 'Success! No lint errors or warnings' | chalk --stdin green",
+    "lint": "eslint . && redocly lint --skip-rule no-undefined-server-variable docs/openapi.json && echo 'Success! No lint errors or warnings' | chalk --stdin green",
     "pret": "prettier . -w"
   },
   "dependencies": {

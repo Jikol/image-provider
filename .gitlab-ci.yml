@@ -31,7 +31,8 @@ prepare:
   stage: prepare
   script:
     - ls -l /var/run/docker.sock
-    - docker --version | grep "Docker version" || (echo "Docker socket not binded."; exit 1)
+    - docker --version | grep "Docker version" || (echo "Docker socket not binded."; exit
+      1)
     - |
       docker run --rm \
       -v /etc/letsencrypt:/etc/letsencrypt \
@@ -47,7 +48,8 @@ taskfile:
   script:
     - sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ${BIN_PATH}
   after_script:
-    - ${BIN_PATH}/task --version | grep "Task version" || (echo "Taskfile not installed."; exit 1)
+    - ${BIN_PATH}/task --version | grep "Task version" || (echo "Taskfile not installed.";
+      exit 1)
   artifacts:
     paths:
       - ${BIN_PATH}

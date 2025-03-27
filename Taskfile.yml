@@ -6,8 +6,7 @@ tasks:
   ## development tasks ##
   init:
     desc: >
-      Initialize express project for development |
-      Usage: task init (i) [-- hard]
+      Initialize express project for development | Usage: task init (i) [-- hard]
     aliases: [i]
     platforms: [linux]
     cmds:
@@ -22,8 +21,7 @@ tasks:
   ## deployment tasks ##
   docker:build:
     desc: >
-      Build docker image for deployment |
-      Usage: task docker:build (d:b) [
+      Build docker image for deployment | Usage: task docker:build (d:b) [
         DOCKER_TARGET=lint/final, default final;
         DOCKER_FILE=<string>, default Dockerfile;
         DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest
@@ -34,12 +32,12 @@ tasks:
         DOCKER_FILE=<string>, default Dockerfile;
         DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest
       ]
-      
+
       Build docker image for deployment
-      
+
       Optional variables:
         DOCKER_TARGET     Defines target for docker image stage
-      
+
       Examples:
         task docker:build
         task docker:build DOCKER_TARGET=lint
@@ -48,10 +46,10 @@ tasks:
     aliases: [d:b]
     platforms: [linux]
     env:
-      DOCKER_TARGET: '{{.DOCKER_TARGET}}' # pass taskfile variable to environment
-      DOCKER_FILE: '{{.DOCKER_FILE}}' # pass taskfile variable to environment
-      DOCKER_TAG: '{{.DOCKER_TAG}}' # pass taskfile variable to environment
-      COMPOSE_BAKE: 'true'
+      DOCKER_TARGET: "{{.DOCKER_TARGET}}" # pass taskfile variable to environment
+      DOCKER_FILE: "{{.DOCKER_FILE}}" # pass taskfile variable to environment
+      DOCKER_TAG: "{{.DOCKER_TAG}}" # pass taskfile variable to environment
+      COMPOSE_BAKE: "true"
     cmds:
       - docker compose --profile prod build
       - defer: |
@@ -61,13 +59,13 @@ tasks:
 
   docker:compose:
     desc: >
-      Run builded docker image in container |
-      Usage: task docker:compose (d:c) [-- up/down, default up; DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest]
+      Run builded docker image in container | Usage: task docker:compose (d:c) [--
+      up/down, default up; DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest]
     summary: |
       Usage: task docker:compose (d:c) [-- up/down, default up; DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest]
-      
+
       Run builded docker image in container 
-      
+
       Examples:
         task docker:compose
         task docker:compose -- down
@@ -75,7 +73,7 @@ tasks:
     aliases: [d:c]
     platforms: [linux]
     env:
-      DOCKER_TAG: '{{.DOCKER_TAG}}' # pass taskfile variable to environment
+      DOCKER_TAG: "{{.DOCKER_TAG}}" # pass taskfile variable to environment
     cmd: |
       export IMAGE_PROVIDER_UPLOAD_PATH=$(realpath ${IMAGE_PROVIDER_UPLOAD_PATH})
       export IMAGE_PROVIDER_SSL_CERT_PATH=$(realpath ${IMAGE_PROVIDER_SSL_CERT_PATH})

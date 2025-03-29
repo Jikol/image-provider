@@ -2,71 +2,102 @@ version: 3
 
 dotenv: [".env.local"]
 
-env:
-  TARGET: "{{if .TARGET}}{{.TARGET}}{{else}}prod{{end}}"
-  VERSION: "{{if .VERSION}}{{.VERSION}}{{else}}latest{{end}}"
-
-vars:
-  PROFILE: "{{if .PROFILE}}{{.PROFILE}}{{else}}prod{{end}}"
-  REPO_NAME: "{{if .REPO_NAME}}{{.REPO_NAME}}{{end}}"
-  IMAGE_NAME: "{{if .IMAGE_NAME}}{{.IMAGE_NAME}}{{end}}"
-
 tasks:
   ## development tasks ##
   init:
-    desc: Initialize nodejs project for development
+    desc: >
+      Initialize express project for development | Usage: task init (i) [-- hard]
     aliases: [i]
     platforms: [linux]
     cmds:
-      - '{{if eq .CLI_ARGS "hard"}}rm -rf bun.lockb{{end}}'
+      - >
+        {{if eq .CLI_ARGS "hard"}}
+          rm -rf bun.lock
+        {{end}}
       - rm -rf node_modules
       - bun install
-
-  docker:dev:
-    desc: Run compose for development with defined variables
-    aliases: [d:d]
-    platforms: [linux]
-    cmds:
-      - task: docker:compose
-        vars: { PROFILE: dev, CLI_ARGS: up, DEFER: true }
   ## ----------------- ##
 
   ## deployment tasks ##
   docker:build:
-    desc: Build docker image for stage or deployment
+    desc: >
+      Build docker images for deployment according to compose.yml definition | 
+      Usage: task docker:build (d:b) [
+        DOCKER_TARGET=lint/final, default final;
+        DOCKER_FILE=<string>, default Dockerfile;
+        DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest
+      ]
+    summary: |
+      Usage: task docker:build (d:b) [
+        DOCKER_TARGET=lint/final, default final;
+        DOCKER_FILE=<string>, default Dockerfile;
+        DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest
+      ]
+
+      Build docker image for deployment
+
+      Optional variables:
+        DOCKER_TARGET   Defines target for docker image stage
+        DOCKER_FILE     Defines the name of the file used for the build
+        DOCKER_TAG      Defines the tag of the resulting image representing the version
+
+      Examples:
+        task docker:build
+        task docker:build DOCKER_TARGET=lint
+        task docker:build DOCKER_TARGET=final
+        task docker:build DOCKER_TAG=1.2.3 DOCKER_FILE=Dockerfile-release
     aliases: [d:b]
     platforms: [linux]
+    env:
+      DOCKER_TARGET: "{{.DOCKER_TARGET}}" # pass taskfile variable to environment
+      DOCKER_FILE: "{{.DOCKER_FILE}}" # pass taskfile variable to environment
+      DOCKER_TAG: "{{.DOCKER_TAG}}" # pass taskfile variable to environment
+      COMPOSE_BAKE: "true"
     cmds:
-      - docker compose --profile {{.PROFILE}} build
-      - defer: docker image prune -f
+      - docker compose --profile prod build
+      - defer: |
+          {{if and (ne .DOCKER_TARGET "final") (not (or (eq .DOCKER_TARGET nil) (eq .DOCKER_TARGET "")))}}
+            docker rmi -f retina/image-provider
+          {{end}}
 
   docker:compose:
-    desc: Run compose with defined variables
+    desc: >
+      Create and start builded docker images containers according to compose.yml definition | 
+      Usage: task docker:compose (d:c) [-- attach; -- down; DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest]
+    summary: |
+      Usage: task docker:compose (d:c) [-- attach; -- down; DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest]
+
+      Run builded docker image in container
+      
+      Optional arguments:
+        attach          Attaches logs of all docker containers when they started
+        down            Stop and remove running containers and their associated networks       
+      
+      Optional variables:
+        DOCKER_TAG      Defines the tag of the image used to run in the container
+
+      Examples:
+        task docker:compose
+        task docker:compose -- attach      
+        task docker:compose -- down
+        task docker:compose DOCKER_TAG=1.2.3
     aliases: [d:c]
     platforms: [linux]
-    vars:
-      CLI_ARGS: "{{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}up -d --no-build{{end}}"
-      DEFER: "{{if .DEFER}}{{.DEFER}}{{else}}false{{end}}"
-    cmds:
-      - docker compose --profile {{.PROFILE}} {{.CLI_ARGS}}
-      - |
-        {{if eq .DEFER "true"}}
-        docker compose --profile {{.PROFILE}} down --remove-orphans
-        {{end}}
-
-  docker:push:
-    desc: Push builded docker image to docker hub
-    aliases: [d:p]
-    platforms: [linux]
-    cmds:
-      - echo "{{.DOCKER_PASSWD}}" | docker login -u "{{.DOCKER_USER}}" --password-stdin
-      - |
-        {{if eq .VERSION "latest"}}
-        docker push {{.REPO_NAME}}:{{.IMAGE_NAME}}-latest
-        {{else}}
-        docker pull {{.REPO_NAME}}:{{.IMAGE_NAME}}-latest
-        docker tag {{.REPO_NAME}}:{{.IMAGE_NAME}}-latest {{.REPO_NAME}}:{{.IMAGE_NAME}}-{{.VERSION}}
-        docker push {{.REPO_NAME}}:{{.IMAGE_NAME}}-{{.VERSION}}
-        docker rmi -f {{.REPO_NAME}}:{{.IMAGE_NAME}}-{{.VERSION}}
-        {{end}}
+    env:
+      DOCKER_TAG: "{{.DOCKER_TAG}}" # pass taskfile variable to environment
+    cmd: |
+      {{if ne .GITLAB_CI "true"}}
+        export IMAGE_PROVIDER_UPLOAD_PATH=$(realpath ${IMAGE_PROVIDER_UPLOAD_PATH})
+        export IMAGE_PROVIDER_SSL_CERT_PATH=$(realpath ${IMAGE_PROVIDER_SSL_CERT_PATH})
+        export IMAGE_PROVIDER_SSL_KEY_PATH=$(realpath ${IMAGE_PROVIDER_SSL_KEY_PATH})
+      {{end}}
+      {{if eq .CLI_ARGS ""}}
+        sh -c 'docker compose --profile prod up -d --no-build --force-recreate --pull missing || (docker compose --profile prod down; exit 1)'
+      {{else if eq .CLI_ARGS "attach"}}
+        sh -c 'docker compose --profile prod up --no-build --force-recreate --pull missing || (docker compose --profile prod down; exit 1)'
+      {{else if eq .CLI_ARGS "down"}}
+        docker compose --profile prod down --remove-orphans
+      {{else}}
+        echo 'Invalid argument: "{{.CLI_ARGS}}". Consult task summary'
+      {{end}}
   ## ---------------- ##

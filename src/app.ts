@@ -1,16 +1,16 @@
 import { json, urlencoded } from "body-parser";
-import { execFileSync } from "child_process";
 import cors from "cors";
 import express from "express";
 import type { Express } from "express";
 import fs from "fs";
-import process from "process";
+import https from "https";
 
-import config from "@/config";
-import log from "@/logger";
 import { error, notFound, response } from "@/middleware";
 import { docsRouter, healthRouter } from "@/router";
 import { versionedRouters } from "@/routers";
+
+import config from "/config";
+import log from "/logger";
 
 const app: Express = express();
 
@@ -18,8 +18,8 @@ const app: Express = express();
 log.debug(config);
 
 /** Preparation of required system locations */
-if (!fs.existsSync(config.NODE_UPLOAD_PATH)) {
-  fs.mkdirSync(config.NODE_UPLOAD_PATH);
+if (!fs.existsSync(config.IMAGE_PROVIDER_UPLOAD_PATH)) {
+  fs.mkdirSync(config.IMAGE_PROVIDER_UPLOAD_PATH, { recursive: true });
 }
 
 /** Add helper middleware */
@@ -38,15 +38,15 @@ app.use(error);
 app.use(notFound);
 
 /** Start express server & bind after start events */
-app.listen(config.NODE_PORT, () => {
+const server = https.createServer(
+  {
+    key: fs.readFileSync(config.IMAGE_PROVIDER_SSL_KEY_PATH, "utf8"),
+    cert: fs.readFileSync(config.IMAGE_PROVIDER_SSL_CERT_PATH, "utf8")
+  },
+  app
+);
+
+server.listen(config.IMAGE_PROVIDER_PORT, () => {
   log.info("Express started");
-  log.info(`Listening on port ${config.NODE_PORT}`);
-  if (process.env.NODE_DEV) {
-    try {
-      execFileSync("ts-node", ["src/scripts/generateDocs.ts"], { stdio: "inherit" });
-    } catch (err) {
-      log.error(err);
-      process.exit(1);
-    }
-  }
+  log.info(`Listening on port ${config.IMAGE_PROVIDER_PORT}`);
 });

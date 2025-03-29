@@ -1,8 +1,9 @@
 import express, { Router } from "express";
 import path from "path";
 
-import config from "@/config";
 import { request } from "@/middleware";
+
+import config from "/config";
 
 const healthRouter: Router = express.Router();
 const healthPaths = {
@@ -13,6 +14,7 @@ const healthPaths = {
  * @openapi
  * /api/health:
  *   get:
+ *     operationId: getHealth
  *     summary: Health Check
  *     description: Checks if the API is up and functional.
  *     responses:
@@ -26,6 +28,8 @@ const healthPaths = {
  *                 message:
  *                   type: string
  *                   example: API is up and functional
+ *       '400':
+ *         description: Bad Request (for internal handling, though it's not really needed).
  *       '500':
  *         description: Internal server error.
  */

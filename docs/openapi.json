@@ -2,17 +2,23 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Image Provider",
-    "version": "latest",
-    "description": "API for uploading and serving images for Retina API"
+    "version": "{{VERSION}}",
+    "description": "API for uploading and serving images for Retina API",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/license/mit"
+    }
   },
   "servers": [
     {
-      "url": "http://localhost:8080"
+      "url": "https://{{HOST}}"
     }
   ],
+  "security": [],
   "paths": {
     "/api/openapi.json": {
       "get": {
+        "operationId": "getOpenapijson",
         "summary": "Serve OpenAPI documentation",
         "description": "Serves the OpenAPI documentation as a JSON file.",
         "responses": {
@@ -36,8 +42,36 @@
         }
       }
     },
+    "/api/redoc": {
+      "get": {
+        "operationId": "getRedoc",
+        "summary": "Serve ReDoc documentation from OpenAPI schema",
+        "description": "Serves the ReDoc documentation as static site.",
+        "responses": {
+          "200": {
+            "description": "The ReDoc documentation as static site.",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "format": "html",
+                  "description": "The static ReDoc documentation."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The documentation static HTML file was not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
     "/api/health": {
       "get": {
+        "operationId": "getHealth",
         "summary": "Health Check",
         "description": "Checks if the API is up and functional.",
         "responses": {
@@ -57,6 +91,9 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request (for internal handling, though it's not really needed)."
+          },
           "500": {
             "description": "Internal server error."
           }
@@ -65,6 +102,7 @@
     },
     "/api/v1/images": {
       "get": {
+        "operationId": "getImages",
         "summary": "List uploaded images",
         "description": "Retrieve images index listing from the server.",
         "responses": {
@@ -77,8 +115,9 @@
         }
       }
     },
-    "/v1/images/{imageName}": {
+    "/api/v1/images/{imageName}": {
       "get": {
+        "operationId": "getImagesName",
         "summary": "Get a static image by name",
         "description": "Retrieve a specific static image from the server by its name.",
         "parameters": [
@@ -112,6 +151,7 @@
     },
     "/api/v1/upload": {
       "post": {
+        "operationId": "postUpload",
         "summary": "Upload images",
         "description": "Upload images to the server.",
         "parameters": [
@@ -123,8 +163,8 @@
             "schema": {
               "type": "string",
               "enum": [
-                true,
-                false
+                "true",
+                "false"
               ]
             }
           },
@@ -192,7 +232,7 @@
                 "example": {
                   "context": {
                     "imageUrls": [
-                      "http://localhost:8000/api/v1/images/<imgId>.<imgExtension>"
+                      "https://{{HOST}}/api/v1/images/<imgId>.<imgExtension>"
                     ]
                   },
                   "message": "File Uploaded Successfully",
@@ -218,6 +258,7 @@
     },
     "/api/v1/upload/delete": {
       "delete": {
+        "operationId": "deleteUploadDelete",
         "summary": "Remove uploaded images",
         "description": "Remove files from filesystem which were uploaded.",
         "requestBody": {
@@ -273,7 +314,7 @@
                 "example": {
                   "context": {
                     "removedImageUrls": [
-                      "http://localhost:8000/api/v1/images/<imgId>.<imgExtension>"
+                      "https://{{HOST}}/api/v1/images/<imgId>.<imgExtension>"
                     ]
                   },
                   "message": "Provided URLs has been deleted",
@@ -296,6 +337,7 @@
     },
     "/api/v1/upload/delete/private": {
       "delete": {
+        "operationId": "deleteUploadDeletePrivate",
         "summary": "Remove uploaded private images",
         "description": "Removes all images which has been uploaded with data_private=true query parameter.",
         "responses": {

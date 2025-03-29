@@ -1,6 +1,5 @@
 .idea
 .git
-data
 dist
 docs
 node_modules
@@ -8,7 +7,6 @@ node_modules
 .gitattributes
 .gitlab-ci.yml
 .gitignore
-compose-dev.yml
 compose.yml
 Dockerfile
 LICENSE

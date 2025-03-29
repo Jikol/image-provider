@@ -1,2 +1,5 @@
-/dist
-/node_modules
+dist
+docs
+static
+node_modules
+**/*.yml

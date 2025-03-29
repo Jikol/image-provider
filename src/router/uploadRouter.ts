@@ -7,12 +7,13 @@ import path from "path";
 import { v4 } from "uuid";
 import { z } from "zod";
 
-import config from "@/config";
 import { UploadError } from "@/helpers";
-import log from "@/logger";
 import { request } from "@/middleware";
 import { imagesV1Paths } from "@/router";
 import { apiUrl, reqUrl } from "@/utils";
+
+import config from "/config";
+import log from "/logger";
 
 const uploadV1Router: Router = express.Router();
 const uploadV1Paths = {
@@ -23,13 +24,13 @@ const uploadV1Paths = {
 
 const storage: StorageEngine = multer.diskStorage({
   destination: (_req, _file, cb): void => {
-    if (!fs.existsSync(config.NODE_UPLOAD_PATH)) {
-      fs.mkdirSync(config.NODE_UPLOAD_PATH);
+    if (!fs.existsSync(config.IMAGE_PROVIDER_UPLOAD_PATH)) {
+      fs.mkdirSync(config.IMAGE_PROVIDER_UPLOAD_PATH);
     }
 
-    return cb(null, config.NODE_UPLOAD_PATH);
+    return cb(null, config.IMAGE_PROVIDER_UPLOAD_PATH);
   },
-  filename(req, file, cb): void {
+  filename: (req, file, cb): void => {
     const fileAppend = path.extname(file.originalname).toLowerCase();
 
     if (req.query?.file_name) {
@@ -47,7 +48,7 @@ const storage: StorageEngine = multer.diskStorage({
 const fileUpload: Multer = multer({
   storage,
   limits: {
-    fileSize: config.NODE_UPLOAD_SIZE
+    fileSize: config.IMAGE_PROVIDER_UPLOAD_SIZE
   },
   fileFilter: (_req, file, cb): void => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
@@ -69,6 +70,7 @@ const fileUpload: Multer = multer({
  * @openapi
  * /api/v1/upload:
  *   post:
+ *     operationId: postUpload
  *     summary: Upload images
  *     description: Upload images to the server.
  *     parameters:
@@ -78,7 +80,7 @@ const fileUpload: Multer = multer({
  *         description: Specifies if the data should be private.
  *         schema:
  *           type: string
- *           enum: [true, false]
+ *           enum: ["true", "false"]
  *       - name: file_name
  *         in: query
  *         required: false
@@ -124,7 +126,7 @@ const fileUpload: Multer = multer({
  *             example:
  *               context:
  *                 imageUrls:
- *                   - "http://localhost:8000/api/v1/images/<imgId>.<imgExtension>"
+ *                   - "https://{{HOST}}/api/v1/images/<imgId>.<imgExtension>"
  *               message: "File Uploaded Successfully"
  *               code: 200
  *       '400':
@@ -145,6 +147,14 @@ uploadV1Router.all(
       return res.badRequest({
         context: {
           message: "Files have not been provided"
+        }
+      });
+    }
+
+    if (req.query?.file_name && (req.files as Array<Express.Multer.File>).length > 1) {
+      return res.badRequest({
+        context: {
+          message: "When defining a file name, only one file can be supplied"
         }
       });
     }
@@ -184,6 +194,7 @@ const uploadDeleteSchema = z.object({
  * @openapi
  * /api/v1/upload/delete:
  *   delete:
+ *     operationId: deleteUploadDelete
  *     summary: Remove uploaded images
  *     description: Remove files from filesystem which were uploaded.
  *     requestBody:
@@ -224,7 +235,7 @@ const uploadDeleteSchema = z.object({
  *             example:
  *               context:
  *                 removedImageUrls:
- *                   - "http://localhost:8000/api/v1/images/<imgId>.<imgExtension>"
+ *                   - "https://{{HOST}}/api/v1/images/<imgId>.<imgExtension>"
  *               message: "Provided URLs has been deleted"
  *               code: 200
  *       '400':
@@ -246,7 +257,7 @@ uploadV1Router.all(
     try {
       imageUrls.forEach((imageUrl) => {
         const imagePath = path.resolve(
-          config.NODE_UPLOAD_PATH,
+          config.IMAGE_PROVIDER_UPLOAD_PATH,
           imageUrl.substring(imageUrl.lastIndexOf("/") + 1)
         );
 
@@ -283,6 +294,7 @@ uploadV1Router.all(
  * @openapi
  * /api/v1/upload/delete/private:
  *   delete:
+ *     operationId: deleteUploadDeletePrivate
  *     summary: Remove uploaded private images
  *     description: Removes all images which has been uploaded with data_private=true query parameter.
  *     responses:
@@ -310,12 +322,12 @@ uploadV1Router.all(
  */
 uploadV1Router.all(uploadV1Paths.deletePrivate, request(["DELETE"]), (_, res) => {
   try {
-    const files = fs.readdirSync(path.resolve(config.NODE_UPLOAD_PATH));
+    const files = fs.readdirSync(path.resolve(config.IMAGE_PROVIDER_UPLOAD_PATH));
 
     files
       .filter((item) => item.startsWith("_"))
       .forEach((fileName) => {
-        const filePath = path.join(config.NODE_UPLOAD_PATH, fileName);
+        const filePath = path.join(config.IMAGE_PROVIDER_UPLOAD_PATH, fileName);
 
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
@@ -343,7 +355,7 @@ uploadV1Router.use((err: Error, req: Request, res: Response, next: NextFunction)
       return res.tooLarge({
         context: {
           message: err.message,
-          maxFileSize: `${config.NODE_UPLOAD_SIZE / 1000} kB`
+          maxFileSize: `${config.IMAGE_PROVIDER_UPLOAD_SIZE / 1000} kB`
         }
       });
     }

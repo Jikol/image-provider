@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
 
-import config from "@/config";
-import log from "@/logger";
 import { docsPaths } from "@/router";
 import { reqUrl } from "@/utils";
+
+import log from "/logger";
 
 const notFound = (req: Request, res: Response): Response => {
   log.warn(`Path not found (${reqUrl(req)})`);
@@ -12,8 +12,8 @@ const notFound = (req: Request, res: Response): Response => {
     message: `path ${req.path} not found for ${req.method} request method, consult docs`,
     context: {
       docs: {
-        openapi: new URL(docsPaths.docs, reqUrl(req)).toString(),
-        redoc: new URL(`http://${config.REDOC_HOSTNAME}:${config.REDOC_PORT}`).toString()
+        openapi: new URL(docsPaths.openapi, reqUrl(req)).toString(),
+        redoc: new URL(docsPaths.redoc, reqUrl(req)).toString()
       }
     }
   }) as Response;

@@ -2,14 +2,15 @@
   "name": "image-provider",
   "private": true,
   "author": "Ondřej Javorský <jav0032@vsb.cz>",
-  "version": "0.1.0",
+  "version": "latest",
   "license": "MIT",
   "scripts": {
-    "dev": "NODE_DEV=true nodemon src/app.ts",
-    "pret": "prettier . -w",
-    "lint": "eslint . && echo 'Success! No lint errors or warnings' | chalk --stdin green",
-    "build": "rimraf dist && ts-node config/esbuild.prod.ts",
-    "prev": "bun run build && node --enable-source-maps dist/index.js"
+    "dev": "bun run docs && NODE_OPTIONS='--no-deprecation' NODE_ENV=development nodemon src/app.ts",
+    "prev": "bun run prod && node --enable-source-maps --no-deprecation dist/index.js",
+    "prod": "rimraf dist && ts-node config/scripts/esbuild.prod.ts",
+    "docs": "ts-node config/scripts/docs.ts && redocly build-docs --title 'ReDoc - Image Provider' -o static/redoc.html docs/openapi.json",
+    "lint": "eslint . && redocly lint --skip-rule no-undefined-server-variable docs/openapi.json && echo 'Success! No lint errors or warnings' | chalk --stdin green",
+    "pret": "prettier . -w"
   },
   "dependencies": {
     "body-parser": "^1.20.3",
@@ -18,6 +19,7 @@
     "emitter": "^0.0.5",
     "env-cmd": "^10.1.0",
     "express": "^4.21.1",
+    "handlebars": "^4.7.8",
     "jest": "^29.7.0",
     "multer": "^1.4.5-lts.1",
     "pino": "^8.20.0",
@@ -29,6 +31,7 @@
   },
   "devDependencies": {
     "@babel/types": "^7.24.5",
+    "@redocly/cli": "^1.34.0",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/body-parser": "^1",
     "@types/cors": "^2",
@@ -41,10 +44,11 @@
     "@typescript-eslint/eslint-plugin": "^5.45.1",
     "@typescript-eslint/parser": "^5.45.1",
     "chalk-cli": "^5.0.1",
-    "esbuild": "^0.20.2",
+    "esbuild": "^0.25.0",
     "eslint": "^8.29.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^9.1.7",
     "nodemon": "^3.1.0",
     "pino-pretty": "^11.0.0",
     "prettier": "^2.7.1",
@@ -52,5 +56,8 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^4.9.3"
+  },
+  "overrides": {
+    "http-proxy": "github:nikeee/node-http-proxy#b42c38fc3486ee8ad4374cc2397458b6e4cd99ca"
   }
 }

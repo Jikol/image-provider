@@ -2,8 +2,9 @@ import type { NextFunction, Request, Response } from "express";
 import { ZodSchema } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
-import log from "@/logger";
 import { reqUrl } from "@/utils";
+
+import log from "/logger";
 
 const request = (
   methods: Array<THttpMethod>,

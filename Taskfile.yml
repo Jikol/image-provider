@@ -24,13 +24,11 @@ tasks:
       Build docker images for deployment according to compose.yml definition | 
       Usage: task docker:build (d:b) [
         DOCKER_TARGET=lint/final, default final;
-        DOCKER_FILE=<string>, default Dockerfile;
         DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest
       ]
     summary: |
       Usage: task docker:build (d:b) [
         DOCKER_TARGET=lint/final, default final;
-        DOCKER_FILE=<string>, default Dockerfile;
         DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest
       ]
 
@@ -38,19 +36,16 @@ tasks:
 
       Optional variables:
         DOCKER_TARGET   Defines target for docker image stage
-        DOCKER_FILE     Defines the name of the file used for the build
         DOCKER_TAG      Defines the tag of the resulting image representing the version
 
       Examples:
         task docker:build
         task docker:build DOCKER_TARGET=lint
-        task docker:build DOCKER_TARGET=final
-        task docker:build DOCKER_TAG=1.2.3 DOCKER_FILE=Dockerfile-release
+        task docker:build DOCKER_TAG=1.2.3
     aliases: [d:b]
     platforms: [linux]
     env:
       DOCKER_TARGET: "{{.DOCKER_TARGET}}" # pass taskfile variable to environment
-      DOCKER_FILE: "{{.DOCKER_FILE}}" # pass taskfile variable to environment
       DOCKER_TAG: "{{.DOCKER_TAG}}" # pass taskfile variable to environment
       COMPOSE_BAKE: "true"
     cmds:

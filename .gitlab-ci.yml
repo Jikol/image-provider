@@ -1,73 +1,74 @@
 variables:
   BIN_PATH: "~/.local/bin"
+  DOCKER_REGISTRY_HOSTNAME: "public.ecr.aws/k7u6f6n6"
   STAGING_HOSTNAME: "retina-staging.jikol.dev"
   PRODUCTION_HOSTNAME: "retina.jikol.dev"
 
 ## pipeline anchors ##
-.develop: &develop
-  tags: [staging]
+.base: &base
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
 
-.master: &master
+.develop_push: &develop_push
   tags: [staging]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 .master_tag: &master_tag
   tags: [production]
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
 ## ---------------- ##
 
 stages:
   - prepare
   - taskfile
-  - lint-staging
-  - build-staging
-  - deploy-staging
-  - push-staging
-  - push-production
-  - deploy-production
+  - lint
+  - build
+  - deploy
+  - release
 
 prepare:
+  <<: *base
   stage: prepare
+  before_script:
+    - ls -l /var/run/docker.sock || (echo "Docker socket not binded."; exit 1)
   script:
-    - ls -l /var/run/docker.sock
-    - docker --version | grep "Docker version" || (echo "Docker socket not binded."; exit
-      1)
     - |
-      docker run --rm \
-      -v /etc/letsencrypt:/etc/letsencrypt \
-      -v /var/log/letsencrypt:/var/log/letsencrypt \
-      --env STAGING_HOSTNAME="$STAGING_HOSTNAME" \
-      certbot/certbot certonly --standalone -d "$STAGING_HOSTNAME" --non-interactive --agree-tos -m foo@bar.com
+      if [[ "$CI_RUNNER_TAGS" == *"staging"* ]]; then
+        docker run --rm \
+        -v /etc/letsencrypt:/etc/letsencrypt \
+        -v /var/log/letsencrypt:/var/log/letsencrypt \
+        --env STAGING_HOSTNAME="$STAGING_HOSTNAME" \
+        certbot/certbot certonly --standalone -d "$STAGING_HOSTNAME" --non-interactive --agree-tos -m foo@bar.com
+      fi
 
 taskfile:
+  <<: *base
   stage: taskfile
   before_script:
     - apk add --no-cache curl
-    - curl --version | grep "curl" || (echo "Curl not installed."; exit 1)
+    - curl --version || (echo "Curl not installed."; exit 1)
   script:
     - sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ${BIN_PATH}
   after_script:
-    - ${BIN_PATH}/task --version | grep "Task version" || (echo "Taskfile not installed.";
-      exit 1)
+    - ${BIN_PATH}/task --version || (echo "Taskfile not installed."; exit 1)
   artifacts:
     paths:
       - ${BIN_PATH}
 
 lint-staging:
-  <<: *develop
-  stage: lint-staging
+  <<: *develop_push
+  stage: lint
   script:
     - ${BIN_PATH}/task docker:build DOCKER_TARGET=lint
   dependencies:
     - taskfile
 
 build-staging:
-  <<: *develop
-  stage: build-staging
+  <<: *develop_push
+  stage: build
   script:
     - ${BIN_PATH}/task docker:build
   dependencies:
@@ -75,26 +76,49 @@ build-staging:
     - lint-staging
 
 deploy-staging:
-  <<: *develop
-  stage: deploy-staging
+  <<: *develop_push
+  stage: deploy
   script:
     - ${BIN_PATH}/task docker:compose
   environment:
     name: staging
-    url: http://${STAGING_HOSTNAME}:${IMAGE_PROVIDER_PORT}/
+    url: https://${STAGING_HOSTNAME}:${IMAGE_PROVIDER_PORT}/
   dependencies:
     - taskfile
     - build-staging
 
-push-staging:
-  <<: *master
-  stage: push-staging
+build-production:
+  <<: *master_tag
+  stage: build
+  script:
+    - ${BIN_PATH}/task docker:build DOCKER_TAG=$CI_COMMIT_TAG
+  dependencies:
+    - taskfile
+
+deploy-production:
+  <<: *master_tag
+  stage: deploy
+  script:
+    - |
+      export IMAGE_PROVIDER_SSL_CERT_PATH="/etc/ssl/certs/jikol.dev.pem"
+      export IMAGE_PROVIDER_SSL_KEY_PATH="/etc/ssl/private/jikol.dev.pem"
+    - ${BIN_PATH}/task docker:compose DOCKER_TAG=$CI_COMMIT_TAG
+  environment:
+    name: production
+    url: https://${PRODUCTION_HOSTNAME}:${IMAGE_PROVIDER_PORT}/
+  dependencies:
+    - taskfile
+    - build-production
+
+release:
+  <<: *master_tag
+  stage: release
   before_script:
     - |
       export AWS_CREDENTIALS=$(docker run --rm \
         -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
         -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
-        amazon/aws-cli:latest sts assume-role --role-arn "$AWS_ROLE_ARN" \
+        amazon/aws-cli:2.25.6 sts assume-role --role-arn "$AWS_ROLE_ARN" \
         --role-session-name "GitlabCIJobSession" \
         --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
         --output text)
@@ -106,18 +130,9 @@ push-staging:
         -e AWS_ACCESS_KEY_ID="$AWS_SESSION_ACCESS_KEY_ID" \
         -e AWS_SECRET_ACCESS_KEY="$AWS_SESSION_SECRET_ACCESS_KEY" \
         -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
-        amazon/aws-cli:latest ecr-public get-login-password --region us-east-1) | \
+        amazon/aws-cli:2.25.6 ecr-public get-login-password --region us-east-1) | \
       docker login -u AWS --password-stdin public.ecr.aws/k7u6f6n6
   script:
-    - docker tag retina/image-provider:latest public.ecr.aws/k7u6f6n6/retina/image-provider:latest
-    - docker push public.ecr.aws/k7u6f6n6/retina/image-provider:latest
-  after_script:
-    - docker rmi -f public.ecr.aws/k7u6f6n6/retina/image-provider:latest
-
-push-production:
-  <<: *master_tag
-  stage: push-production
-  script:
-    - |
-      echo "CI_COMMIT_REF_NAME: $CI_COMMIT_REF_NAME"
-      echo "CI_DEFAULT_BRANCH: $CI_DEFAULT_BRANCH"
+    - echo "Release"
+  dependencies:
+    - deploy-production

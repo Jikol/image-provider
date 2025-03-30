@@ -7,7 +7,6 @@ services:
     profiles: [prod]
     build:
       target: ${DOCKER_TARGET:-final}
-      dockerfile: ${DOCKER_FILE:-Dockerfile}
       args:
         DOCKER_TAG: ${DOCKER_TAG:-latest}
         IMAGE_PROVIDER_PORT: ${IMAGE_PROVIDER_PORT:?error}

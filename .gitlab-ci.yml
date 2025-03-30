@@ -14,7 +14,7 @@ variables:
   rules:
     - if: '$CI_COMMIT_BRANCH == "master"'
 
-.release: &release
+.master_tag: &master_tag
   tags: [production]
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
@@ -27,6 +27,8 @@ stages:
   - build-staging
   - deploy-staging
   - push-staging
+  - push-production
+  - deploy-production
 
 prepare:
   stage: prepare
@@ -111,3 +113,11 @@ push-staging:
     - docker push public.ecr.aws/k7u6f6n6/retina/image-provider:latest
   after_script:
     - docker rmi -f public.ecr.aws/k7u6f6n6/retina/image-provider:latest
+
+push-production:
+  <<: *master_tag
+  stage: push-production
+  script:
+    - |
+      echo "CI_COMMIT_REF_NAME: $CI_COMMIT_REF_NAME"
+      echo "CI_DEFAULT_BRANCH: $CI_DEFAULT_BRANCH"

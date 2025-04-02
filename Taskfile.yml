@@ -24,28 +24,33 @@ tasks:
       Build docker images for deployment according to compose.yml definition | 
       Usage: task docker:build (d:b) [
         DOCKER_TARGET=lint/final, default final;
-        DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest
+        DOCKER_IMAGE=<string>, default retina/image-provider;
+        DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest;
       ]
     summary: |
       Usage: task docker:build (d:b) [
         DOCKER_TARGET=lint/final, default final;
-        DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest
+        DOCKER_IMAGE=<string>, default retina/image-provider;
+        DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest;
       ]
 
       Build docker image for deployment
 
       Optional variables:
         DOCKER_TARGET   Defines target for docker image stage
+        DOCKER_IMAGE    Name of the project image which will be run in container
         DOCKER_TAG      Defines the tag of the resulting image representing the version
 
       Examples:
         task docker:build
         task docker:build DOCKER_TARGET=lint
+        task docker:build DOCKER_IMAGE=custom_user/custom_registry/custom_repository
         task docker:build DOCKER_TAG=1.2.3
     aliases: [d:b]
     platforms: [linux]
     env:
       DOCKER_TARGET: "{{.DOCKER_TARGET}}" # pass taskfile variable to environment
+      DOCKER_IMAGE: "{{.DOCKER_IMAGE}}" # pass taskfile variable to environment
       DOCKER_TAG: "{{.DOCKER_TAG}}" # pass taskfile variable to environment
       COMPOSE_BAKE: "true"
     cmds:
@@ -58,9 +63,17 @@ tasks:
   docker:compose:
     desc: >
       Create and start builded docker images containers according to compose.yml definition | 
-      Usage: task docker:compose (d:c) [-- attach; -- down; DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest]
+      Usage: task docker:compose (d:c) [
+        -- attach; -- down;
+        DOCKER_IMAGE=<string>, default retina/image-provider;
+        DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest;
+      ]
     summary: |
-      Usage: task docker:compose (d:c) [-- attach; -- down; DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest]
+      Usage: task docker:compose (d:c) [
+        -- attach; -- down;
+        DOCKER_IMAGE=<string>, default retina/image-provider;
+        DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest;
+      ]
 
       Run builded docker image in container
       
@@ -69,16 +82,19 @@ tasks:
         down            Stop and remove running containers and their associated networks       
       
       Optional variables:
+        DOCKER_IMAGE    Name of the project image which will be run in container
         DOCKER_TAG      Defines the tag of the image used to run in the container
 
       Examples:
         task docker:compose
         task docker:compose -- attach      
         task docker:compose -- down
+        task docker:compose DOCKER_IMAGE=custom_user/custom_registry/custom_repository
         task docker:compose DOCKER_TAG=1.2.3
     aliases: [d:c]
     platforms: [linux]
     env:
+      DOCKER_IMAGE: "{{.DOCKER_IMAGE}}" # pass taskfile variable to environment
       DOCKER_TAG: "{{.DOCKER_TAG}}" # pass taskfile variable to environment
     cmd: |
       {{if ne .GITLAB_CI "true"}}

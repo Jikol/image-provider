@@ -3,7 +3,7 @@ name: image-provider
 services:
   image-provider:
     container_name: image-provider
-    image: retina/image-provider:${DOCKER_TAG:-latest}
+    image: ${DOCKER_IMAGE:-retina/image-provider}:${DOCKER_TAG:-latest}
     profiles: [prod]
     build:
       target: ${DOCKER_TARGET:-final}

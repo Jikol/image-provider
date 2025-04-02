@@ -124,13 +124,15 @@ build-production:
   <<: *docker_registry_login
   stage: build
   script:
-    - ${BIN_PATH}/task docker:build DOCKER_IMAGE="$DOCKER_REGISTRY_HOSTNAME/retina/image-provider"
     - |
-      docker tag "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider" \
-        "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider:$CI_DOCKER_TAG"
+      ${BIN_PATH}/task docker:build \
+        DOCKER_IMAGE="$DOCKER_REGISTRY_HOSTNAME/retina/image-provider" DOCKER_TAG=$CI_DOCKER_TAG
+    - |
+      docker tag "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider:$CI_DOCKER_TAG" \
+        "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider"
     - docker push "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider"
     - docker push "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider:$CI_DOCKER_TAG"
-    - docker rmi -f "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider"
+    - docker rmi -f "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider:$CI_DOCKER_TAG"
   dependencies:
     - taskfile
     - environments

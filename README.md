@@ -1,58 +1,57 @@
 # Image Provider
 
-[![license](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/license/mit)
+[![license](https://img.shields.io/badge/License-MIT-coral)](https://opensource.org/license/mit)
 [![pipeline](https://gitlab.vsb.cz/retina/image-provider/badges/develop/pipeline.svg)](https://gitlab.vsb.cz/retina/image-provider/-/pipelines)
 [![release](https://gitlab.vsb.cz/retina/image-provider/-/badges/release.svg)](https://gitlab.vsb.cz/retina/image-provider/-/releases)
-[![docker](https://img.shields.io/badge/Docker-jav0032%2Fretina-blue)](https://hub.docker.com/repository/docker/jav0032/retina/general)
+[![docker](https://img.shields.io/badge/Docker_Registry-retina%2Fimage--provider-dodgerblue)](https://gallery.ecr.aws/k7u6f6n6/retina/image-provider)
 
 > API service used to upload image files that can then be served using their URL. \
 > Primarily used for the Retina API.
 
-## Documentation
+## Overview
 
-[API Documentation](http://vsrvfeia0h-86.vsb.cz:8888)
+[API Documentation](https://retina.jikol.dev:2053/api/redoc)
 
 ### Tech Stack
 
-- Server: [Node](https://nodejs.org/en), [Express](https://expressjs.com/)
-- Docs: [Redocly](https://redocly.com/), [OpenAPI](https://swagger.io/specification/)
+| **Server**                                                                                                                       | **Docs**                                                                                                                                              |
+|----------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [![nodejs](https://img.shields.io/badge/_-_?style=flat-square&logo=nodedotjs&label=Node.js&color=5fa04e)](https://nodejs.org/en) | [![redocly](https://img.shields.io/badge/_-_?style=flat-square&logo=readthedocs&label=Redocly&color=8ca1af)](https://redocly.com/)                    |
+| [![express](https://img.shields.io/badge/_-_?style=flat-square&logo=express&label=Express&color=000000)](https://expressjs.com/) | [![openapi](https://img.shields.io/badge/_-_?style=flat-square&logo=openapiinitiative&label=OpenAPI&color=6BA539)](https://swagger.io/specification/) |
 
 ## Development
 
-Required programs: [Taskfile](https://taskfile.dev/installation/) • [Bun](https://bun.sh/)
-• [Node.js](https://nodejs.org/en) • [Git](https://git-scm.com/)
+**Required programs**
 
-Clone the project from
-[GitLab - image-provider](https://gitlab.vsb.cz/retina/image-provider/-/tree/develop?ref_type=heads)
-repository with
+[![taskfile](https://img.shields.io/badge/_-_?style=flat-square&logo=yaml&label=Taskfile&color=94dfd8)](https://taskfile.dev/installation/)
+[![bun](https://img.shields.io/badge/_-_?style=flat-square&logo=bun&label=Bun&color=fbf0df)](https://bun.sh/)
+[![nodejs](https://img.shields.io/badge/_-_?style=flat-square&logo=nodedotjs&label=Node.js&color=5fa04e)](https://nodejs.org/en)
+[![git](https://img.shields.io/badge/_-_?style=flat-square&logo=git&label=Git&color=f05032)](https://git-scm.com/)
+
+### Instructions
+
+Clone the project and checkout to develop branch
 
 ```bash
   git clone https://gitlab.vsb.cz/retina/image-provider.git
+  cd image-provider && git checkout origin/develop
 ```
 
-Go to the project directory and install JavaScript runtime dependencies with
+Install JavaScript runtime dependencies
 
 ```bash
-  cd image-provider && task init
+  task init
 ```
 
-Create `.env` file from `template.env` file and fill the _Development Environment_ section
-it in as needed.
+Create `.env.local` file from `template.env` and fill the desired variables
 
-Run compose for dependent service for development with
-
-```bash
-  task docker:dev
-```
-
-Now you can start Node.js `express` server in `nodemon` HMR runtime with \
-_(it will start docker compose in attach mode)_
+Now you can start Node.js `express` server in `nodemon` runtime
 
 ```bash
   bun dev
 ```
 
-You should see Redoc docsRouter on `http://localhost:$REDOC_PORT/`
+You should see development documentation on `https://localhost:$IMAGE_PROVIDER_PORT/api/redoc`
 
 ## Conventions
 

@@ -50,7 +50,6 @@ variables:
 
 stages:
   - prepare
-  - taskfile
   - test
   - build
   - deploy
@@ -61,19 +60,18 @@ prepare:
   stage: prepare
   before_script:
     - ls -l /var/run/docker.sock || (echo "Docker socket not binded."; exit 1)
-  script:
-    - |
-      if [[ "$CI_RUNNER_TAGS" == *"staging"* ]]; then
-        docker run --rm \
-        -v /etc/letsencrypt:/etc/letsencrypt \
-        -v /var/log/letsencrypt:/var/log/letsencrypt \
-        --env STAGING_HOSTNAME="$STAGING_HOSTNAME" \
-        certbot/certbot certonly --standalone -d "$STAGING_HOSTNAME" --non-interactive --agree-tos -m foo@bar.com
-      fi
+  script: |
+    if [[ "$CI_RUNNER_TAGS" == *"staging"* ]]; then
+      docker run --rm \
+      -v /etc/letsencrypt:/etc/letsencrypt \
+      -v /var/log/letsencrypt:/var/log/letsencrypt \
+      --env STAGING_HOSTNAME="$STAGING_HOSTNAME" \
+      certbot/certbot certonly --standalone -d "$STAGING_HOSTNAME" --non-interactive --agree-tos -m foo@bar.com
+    fi
 
 taskfile:
   <<: *base
-  stage: taskfile
+  stage: prepare
   before_script:
     - apk add --no-cache curl
     - curl --version || (echo "Curl not installed."; exit 1)
@@ -84,6 +82,15 @@ taskfile:
   artifacts:
     paths:
       - ${BIN_PATH}
+
+environments:
+  <<: *base
+  stage: prepare
+  script:
+    - echo "CI_DOCKER_TAG=$(echo "$CI_COMMIT_TAG" | awk '{gsub(/^v/, "", $0); print}')" >> variables.env
+  artifacts:
+    reports:
+      dotenv: variables.env
 
 lint-staging:
   <<: *develop_push
@@ -100,7 +107,6 @@ build-staging:
     - ${BIN_PATH}/task docker:build
   dependencies:
     - taskfile
-    - lint-staging
 
 deploy-staging:
   <<: *develop_push
@@ -112,7 +118,6 @@ deploy-staging:
     url: https://${STAGING_HOSTNAME}:${IMAGE_PROVIDER_PORT}/
   dependencies:
     - taskfile
-    - build-staging
 
 build-production:
   <<: *master_tag
@@ -122,12 +127,13 @@ build-production:
     - ${BIN_PATH}/task docker:build DOCKER_IMAGE="$DOCKER_REGISTRY_HOSTNAME/retina/image-provider"
     - |
       docker tag "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider" \
-        "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider:$CI_COMMIT_TAG"
+        "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider:$CI_DOCKER_TAG"
     - docker push "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider"
-    - docker push "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider:$CI_COMMIT_TAG"
+    - docker push "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider:$CI_DOCKER_TAG"
     - docker rmi -f "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider"
   dependencies:
     - taskfile
+    - environments
 
 deploy-production:
   <<: *master_tag
@@ -135,19 +141,62 @@ deploy-production:
   script:
     - |
       ${BIN_PATH}/task docker:compose \
-        DOCKER_IMAGE="$DOCKER_REGISTRY_HOSTNAME/retina/image-provider" DOCKER_TAG=$CI_COMMIT_TAG
+        DOCKER_IMAGE="$DOCKER_REGISTRY_HOSTNAME/retina/image-provider" DOCKER_TAG=$CI_DOCKER_TAG
+    - |
+      docker save "$DOCKER_REGISTRY_HOSTNAME/retina/image-provider:$CI_DOCKER_TAG" | \
+        gzip > "image_provider_$CI_COMMIT_TAG.tar.gz"
+  after_script:
+    - echo "CI_DEPLOY_JOB_ID=$CI_JOB_ID" >> variables.env
   environment:
     name: production
     url: https://${PRODUCTION_HOSTNAME}:${IMAGE_PROVIDER_PORT}/
+  artifacts:
+    paths:
+      - "image_provider_$CI_COMMIT_TAG.tar.gz"
+    reports:
+      dotenv: variables.env
+    expire_in: never
   dependencies:
     - taskfile
-    - build-production
+    - environments
 
 release:
   <<: *master_tag
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:v0.23.0
+  variables:
+    IMAGE_ARTIFACT: $CI_PROJECT_URL/-/jobs/$CI_DEPLOY_JOB_ID/artifacts/raw/image_provider_$CI_COMMIT_TAG.tar.gz
   script:
-    - release-cli --help
+    - echo ""
+  release:
+    tag_name: $CI_COMMIT_TAG
+    name: "Release $CI_COMMIT_TAG"
+    description: |
+      ## 🚀 Image Provider $CI_COMMIT_TAG
+      
+      👤 **Autor**: $GITLAB_USER_NAME ($GITLAB_USER_EMAIL)
+      
+      📅 **Date**: $CI_COMMIT_TIMESTAMP
+      
+      🔗 **Pipeline**: $CI_PIPELINE_URL
+      
+      ⚙️ **Environment**: $CI_ENVIRONMENT_NAME
+      
+      ### 🐳 Docker
+      
+      🗄️ **Registry**: [retina/image-provider](https://gallery.ecr.aws/k7u6f6n6/retina/image-provider)
+      
+      📦 **Image**: [image_provider_$CI_COMMIT_TAG.tar.gz]($IMAGE_ARTIFACT)
+
+      ### 📌 Changelog
+      
+      $(echo "$CI_COMMIT_TITLE") \
+      $(echo "$CI_COMMIT_DESCRIPTION")
+    assets:
+      links:
+        - name: "Docker image (tar.gz)"
+          url: "$IMAGE_ARTIFACT"
+          filepath: "/docker/image_provider_$CI_COMMIT_TAG.tar.gz"
+          link_type: package
   dependencies:
     - deploy-production

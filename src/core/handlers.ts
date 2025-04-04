@@ -6,7 +6,7 @@ import { reqUrl } from "@/utils";
 
 import log from "/logger";
 
-const request = (
+const requestHandler = (
   methods: Array<THttpMethod>,
   contentType?: THttpContentType,
   bodySchema?: ZodSchema
@@ -44,4 +44,4 @@ const request = (
   };
 };
 
-export { request };
+export { requestHandler };

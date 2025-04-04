@@ -3,14 +3,20 @@ import fs from "fs";
 import handlebars from "handlebars";
 import path from "path";
 
-import { request } from "@/middleware";
+import { requestHandler } from "@/core";
+import { imagesV1Router, uploadV1Router } from "@/http";
 
 import config from "/config";
 
-const docsRouter: Router = express.Router();
+const versionedRouters: Router = express.Router();
+
+versionedRouters.use(config.API_BASE_PATH, imagesV1Router);
+versionedRouters.use(config.API_BASE_PATH, uploadV1Router);
+
+const infoRouters: Router = express.Router();
 const docsPaths = {
-  openapi: path.join(config.API_BASE_PATH, "openapi.json"),
-  redoc: path.join(config.API_BASE_PATH, "redoc")
+  openapi: path.join(config.API_BASE_PATH, "/openapi.json"),
+  redoc: path.join(config.API_BASE_PATH, "/redoc")
 };
 
 /**
@@ -31,9 +37,9 @@ const docsPaths = {
  *       '404':
  *         description: The documentation file was not found.
  *       '500':
- *         description: Internal server error.
+ *         description: Internal server errorHandler.
  */
-docsRouter.use(docsPaths.openapi, request(["GET"]), (req, res) => {
+infoRouters.use(docsPaths.openapi, requestHandler(["GET"]), (req, res) => {
   fs.readFile(
     path.join(config.ROOT_PATH, "docs", "openapi.json"),
     "utf8",
@@ -80,9 +86,9 @@ docsRouter.use(docsPaths.openapi, request(["GET"]), (req, res) => {
  *       '404':
  *         description: The documentation static HTML file was not found.
  *       '500':
- *         description: Internal server error.
+ *         description: Internal server errorHandler.
  */
-docsRouter.use(docsPaths.redoc, request(["GET"]), (req, res) => {
+infoRouters.use(docsPaths.redoc, requestHandler(["GET"]), (req, res) => {
   fs.readFile(
     path.join(config.ROOT_PATH, "static", "redoc.html"),
     "utf8",
@@ -108,4 +114,33 @@ docsRouter.use(docsPaths.redoc, request(["GET"]), (req, res) => {
   );
 });
 
-export { docsRouter, docsPaths };
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     operationId: getHealth
+ *     summary: Health Check
+ *     description: Checks if the API is up and functional.
+ *     responses:
+ *       '200':
+ *         description: API is up and functional.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: API service is up and functional
+ *       '400':
+ *         description: Bad Request (for internal handling, though it's not really needed).
+ *       '500':
+ *         description: Internal server errorHandler.
+ */
+infoRouters.all("/health", requestHandler(["GET"]), (_req, res) => {
+  res.success({
+    message: "API service is up and functional"
+  });
+});
+
+export { versionedRouters, infoRouters, docsPaths };

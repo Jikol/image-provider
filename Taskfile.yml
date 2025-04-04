@@ -6,7 +6,8 @@ tasks:
   ## development tasks ##
   init:
     desc: >
-      Initialize express project for development | Usage: task init (i) [-- hard]
+      Initialize express project for development | 
+      Usage: task init (i) [-- hard]
     aliases: [i]
     platforms: [linux]
     cmds:

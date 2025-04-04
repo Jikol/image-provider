@@ -59,6 +59,3 @@ You should see development documentation on `https://localhost:$IMAGE_PROVIDER_P
 - [Commit messages](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Commit-messages)
 - [Versioning](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Versioning)
 - [Docker](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Docker)
-
-foo
-bar

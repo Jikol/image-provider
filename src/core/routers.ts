@@ -37,7 +37,7 @@ const docsPaths = {
  *       '404':
  *         description: The documentation file was not found.
  *       '500':
- *         description: Internal server errorHandler.
+ *         description: Internal server error.
  */
 infoRouters.use(docsPaths.openapi, requestHandler(["GET"]), (req, res) => {
   fs.readFile(
@@ -86,7 +86,7 @@ infoRouters.use(docsPaths.openapi, requestHandler(["GET"]), (req, res) => {
  *       '404':
  *         description: The documentation static HTML file was not found.
  *       '500':
- *         description: Internal server errorHandler.
+ *         description: Internal server error.
  */
 infoRouters.use(docsPaths.redoc, requestHandler(["GET"]), (req, res) => {
   fs.readFile(
@@ -135,7 +135,7 @@ infoRouters.use(docsPaths.redoc, requestHandler(["GET"]), (req, res) => {
  *       '400':
  *         description: Bad Request (for internal handling, though it's not really needed).
  *       '500':
- *         description: Internal server errorHandler.
+ *         description: Internal server error.
  */
 infoRouters.all("/health", requestHandler(["GET"]), (_req, res) => {
   res.success({

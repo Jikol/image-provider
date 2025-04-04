@@ -36,7 +36,7 @@ app.use(responseMiddleware);
 app.use(infoRouters);
 app.use(versionedRouters);
 
-/** Add errorHandler middleware */
+/** Add error middleware */
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 

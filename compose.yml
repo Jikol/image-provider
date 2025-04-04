@@ -9,21 +9,21 @@ services:
       target: ${DOCKER_TARGET:-final}
       args:
         DOCKER_TAG: ${DOCKER_TAG:-latest}
-        IMAGE_PROVIDER_PORT: ${IMAGE_PROVIDER_PORT:?errorHandler}
+        IMAGE_PROVIDER_PORT: ${IMAGE_PROVIDER_PORT:?error}
     environment:
       IMAGE_PROVIDER_DEBUG: true
-      IMAGE_PROVIDER_PORT: ${IMAGE_PROVIDER_PORT:?errorHandler}
-      IMAGE_PROVIDER_UPLOAD_PATH: ${IMAGE_PROVIDER_UPLOAD_PATH:?errorHandler}
-      IMAGE_PROVIDER_UPLOAD_SIZE: ${IMAGE_PROVIDER_UPLOAD_SIZE:?errorHandler}
-      IMAGE_PROVIDER_SSL_CERT_PATH: ${IMAGE_PROVIDER_SSL_CERT_PATH:?errorHandler}
-      IMAGE_PROVIDER_SSL_KEY_PATH: ${IMAGE_PROVIDER_SSL_KEY_PATH:?errorHandler}
+      IMAGE_PROVIDER_PORT: ${IMAGE_PROVIDER_PORT:?error}
+      IMAGE_PROVIDER_UPLOAD_PATH: ${IMAGE_PROVIDER_UPLOAD_PATH:?error}
+      IMAGE_PROVIDER_UPLOAD_SIZE: ${IMAGE_PROVIDER_UPLOAD_SIZE:?error}
+      IMAGE_PROVIDER_SSL_CERT_PATH: ${IMAGE_PROVIDER_SSL_CERT_PATH:?error}
+      IMAGE_PROVIDER_SSL_KEY_PATH: ${IMAGE_PROVIDER_SSL_KEY_PATH:?error}
     ports:
-      - ${IMAGE_PROVIDER_PORT:?errorHandler}:${IMAGE_PROVIDER_PORT:?errorHandler}
+      - ${IMAGE_PROVIDER_PORT:?error}:${IMAGE_PROVIDER_PORT:?error}
     restart: unless-stopped
     volumes:
-      - ${IMAGE_PROVIDER_UPLOAD_PATH:?errorHandler}:${IMAGE_PROVIDER_UPLOAD_PATH:?errorHandler}
-      - ${IMAGE_PROVIDER_SSL_CERT_PATH:?errorHandler}:${IMAGE_PROVIDER_SSL_CERT_PATH:?errorHandler}
-      - ${IMAGE_PROVIDER_SSL_KEY_PATH:?errorHandler}:${IMAGE_PROVIDER_SSL_KEY_PATH:?errorHandler}
+      - ${IMAGE_PROVIDER_UPLOAD_PATH:?error}:${IMAGE_PROVIDER_UPLOAD_PATH:?error}
+      - ${IMAGE_PROVIDER_SSL_CERT_PATH:?error}:${IMAGE_PROVIDER_SSL_CERT_PATH:?error}
+      - ${IMAGE_PROVIDER_SSL_KEY_PATH:?error}:${IMAGE_PROVIDER_SSL_KEY_PATH:?error}
 
   healthcheck:
     container_name: healthcheck

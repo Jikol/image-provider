@@ -37,7 +37,7 @@
             "description": "The documentation file was not found."
           },
           "500": {
-            "description": "Internal server errorHandler."
+            "description": "Internal server error."
           }
         }
       }
@@ -64,7 +64,7 @@
             "description": "The documentation static HTML file was not found."
           },
           "500": {
-            "description": "Internal server errorHandler."
+            "description": "Internal server error."
           }
         }
       }
@@ -95,7 +95,7 @@
             "description": "Bad Request (for internal handling, though it's not really needed)."
           },
           "500": {
-            "description": "Internal server errorHandler."
+            "description": "Internal server error."
           }
         }
       }

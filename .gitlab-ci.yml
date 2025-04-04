@@ -6,12 +6,14 @@ variables:
 
 ## pipeline anchors ##
 .base: &base
+  interruptible: true
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
     - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
 
 .develop_push: &develop_push
   tags: [staging]
+  interruptible: true
   environment:
     name: staging
   interruptible: true
@@ -20,6 +22,7 @@ variables:
 
 .master_tag: &master_tag
   tags: [production]
+  interruptible: true
   environment:
     name: production
   rules:
@@ -173,25 +176,19 @@ release:
     - echo ""
   release:
     tag_name: $CI_COMMIT_TAG
-    name: "Release $CI_COMMIT_TAG"
+    name: "🔖 Release $CI_COMMIT_TAG"
     description: |
-      ## 🚀 Image Provider $CI_COMMIT_TAG
+      ### 🚀 Image Provider $CI_COMMIT_TAG
       
       👤 **Autor**: $GITLAB_USER_NAME ($GITLAB_USER_EMAIL)
       
-      📅 **Date**: $CI_COMMIT_TIMESTAMP
+      👷 **Pipeline**: $CI_PIPELINE_URL
       
-      🔗 **Pipeline**: $CI_PIPELINE_URL
+      🐳 **Docker Registry**: [retina/image-provider](https://gallery.ecr.aws/k7u6f6n6/retina/image-provider)
       
-      ⚙️ **Environment**: $CI_ENVIRONMENT_NAME
-      
-      ### 🐳 Docker
-      
-      🗄️ **Registry**: [retina/image-provider](https://gallery.ecr.aws/k7u6f6n6/retina/image-provider)
-      
-      📦 **Image**: [image_provider_$CI_COMMIT_TAG.tar.gz]($IMAGE_ARTIFACT)
+      📦 **Docker Image**: [image_provider_$CI_COMMIT_TAG.tar.gz]($IMAGE_ARTIFACT)
 
-      ### 📌 Changelog
+      ### 📝 Changelog
       
       $(echo "$CI_COMMIT_TITLE") \
       $(echo "$CI_COMMIT_DESCRIPTION")

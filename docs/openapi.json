@@ -37,7 +37,7 @@
             "description": "The documentation file was not found."
           },
           "500": {
-            "description": "Internal server error."
+            "description": "Internal server errorHandler."
           }
         }
       }
@@ -64,12 +64,12 @@
             "description": "The documentation static HTML file was not found."
           },
           "500": {
-            "description": "Internal server error."
+            "description": "Internal server errorHandler."
           }
         }
       }
     },
-    "/api/health": {
+    "/health": {
       "get": {
         "operationId": "getHealth",
         "summary": "Health Check",
@@ -84,7 +84,7 @@
                   "properties": {
                     "message": {
                       "type": "string",
-                      "example": "API is up and functional"
+                      "example": "API service is up and functional"
                     }
                   }
                 }
@@ -95,7 +95,7 @@
             "description": "Bad Request (for internal handling, though it's not really needed)."
           },
           "500": {
-            "description": "Internal server error."
+            "description": "Internal server errorHandler."
           }
         }
       }

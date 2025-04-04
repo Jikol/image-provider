@@ -1,7 +1,7 @@
 declare global {
   namespace Express {
     type TResponseProps = {
-      context?: Record<string, string> | unknown;
+      context?: Record<string, string | object>;
       code?: number;
       message?: string;
     };

@@ -46,7 +46,7 @@ RUN apk add --no-cache --update nodejs curl
 COPY --from=build /app/dist/. .
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
-  CMD /bin/sh -c "curl --silent --fail --insecure https://localhost:${IMAGE_PROVIDER_PORT}/api/health || exit 1"
+  CMD /bin/sh -c "curl --silent --fail --insecure https://localhost:${IMAGE_PROVIDER_PORT}/health || exit 1"
 
 CMD ["node", "index.js"]
 

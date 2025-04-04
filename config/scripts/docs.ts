@@ -28,7 +28,10 @@ const options: Options = {
     ],
     security: []
   },
-  apis: [path.join(config.ROOT_PATH, "src", "router/*.ts")]
+  apis: [
+    path.join(config.ROOT_PATH, "src", "core", "routers.ts"),
+    path.join(config.ROOT_PATH, "src", "http", "routers.ts")
+  ]
 };
 
 ((): void => {

@@ -4,16 +4,64 @@ import fs from "fs";
 import multer, { MulterError } from "multer";
 import type { Multer, StorageEngine } from "multer";
 import path from "path";
+import serveIndex from "serve-index";
 import { v4 } from "uuid";
 import { z } from "zod";
 
-import { UploadError } from "@/helpers";
-import { request } from "@/middleware";
-import { imagesV1Paths } from "@/router";
-import { apiUrl, reqUrl } from "@/utils";
+import { requestHandler } from "@/core";
+import { UploadError, apiUrl, reqUrl } from "@/utils";
 
 import config from "/config";
 import log from "/logger";
+
+const imagesV1Router: Router = express.Router();
+const imagesV1Paths = {
+  images: path.join("/v1", "images")
+};
+
+/**
+ * @openapi
+ * /api/v1/images:
+ *   get:
+ *     operationId: getImages
+ *     summary: List uploaded images
+ *     description: Retrieve images index listing from the server.
+ *     responses:
+ *       '200':
+ *         description: Image listing retrieved successfully.
+ *       '404':
+ *         description: Image listing directory not found.
+ * /api/v1/images/{imageName}:
+ *   get:
+ *     operationId: getImagesName
+ *     summary: Get a static image by name
+ *     description: Retrieve a specific static image from the server by its name.
+ *     parameters:
+ *       - in: path
+ *         name: imageName
+ *         required: true
+ *         description: The name of the image file to retrieve.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Static image retrieved successfully.
+ *         content:
+ *           image/*:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       '404':
+ *         description: Static image not found.
+ */
+imagesV1Router.use(
+  imagesV1Paths.images,
+  express.static(config.IMAGE_PROVIDER_UPLOAD_PATH),
+  serveIndex(config.IMAGE_PROVIDER_UPLOAD_PATH, {
+    icons: true,
+    view: "details"
+  })
+);
 
 const uploadV1Router: Router = express.Router();
 const uploadV1Paths = {
@@ -140,7 +188,7 @@ const fileUpload: Multer = multer({
  */
 uploadV1Router.all(
   uploadV1Paths.upload,
-  request(["POST"], "multipart/form-data"),
+  requestHandler(["POST"], "multipart/form-data"),
   fileUpload.array("file"),
   (req, res) => {
     if ((req.files as Array<Express.Multer.File>).length <= 0) {
@@ -247,7 +295,7 @@ const uploadDeleteSchema = z.object({
  */
 uploadV1Router.all(
   uploadV1Paths.delete,
-  request(["DELETE"], "application/json", uploadDeleteSchema),
+  requestHandler(["DELETE"], "application/json", uploadDeleteSchema),
   (req, res) => {
     const { imageUrls } = req.body as z.infer<typeof uploadDeleteSchema>;
 
@@ -320,7 +368,7 @@ uploadV1Router.all(
  *       '500':
  *         description: Internal Server Error.
  */
-uploadV1Router.all(uploadV1Paths.deletePrivate, request(["DELETE"]), (_, res) => {
+uploadV1Router.all(uploadV1Paths.deletePrivate, requestHandler(["DELETE"]), (_, res) => {
   try {
     const files = fs.readdirSync(path.resolve(config.IMAGE_PROVIDER_UPLOAD_PATH));
 
@@ -385,4 +433,4 @@ uploadV1Router.use((err: Error, req: Request, res: Response, next: NextFunction)
   next(err);
 });
 
-export { uploadV1Router, uploadV1Paths };
+export { imagesV1Router, imagesV1Paths, uploadV1Router, uploadV1Paths };

@@ -1,7 +1,4 @@
 .idea
-.yarn
-.env.local
-node_modules
 dist
-data/**/*
-!data/.gitkeep
+node_modules
+**/*.local

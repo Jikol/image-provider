@@ -3,15 +3,17 @@ FROM oven/bun:1.2-alpine AS base
 
 ARG DOCKER_TAG
 ARG IMAGE_PROVIDER_PORT
-ENV DOCKER_TAG=${DOCKER_TAG}
-ENV IMAGE_PROVIDER_PORT=${IMAGE_PROVIDER_PORT}
+
+ENV DOCKER_TAG=${DOCKER_TAG} \
+    IMAGE_PROVIDER_PORT=${IMAGE_PROVIDER_PORT}
 
 WORKDIR /app
 
+RUN apk add --no-cache --update nodejs
+
 COPY package.json bun.lock ./
 
-RUN apk add --no-cache --update nodejs && \
-    bun install --frozen-lockfile --no-save
+RUN bun install --frozen-lockfile --no-save
 
 # linting stage
 FROM base AS lint
@@ -24,10 +26,11 @@ RUN bun run docs && \
 # build stage
 FROM base AS build
 
+RUN apk add --no-cache --update jq
+
 COPY . .
 
-RUN apk add --no-cache --update jq && \
-    bun run docs && \
+RUN bun run docs && \
     bun run prod && \
     jq --arg DOCKER_TAG "${DOCKER_TAG}" 'walk(if type == "string" then gsub("{{VERSION}}"; $DOCKER_TAG) else . end)' \
       dist/docs/openapi.json > dist/docs/openapi.tmp.json && \

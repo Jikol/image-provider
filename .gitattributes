@@ -1,23 +1,31 @@
-# Handle line endings automatically for files detected as text
-# and leave all files detected as binary untouched.
-* text=false
+* text=auto eol=lf
 
-# Bash scripts, keep untouched
-*.sh -crlf
+*.ts        diff=ts
+*.tsx       diff=ts
+*.json      diff=json
+*.html      diff=html
+*.css       diff=css
+*.scss      diff=css
+*.md        diff=markdown
+*.log       diff
+*.xml       diff
 
-# Text files, should be normalized (crlf => lf)
-*.css           text
-*.html          text
-*.java          text
-*.js            text
-*.json          text
-*.properties    text
-*.txt           text
-*.xml           text
-
-# Binary files, should be untouched
-*.class         binary
-*.jar           binary
-*.gif           binary
-*.jpg           binary
-*.png           binary
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.svg       binary
+*.woff      binary
+*.woff2     binary
+*.ttf       binary
+*.eot       binary
+*.mp4       binary
+*.mp3       binary
+*.zip       binary
+*.gz        binary
+*.tar       binary
+*.pdf       binary
+*.pickle    binary
+*.pkl       binary
+bun.lock    binary

@@ -2,8 +2,8 @@
   "name": "image-provider",
   "private": true,
   "author": "Ondřej Javorský <jav0032@vsb.cz>",
-  "version": "latest",
   "license": "MIT",
+  "readme": "README.md",
   "scripts": {
     "dev": "bun run docs && NODE_OPTIONS='--no-deprecation' NODE_ENV=development nodemon src/app.ts",
     "prev": "bun run prod && node --enable-source-maps --no-deprecation dist/index.js",

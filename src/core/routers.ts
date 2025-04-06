@@ -10,13 +10,13 @@ import config from "/config";
 
 const versionedRouters: Router = express.Router();
 
-versionedRouters.use(config.API_BASE_PATH, imagesV1Router);
-versionedRouters.use(config.API_BASE_PATH, uploadV1Router);
+versionedRouters.use(config.CONST.API_BASE_PATH, imagesV1Router);
+versionedRouters.use(config.CONST.API_BASE_PATH, uploadV1Router);
 
 const infoRouters: Router = express.Router();
 const docsPaths = {
-  openapi: path.join(config.API_BASE_PATH, "/openapi.json"),
-  redoc: path.join(config.API_BASE_PATH, "/redoc")
+  openapi: path.join(config.CONST.API_BASE_PATH, "/openapi.json"),
+  redoc: path.join(config.CONST.API_BASE_PATH, "/redoc")
 };
 
 /**
@@ -41,7 +41,7 @@ const docsPaths = {
  */
 infoRouters.use(docsPaths.openapi, requestHandler(["GET"]), (req, res) => {
   fs.readFile(
-    path.join(config.ROOT_PATH, "docs", "openapi.json"),
+    path.join(config.CONST.ROOT_PATH, "docs", "openapi.json"),
     "utf8",
     (err, data) => {
       if (!err) {
@@ -90,7 +90,7 @@ infoRouters.use(docsPaths.openapi, requestHandler(["GET"]), (req, res) => {
  */
 infoRouters.use(docsPaths.redoc, requestHandler(["GET"]), (req, res) => {
   fs.readFile(
-    path.join(config.ROOT_PATH, "static", "redoc.html"),
+    path.join(config.CONST.ROOT_PATH, "static", "redoc.html"),
     "utf8",
     (err, data) => {
       if (!err) {

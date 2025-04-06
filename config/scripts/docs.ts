@@ -6,7 +6,7 @@ import { Options } from "swagger-jsdoc";
 import config from "/config";
 import log from "/logger";
 
-const docsDir = path.join(config.ROOT_PATH, "docs");
+const docsDir = path.join(config.CONST.ROOT_PATH, "docs");
 const docsLocation = path.join(docsDir, "openapi.json");
 
 const options: Options = {
@@ -29,8 +29,8 @@ const options: Options = {
     security: []
   },
   apis: [
-    path.join(config.ROOT_PATH, "src", "core", "routers.ts"),
-    path.join(config.ROOT_PATH, "src", "http", "routers.ts")
+    path.join(config.CONST.ROOT_PATH, "src", "core", "routers.ts"),
+    path.join(config.CONST.ROOT_PATH, "src", "http", "routers.ts")
   ]
 };
 

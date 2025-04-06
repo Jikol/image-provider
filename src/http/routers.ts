@@ -56,8 +56,8 @@ const imagesV1Paths = {
  */
 imagesV1Router.use(
   imagesV1Paths.images,
-  express.static(config.IMAGE_PROVIDER_UPLOAD_PATH),
-  serveIndex(config.IMAGE_PROVIDER_UPLOAD_PATH, {
+  express.static(config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH),
+  serveIndex(config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH, {
     icons: true,
     view: "details"
   })
@@ -72,11 +72,11 @@ const uploadV1Paths = {
 
 const storage: StorageEngine = multer.diskStorage({
   destination: (_req, _file, cb): void => {
-    if (!fs.existsSync(config.IMAGE_PROVIDER_UPLOAD_PATH)) {
-      fs.mkdirSync(config.IMAGE_PROVIDER_UPLOAD_PATH);
+    if (!fs.existsSync(config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH)) {
+      fs.mkdirSync(config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH);
     }
 
-    return cb(null, config.IMAGE_PROVIDER_UPLOAD_PATH);
+    return cb(null, config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH);
   },
   filename: (req, file, cb): void => {
     const fileAppend = path.extname(file.originalname).toLowerCase();
@@ -96,7 +96,7 @@ const storage: StorageEngine = multer.diskStorage({
 const fileUpload: Multer = multer({
   storage,
   limits: {
-    fileSize: config.IMAGE_PROVIDER_UPLOAD_SIZE
+    fileSize: config.ENVS.IMAGE_PROVIDER_UPLOAD_SIZE
   },
   fileFilter: (_req, file, cb): void => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
@@ -213,7 +213,7 @@ uploadV1Router.all(
           file.filename
         } as [${(req.files as Array<Express.Multer.File>).map((file) =>
           new URL(
-            path.join(config.API_BASE_PATH, imagesV1Paths.images, file.filename),
+            path.join(config.CONST.API_BASE_PATH, imagesV1Paths.images, file.filename),
             apiUrl(req)
           ).toString()
         )}] (${reqUrl(req)})`
@@ -224,7 +224,7 @@ uploadV1Router.all(
       context: {
         imageUrls: (req.files as Array<Express.Multer.File>).map((file) =>
           new URL(
-            path.join(config.API_BASE_PATH, imagesV1Paths.images, file.filename),
+            path.join(config.CONST.API_BASE_PATH, imagesV1Paths.images, file.filename),
             apiUrl(req)
           ).toString()
         )
@@ -305,7 +305,7 @@ uploadV1Router.all(
     try {
       imageUrls.forEach((imageUrl) => {
         const imagePath = path.resolve(
-          config.IMAGE_PROVIDER_UPLOAD_PATH,
+          config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH,
           imageUrl.substring(imageUrl.lastIndexOf("/") + 1)
         );
 
@@ -370,12 +370,12 @@ uploadV1Router.all(
  */
 uploadV1Router.all(uploadV1Paths.deletePrivate, requestHandler(["DELETE"]), (_, res) => {
   try {
-    const files = fs.readdirSync(path.resolve(config.IMAGE_PROVIDER_UPLOAD_PATH));
+    const files = fs.readdirSync(path.resolve(config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH));
 
     files
       .filter((item) => item.startsWith("_"))
       .forEach((fileName) => {
-        const filePath = path.join(config.IMAGE_PROVIDER_UPLOAD_PATH, fileName);
+        const filePath = path.join(config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH, fileName);
 
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
@@ -403,7 +403,7 @@ uploadV1Router.use((err: Error, req: Request, res: Response, next: NextFunction)
       return res.tooLarge({
         context: {
           message: err.message,
-          maxFileSize: `${config.IMAGE_PROVIDER_UPLOAD_SIZE / 1000} kB`
+          maxFileSize: `${config.ENVS.IMAGE_PROVIDER_UPLOAD_SIZE / 1000} kB`
         }
       });
     }

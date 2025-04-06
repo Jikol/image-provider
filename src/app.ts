@@ -22,8 +22,8 @@ const app: Express = express();
 log.debug(config);
 
 /** Preparation of required system locations */
-if (!fs.existsSync(config.IMAGE_PROVIDER_UPLOAD_PATH)) {
-  fs.mkdirSync(config.IMAGE_PROVIDER_UPLOAD_PATH, { recursive: true });
+if (!fs.existsSync(config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH)) {
+  fs.mkdirSync(config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH, { recursive: true });
 }
 
 /** Add helper middleware */
@@ -43,13 +43,13 @@ app.use(errorMiddleware);
 /** Start express server & bind after start events */
 const server = https.createServer(
   {
-    key: fs.readFileSync(config.IMAGE_PROVIDER_SSL_KEY_PATH, "utf8"),
-    cert: fs.readFileSync(config.IMAGE_PROVIDER_SSL_CERT_PATH, "utf8")
+    key: fs.readFileSync(config.ENVS.IMAGE_PROVIDER_SSL_KEY_PATH, "utf8"),
+    cert: fs.readFileSync(config.ENVS.IMAGE_PROVIDER_SSL_CERT_PATH, "utf8")
   },
   app
 );
 
-server.listen(config.IMAGE_PROVIDER_PORT, () => {
+server.listen(config.ENVS.IMAGE_PROVIDER_PORT, () => {
   log.info("Express started");
-  log.info(`Listening on port ${config.IMAGE_PROVIDER_PORT}`);
+  log.info(`Listening on port ${config.ENVS.IMAGE_PROVIDER_PORT}`);
 });

@@ -10,22 +10,28 @@ const options: BuildOptions = {
   platform: "node",
   target: ["node21.0"],
   entryPoints: [
-    { out: "index", in: path.join(config.ROOT_PATH, "src/app.ts") },
+    { out: "index", in: path.join(config.CONST.ROOT_PATH, "src/app.ts") },
     {
       out: "public/style",
-      in: path.join(config.ROOT_PATH, "node_modules/serve-index/public/style.css")
+      in: path.join(config.CONST.ROOT_PATH, "node_modules/serve-index/public/style.css")
     },
     {
       out: "public/directory",
-      in: path.join(config.ROOT_PATH, "node_modules/serve-index/public/directory.html")
+      in: path.join(
+        config.CONST.ROOT_PATH,
+        "node_modules/serve-index/public/directory.html"
+      )
     },
     {
       out: "public/icons/image",
-      in: path.join(config.ROOT_PATH, "node_modules/serve-index/public/icons/image.png")
+      in: path.join(
+        config.CONST.ROOT_PATH,
+        "node_modules/serve-index/public/icons/image.png"
+      )
     },
     {
       out: "static/redoc",
-      in: path.join(config.ROOT_PATH, "static/redoc.html")
+      in: path.join(config.CONST.ROOT_PATH, "static/redoc.html")
     }
   ],
   entryNames: "[dir]/[name]",
@@ -34,12 +40,12 @@ const options: BuildOptions = {
   minify: true,
   sourcemap: true,
   treeShaking: true,
-  outdir: path.join(config.ROOT_PATH, "dist")
+  outdir: path.join(config.CONST.ROOT_PATH, "dist")
 };
 
 const copyFiles: Array<Record<"src" | "dest", string>> = [
   {
-    src: path.join(config.ROOT_PATH, "docs/openapi.json"),
+    src: path.join(config.CONST.ROOT_PATH, "docs/openapi.json"),
     dest: path.join(options.outdir as string, "docs/openapi.json")
   }
 ];

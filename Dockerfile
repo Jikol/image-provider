@@ -15,8 +15,8 @@ COPY package.json bun.lock ./
 
 RUN bun install --frozen-lockfile --no-save
 
-# linting stage
-FROM base AS lint
+# testing stage
+FROM base AS test
 
 COPY . .
 
@@ -39,6 +39,8 @@ RUN bun run docs && \
 
 # prod stage
 FROM alpine:3.19 AS final
+
+ARG DOCKER_TAG
 
 WORKDIR /app
 

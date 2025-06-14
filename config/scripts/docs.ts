@@ -23,7 +23,7 @@ const options: Options = {
     },
     servers: [
       {
-        url: "https://{{HOST}}"
+        url: `{{PROTOCOL}}://{{HOST}}`
       }
     ],
     security: []

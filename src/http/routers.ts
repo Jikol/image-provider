@@ -56,6 +56,7 @@ const imagesV1Paths = {
  */
 imagesV1Router.use(
   imagesV1Paths.images,
+  requestHandler(["GET"]),
   express.static(config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH),
   serveIndex(config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH, {
     icons: true,
@@ -222,14 +223,14 @@ uploadV1Router.all(
 
     return res.success({
       context: {
+        message: "File Uploaded Successfully",
         imageUrls: (req.files as Array<Express.Multer.File>).map((file) =>
           new URL(
             path.join(config.CONST.API_BASE_PATH, imagesV1Paths.images, file.filename),
             apiUrl(req)
           ).toString()
         )
-      },
-      message: "File Uploaded Successfully"
+      }
     });
   }
 );
@@ -319,20 +320,24 @@ uploadV1Router.all(
       log.error(err);
 
       return res.error({
-        message: "Error while perform i/o operations"
+        context: {
+          message: "Error while perform i/o operations"
+        }
       });
     }
 
     if (alreadyDeleted) {
       return res.success({
-        message: "Provided URLs has its file representation already deleted"
+        context: {
+          message: "Provided URLs has its file representation already deleted"
+        }
       });
     } else {
       return res.success({
         context: {
+          message: "Provided URLs has been deleted",
           removedImageUrls: deletedUrls
-        },
-        message: "Provided URLs has been deleted"
+        }
       });
     }
   }
@@ -385,12 +390,16 @@ uploadV1Router.all(uploadV1Paths.deletePrivate, requestHandler(["DELETE"]), (_, 
     log.error(err);
 
     return res.error({
-      message: "Error while perform i/o operations"
+      context: {
+        message: "Error while perform i/o operations"
+      }
     });
   }
 
   return res.success({
-    message: "All private images has been deleted"
+    context: {
+      message: "All private images has been deleted"
+    }
   });
 });
 

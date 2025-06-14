@@ -48,20 +48,28 @@ infoRouters.use(docsPaths.openapi, requestHandler(["GET"]), (req, res) => {
         return res.json(
           JSON.parse(
             data
+              .replaceAll(
+                "{{PROTOCOL}}",
+                process.env.NODE_ENV === "development" ? "http" : "https"
+              )
               .replaceAll("{{HOST}}", req.get("host") ?? "localhost")
-              .replaceAll("{{VERSION}}", "latest")
+              .replaceAll("{{VERSION}}", process.env.VERSION || "latest")
           )
         );
       }
 
       if (err.code === "ENOENT") {
         return res.notFound({
-          message: "The requested openapi file was not found"
+          context: {
+            message: "The requested openapi file was not found"
+          }
         });
       }
 
       return res.error({
-        message: err.message
+        context: {
+          message: err.message
+        }
       });
     }
   );
@@ -97,18 +105,26 @@ infoRouters.use(docsPaths.redoc, requestHandler(["GET"]), (req, res) => {
         const parsedHtml = handlebars.compile(data);
 
         return res.send(
-          parsedHtml({ HOST: req.get("host") ?? "localhost", VERSION: "latest" })
+          parsedHtml({
+            PROTOCOL: process.env.NODE_ENV === "development" ? "http" : "https",
+            HOST: req.get("host") ?? "localhost",
+            VERSION: process.env.VERSION || "latest"
+          })
         );
       }
 
       if (err.code === "ENOENT") {
         return res.notFound({
-          message: "The requested ReDoc HTML file was not found"
+          context: {
+            message: "The requested ReDoc HTML file was not found"
+          }
         });
       }
 
       return res.error({
-        message: err.message
+        context: {
+          message: err.message
+        }
       });
     }
   );
@@ -139,7 +155,9 @@ infoRouters.use(docsPaths.redoc, requestHandler(["GET"]), (req, res) => {
  */
 infoRouters.all("/health", requestHandler(["GET"]), (_req, res) => {
   res.success({
-    message: "API service is up and functional"
+    context: {
+      message: "API service is up and functional"
+    }
   });
 });
 

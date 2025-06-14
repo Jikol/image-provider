@@ -16,7 +16,7 @@ const requestHandler = (
     if (!methods.includes(req.method as THttpMethod)) {
       log.warn(`Method not allowed [${reqUrl(req)}]`);
 
-      return res.notAllowed({ context: { allowedMethods: methods } }) as Response;
+      return res.notAllowed({ allowedMethods: methods }) as Response;
     }
     if (contentType && !req.is(contentType)) {
       log.warn(
@@ -26,7 +26,7 @@ const requestHandler = (
       );
 
       return res.unsupportedContentType({
-        context: { allowedContentType: contentType }
+        allowedContentType: contentType
       }) as Response;
     }
     if (bodySchema && !bodySchema.safeParse(req.body).success) {

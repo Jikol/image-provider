@@ -26,21 +26,18 @@ RUN bun run docs && \
 # build stage
 FROM base AS build
 
-RUN apk add --no-cache --update jq
-
 COPY . .
 
 RUN bun run docs && \
-    bun run prod && \
-    jq --arg DOCKER_TAG "${DOCKER_TAG}" 'walk(if type == "string" then gsub("{{VERSION}}"; $DOCKER_TAG) else . end)' \
-      dist/docs/openapi.json > dist/docs/openapi.tmp.json && \
-    mv dist/docs/openapi.tmp.json dist/docs/openapi.json && \
-    sed -i "s/{{VERSION}}/${DOCKER_TAG}/g" dist/static/redoc.html
+    bun run prod
 
 # prod stage
-FROM alpine:3.19 AS final
+FROM alpine:3.22 AS final
 
 ARG DOCKER_TAG
+ARG IMAGE_PROVIDER_PORT
+
+ENV VERSION=${DOCKER_TAG}
 
 WORKDIR /app
 

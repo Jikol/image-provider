@@ -1,21 +1,20 @@
 declare global {
   namespace Express {
     type TResponseProps = {
-      context?: Record<string, string | object>;
-      code?: number;
-      message?: string;
+      context?: {
+        message?: string | Array<unknown> | Record<string, unknown>;
+        docs?: Record<string, string>;
+        [key: string]: unknown;
+      };
+      status_message?: string;
     };
 
     type TNotAllowedProps = TResponseProps & {
-      context: {
-        allowedMethods: Array<THttpMethod>;
-      };
+      allowedMethods: Array<THttpMethod>;
     };
 
     type TUnsupportedContentTypeProps = TResponseProps & {
-      context: {
-        allowedContentType: string;
-      };
+      allowedContentType: string;
     };
 
     interface Response {

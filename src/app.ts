@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import type { Express } from "express";
 import fs from "fs";
+import http from "http";
 import https from "https";
 
 import {
@@ -41,15 +42,20 @@ app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
 /** Start express server & bind after start events */
-const server = https.createServer(
-  {
-    key: fs.readFileSync(config.ENVS.IMAGE_PROVIDER_SSL_KEY_PATH, "utf8"),
-    cert: fs.readFileSync(config.ENVS.IMAGE_PROVIDER_SSL_CERT_PATH, "utf8")
-  },
-  app
-);
+const server = {
+  https: (): https.Server =>
+    https.createServer(
+      {
+        key: fs.readFileSync(config.ENVS.IMAGE_PROVIDER_SSL_KEY_PATH, "utf8"),
+        cert: fs.readFileSync(config.ENVS.IMAGE_PROVIDER_SSL_CERT_PATH, "utf8")
+      },
+      app
+    ),
+  http: (): http.Server => http.createServer(app)
+};
+const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
 
-server.listen(config.ENVS.IMAGE_PROVIDER_PORT, () => {
-  log.info("Express started");
+server[protocol]().listen(config.ENVS.IMAGE_PROVIDER_PORT, () => {
+  log.info(`Express started with '${protocol}' protocol`);
   log.info(`Listening on port ${config.ENVS.IMAGE_PROVIDER_PORT}`);
 });

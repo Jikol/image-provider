@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "https://{{HOST}}"
+      "url": "{{PROTOCOL}}://{{HOST}}"
     }
   ],
   "security": [],

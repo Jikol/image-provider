@@ -23,7 +23,7 @@ const configSchema = z.object({
   IMAGE_PROVIDER_PORT: z.string().transform((port) => +port),
   IMAGE_PROVIDER_UPLOAD_PATH: z
     .string()
-    .default("/tmp/image_provider")
+    .default("/var/lib/image_provider")
     .transform((path) => resolvePath(path) as string),
   IMAGE_PROVIDER_UPLOAD_SIZE: z
     .string()

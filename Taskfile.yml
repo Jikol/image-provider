@@ -24,18 +24,23 @@ tasks:
     desc: >
       Build docker images for deployment according to compose.yml definition | 
       Usage: task docker:build (d:b) [
+        -- push;
         DOCKER_TARGET=test/final, default final;
         DOCKER_IMAGE=<string>, default retina/image-provider;
         DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest;
       ]
     summary: |
       Usage: task docker:build (d:b) [
+        -- push;
         DOCKER_TARGET=test/final, default final;
         DOCKER_IMAGE=<string>, default retina/image-provider;
         DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest;
       ]
 
       Build docker image for deployment
+      
+      Optional arguments:
+        push            Uploads the image to the registry instead of keep it locally
 
       Optional variables:
         DOCKER_TARGET   Defines target for docker image stage
@@ -44,6 +49,7 @@ tasks:
 
       Examples:
         task docker:build
+        task docker:build -- push
         task docker:build DOCKER_TARGET=test
         task docker:build DOCKER_IMAGE=custom_user/custom_registry/custom_repository
         task docker:build DOCKER_TAG=1.2.3
@@ -52,13 +58,22 @@ tasks:
     requires:
       vars: [IMAGE_PROVIDER_PORT]
     cmd: >
-      DOCKER_BUILDKIT=1 docker build
+      docker buildx inspect containerd > /dev/null 2> /dev/null ||
+      docker buildx create --name containerd --driver docker-container --bootstrap &&
+      echo "BuildKit Driver: $(docker buildx inspect --builder containerd | \
+        awk -F': *' '/^Driver:/ {print $2}')" &&
+      docker build
       --tag {{.DOCKER_IMAGE | default "retina/image-provider"}}:{{.DOCKER_TAG | default "latest"}}
       --target {{.DOCKER_TARGET | default "final"}}
       --build-arg DOCKER_TAG={{.DOCKER_TAG | default "latest"}}
       --build-arg IMAGE_PROVIDER_PORT={{.IMAGE_PROVIDER_PORT}}
+      --builder containerd
       {{if and (ne .DOCKER_TARGET "final") (not (or (eq .DOCKER_TARGET nil) (eq .DOCKER_TARGET "")))}}
-      --output type=tar,dest=/dev/null
+      --output type=cacheonly
+      {{else if eq .CLI_ARGS "push"}}
+      --push
+      {{else}}
+      --load
       {{end}}
       .
 
@@ -100,10 +115,10 @@ tasks:
       DOCKER_TAG: "{{.DOCKER_TAG}}" # pass taskfile variable to environment
     cmd: |
       {{if ne .GITLAB_CI "true"}}
-        export IMAGE_PROVIDER_UPLOAD_PATH=$(realpath ${IMAGE_PROVIDER_UPLOAD_PATH})
         export IMAGE_PROVIDER_SSL_CERT_PATH=$(realpath ${IMAGE_PROVIDER_SSL_CERT_PATH})
         export IMAGE_PROVIDER_SSL_KEY_PATH=$(realpath ${IMAGE_PROVIDER_SSL_KEY_PATH})
       {{end}}
+      docker volume create image-provider-data
       {{if eq .CLI_ARGS ""}}
         sh -c 'docker compose --profile prod up -d --no-build --force-recreate --pull missing || (docker compose --profile prod down; exit 1)'
       {{else if eq .CLI_ARGS "attach"}}

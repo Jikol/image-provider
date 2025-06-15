@@ -5,6 +5,11 @@ services:
     container_name: image-provider
     image: ${DOCKER_IMAGE:-retina/image-provider}:${DOCKER_TAG:-latest}
     profiles: [prod]
+    build:
+      target: ${DOCKER_TARGET:-final}
+      args:
+        DOCKER_TAG: ${DOCKER_TAG:-latest}
+        IMAGE_PROVIDER_PORT: ${IMAGE_PROVIDER_PORT:?error}
     environment:
       IMAGE_PROVIDER_DEBUG: true
       IMAGE_PROVIDER_PORT: ${IMAGE_PROVIDER_PORT:?error}

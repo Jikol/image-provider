@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { StatusCodes, getReasonPhrase } from "http-status-codes";
 
 import { docsPaths } from "@/core";
 import { reqUrl } from "@/utils";
@@ -12,65 +13,55 @@ const getDocs = (req: Request): Record<string, object> => ({
   }
 });
 
+const baseResponse = (
+  req: Request,
+  res: Response,
+  context: object | undefined,
+  status_code: number,
+  headers?: Record<string, string | Array<string>>
+): Response => {
+  if (headers) {
+    Object.entries(headers).forEach(([key, value]) => res.setHeader(key, value));
+  }
+
+  return res
+    .status(status_code)
+    .json({
+      context: { ...context, ...getDocs(req) },
+      status_message: getReasonPhrase(status_code),
+      status_code
+    })
+    .end();
+};
+
 const responseMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  res.unsupportedContentType = ({
-    context,
-    message = "Unsupported Content Type",
-    code = 415
-  }): Response => {
-    return res
-      .header("Accept", context.allowedContentType)
-      .status(code)
-      .json({ context: { ...context, ...getDocs(req) }, message, code })
-      .end();
+  res.unsupportedContentType = ({ context, allowedContentType }): Response => {
+    return baseResponse(req, res, context, StatusCodes.UNSUPPORTED_MEDIA_TYPE, {
+      Accept: allowedContentType
+    });
   };
-  res.unsupportedMedia = ({
-    context,
-    message = "Unsupported Media Type",
-    code = 415
-  }): Response => {
-    return res
-      .status(code)
-      .json({ context: { ...context, ...getDocs(req) }, message, code })
-      .end();
+  res.unsupportedMedia = ({ context }): Response => {
+    return baseResponse(req, res, context, StatusCodes.UNSUPPORTED_MEDIA_TYPE);
   };
-  res.notAllowed = ({
-    context,
-    message = "Method Not Allowed",
-    code = 405
-  }): Response => {
-    return res
-      .header("Allow", context.allowedMethods)
-      .status(code)
-      .json({ context: { ...context, ...getDocs(req) }, message, code })
-      .end();
+  res.notAllowed = ({ context, allowedMethods }): Response => {
+    return baseResponse(req, res, context, StatusCodes.METHOD_NOT_ALLOWED, {
+      Allow: allowedMethods
+    }).end();
   };
-  res.tooLarge = ({ context, message = "Content Too Large", code = 413 }): Response => {
-    return res
-      .status(code)
-      .json({ context: { ...context, ...getDocs(req) }, message, code })
-      .end();
+  res.tooLarge = ({ context }): Response => {
+    return baseResponse(req, res, context, StatusCodes.REQUEST_TOO_LONG);
   };
-  res.notFound = ({ context, message = "Not Found", code = 404 }): Response => {
-    return res
-      .status(code)
-      .json({ context: { ...context, ...getDocs(req) }, message, code })
-      .end();
+  res.notFound = ({ context }): Response => {
+    return baseResponse(req, res, context, StatusCodes.NOT_FOUND);
   };
-  res.error = ({ context, message = "Internal Server Error", code = 500 }): Response => {
-    return res
-      .status(code)
-      .json({ context: { ...context, ...getDocs(req) }, message, code })
-      .end();
+  res.error = ({ context }): Response => {
+    return baseResponse(req, res, context, StatusCodes.INTERNAL_SERVER_ERROR);
   };
-  res.badRequest = ({ context, message = "Bad Request", code = 400 }): Response => {
-    return res
-      .status(code)
-      .json({ context: { ...context, ...getDocs(req) }, message, code })
-      .end();
+  res.badRequest = ({ context }): Response => {
+    return baseResponse(req, res, context, StatusCodes.BAD_REQUEST);
   };
-  res.success = ({ context, message = "Success", code = 200 }): Response => {
-    return res.status(code).json({ context, message, code }).end();
+  res.success = ({ context }): Response => {
+    return baseResponse(req, res, context, StatusCodes.OK);
   };
 
   next();
@@ -80,7 +71,9 @@ const notFoundMiddleware = (req: Request, res: Response): Response => {
   log.warn(`Path not found (${reqUrl(req)})`);
 
   return res.notFound({
-    message: `Path ${req.path} not found for ${req.method} request method, consult docs`
+    context: {
+      message: `Path '${req.path}' not found for '${req.method}' request method (consult docs)`
+    }
   }) as Response;
 };
 

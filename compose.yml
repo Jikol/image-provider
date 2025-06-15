@@ -1,4 +1,4 @@
-name: image-provider
+name: retina-image-provider
 
 services:
   image-provider:
@@ -13,20 +13,20 @@ services:
     environment:
       IMAGE_PROVIDER_DEBUG: true
       IMAGE_PROVIDER_PORT: ${IMAGE_PROVIDER_PORT:?error}
-      IMAGE_PROVIDER_UPLOAD_PATH: ${IMAGE_PROVIDER_UPLOAD_PATH:?error}
       IMAGE_PROVIDER_UPLOAD_SIZE: ${IMAGE_PROVIDER_UPLOAD_SIZE:?error}
       IMAGE_PROVIDER_SSL_CERT_PATH: ${IMAGE_PROVIDER_SSL_CERT_PATH:?error}
       IMAGE_PROVIDER_SSL_KEY_PATH: ${IMAGE_PROVIDER_SSL_KEY_PATH:?error}
+    # noinspection ComposeUnknownValues
     ports:
       - ${IMAGE_PROVIDER_PORT:?error}:${IMAGE_PROVIDER_PORT:?error}
     restart: unless-stopped
     volumes:
-      - ${IMAGE_PROVIDER_UPLOAD_PATH:?error}:${IMAGE_PROVIDER_UPLOAD_PATH:?error}
       - ${IMAGE_PROVIDER_SSL_CERT_PATH:?error}:${IMAGE_PROVIDER_SSL_CERT_PATH:?error}
       - ${IMAGE_PROVIDER_SSL_KEY_PATH:?error}:${IMAGE_PROVIDER_SSL_KEY_PATH:?error}
+      - image-data:/var/lib/image_provider
 
-  healthcheck:
-    container_name: healthcheck
+  image-provider-healthcheck:
+    container_name: image-provider-healthcheck
     image: alpine
     profiles: [prod]
     restart: no
@@ -34,3 +34,8 @@ services:
       image-provider:
         condition: service_healthy
     command: ["sh", "-c", "echo 'All services are healthy, exiting.'"]
+
+volumes:
+  image-data:
+    external: true
+    name: image-provider-data

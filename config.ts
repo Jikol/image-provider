@@ -7,11 +7,12 @@ import { resolvePath } from "@/utils";
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
+const constants = {
+  ROOT_PATH: path.resolve(process.cwd()),
+  API_BASE_PATH: "/api"
+};
+
 const configSchema = z.object({
-  // static constants
-  ROOT_PATH: z.string().default(path.resolve(process.cwd())),
-  API_BASE_PATH: z.string().default("/api"),
-  // code envs
   NODE_ENV: z
     .union([z.literal("development"), z.literal("production")])
     .default("production"),
@@ -22,7 +23,7 @@ const configSchema = z.object({
   IMAGE_PROVIDER_PORT: z.string().transform((port) => +port),
   IMAGE_PROVIDER_UPLOAD_PATH: z
     .string()
-    .default("/tmp/image_provider")
+    .default("/var/lib/image_provider")
     .transform((path) => resolvePath(path) as string),
   IMAGE_PROVIDER_UPLOAD_SIZE: z
     .string()
@@ -49,4 +50,7 @@ if (!parseResult.success) {
   throw new Error(parseResult.error.message);
 }
 
-export default parseResult.data as z.infer<typeof configSchema>;
+export default { CONST: constants, ENVS: parseResult.data } as {
+  CONST: typeof constants;
+  ENVS: z.infer<typeof configSchema>;
+};

@@ -9,8 +9,8 @@ node_modules
 .gitignore
 compose.yml
 Dockerfile
+Taskfile.yml
 LICENSE
 README.md
-Taskfile.yml
 template.env
 **/*.local

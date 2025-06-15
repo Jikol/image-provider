@@ -10,13 +10,13 @@ import config from "/config";
 
 const versionedRouters: Router = express.Router();
 
-versionedRouters.use(config.API_BASE_PATH, imagesV1Router);
-versionedRouters.use(config.API_BASE_PATH, uploadV1Router);
+versionedRouters.use(config.CONST.API_BASE_PATH, imagesV1Router);
+versionedRouters.use(config.CONST.API_BASE_PATH, uploadV1Router);
 
 const infoRouters: Router = express.Router();
 const docsPaths = {
-  openapi: path.join(config.API_BASE_PATH, "/openapi.json"),
-  redoc: path.join(config.API_BASE_PATH, "/redoc")
+  openapi: path.join(config.CONST.API_BASE_PATH, "/openapi.json"),
+  redoc: path.join(config.CONST.API_BASE_PATH, "/redoc")
 };
 
 /**
@@ -41,27 +41,35 @@ const docsPaths = {
  */
 infoRouters.use(docsPaths.openapi, requestHandler(["GET"]), (req, res) => {
   fs.readFile(
-    path.join(config.ROOT_PATH, "docs", "openapi.json"),
+    path.join(config.CONST.ROOT_PATH, "docs", "openapi.json"),
     "utf8",
     (err, data) => {
       if (!err) {
         return res.json(
           JSON.parse(
             data
+              .replaceAll(
+                "{{PROTOCOL}}",
+                process.env.NODE_ENV === "development" ? "http" : "https"
+              )
               .replaceAll("{{HOST}}", req.get("host") ?? "localhost")
-              .replaceAll("{{VERSION}}", "latest")
+              .replaceAll("{{VERSION}}", process.env.VERSION || "latest")
           )
         );
       }
 
       if (err.code === "ENOENT") {
         return res.notFound({
-          message: "The requested openapi file was not found"
+          context: {
+            message: "The requested openapi file was not found"
+          }
         });
       }
 
       return res.error({
-        message: err.message
+        context: {
+          message: err.message
+        }
       });
     }
   );
@@ -90,25 +98,33 @@ infoRouters.use(docsPaths.openapi, requestHandler(["GET"]), (req, res) => {
  */
 infoRouters.use(docsPaths.redoc, requestHandler(["GET"]), (req, res) => {
   fs.readFile(
-    path.join(config.ROOT_PATH, "static", "redoc.html"),
+    path.join(config.CONST.ROOT_PATH, "static", "redoc.html"),
     "utf8",
     (err, data) => {
       if (!err) {
         const parsedHtml = handlebars.compile(data);
 
         return res.send(
-          parsedHtml({ HOST: req.get("host") ?? "localhost", VERSION: "latest" })
+          parsedHtml({
+            PROTOCOL: process.env.NODE_ENV === "development" ? "http" : "https",
+            HOST: req.get("host") ?? "localhost",
+            VERSION: process.env.VERSION || "latest"
+          })
         );
       }
 
       if (err.code === "ENOENT") {
         return res.notFound({
-          message: "The requested ReDoc HTML file was not found"
+          context: {
+            message: "The requested ReDoc HTML file was not found"
+          }
         });
       }
 
       return res.error({
-        message: err.message
+        context: {
+          message: err.message
+        }
       });
     }
   );
@@ -139,7 +155,9 @@ infoRouters.use(docsPaths.redoc, requestHandler(["GET"]), (req, res) => {
  */
 infoRouters.all("/health", requestHandler(["GET"]), (_req, res) => {
   res.success({
-    message: "API service is up and functional"
+    context: {
+      message: "API service is up and functional"
+    }
   });
 });
 

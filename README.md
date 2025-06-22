@@ -15,7 +15,7 @@
 ### Tech Stack
 
 | **Server**                                                                                                                       | **Docs**                                                                                                                                              |
-|----------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [![nodejs](https://img.shields.io/badge/_-_?style=flat-square&logo=nodedotjs&label=Node.js&color=5fa04e)](https://nodejs.org/en) | [![redocly](https://img.shields.io/badge/_-_?style=flat-square&logo=readthedocs&label=Redocly&color=8ca1af)](https://redocly.com/)                    |
 | [![express](https://img.shields.io/badge/_-_?style=flat-square&logo=express&label=Express&color=000000)](https://expressjs.com/) | [![openapi](https://img.shields.io/badge/_-_?style=flat-square&logo=openapiinitiative&label=OpenAPI&color=6BA539)](https://swagger.io/specification/) |
 
@@ -51,7 +51,8 @@ Now you can start Node.js `express` server in `nodemon` runtime
   bun dev
 ```
 
-You should see development documentation on `https://localhost:$IMAGE_PROVIDER_PORT/api/redoc`
+You should see development documentation on
+`https://localhost:$IMAGE_PROVIDER_PORT/api/redoc`
 
 ## Conventions
 

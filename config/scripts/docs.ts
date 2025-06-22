@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import swaggerJsdoc from "swagger-jsdoc";
-import { Options } from "swagger-jsdoc";
+import type { Options } from "swagger-jsdoc";
 
 import config from "/config";
 import log from "/logger";
@@ -23,7 +23,7 @@ const options: Options = {
     },
     servers: [
       {
-        url: `{{PROTOCOL}}://{{HOST}}`
+        url: "{{PROTOCOL}}://{{HOST}}"
       }
     ],
     security: []

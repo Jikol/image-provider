@@ -5,6 +5,7 @@ import type { Express } from "express";
 import fs from "fs";
 import http from "http";
 import https from "https";
+import process from "process";
 
 import {
   errorMiddleware,
@@ -42,7 +43,7 @@ app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
 /** Start express server & bind after start events */
-const server = {
+const createServer = {
   https: (): https.Server =>
     https.createServer(
       {
@@ -54,8 +55,37 @@ const server = {
   http: (): http.Server => http.createServer(app)
 };
 const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+const server = createServer[protocol]();
 
-server[protocol]().listen(config.ENVS.IMAGE_PROVIDER_PORT, () => {
+server.listen(config.ENVS.IMAGE_PROVIDER_PORT, () => {
   log.info(`Express started with '${protocol}' protocol`);
   log.info(`Listening on port ${config.ENVS.IMAGE_PROVIDER_PORT}`);
 });
+
+/** Shutdown handling */
+const handleExit = (
+  server: http.Server | https.Server,
+  err: Error | undefined = undefined
+): void => {
+  if (err) {
+    log.error("Runtime error occurred:", err);
+    process.exitCode = 1;
+  }
+
+  log.info("Received shutdown signal. Closing server...");
+
+  server.close((err: Error | undefined) => {
+    if (err) {
+      log.error("Error during server shutdown:", err);
+      process.exitCode = 1;
+    } else {
+      log.info("The server has shut down gracefully.");
+    }
+
+    process.exit();
+  });
+};
+
+process.on("SIGINT", () => handleExit(server));
+process.on("SIGTERM", () => handleExit(server));
+process.on("uncaughtException", (err: Error) => handleExit(server, err));

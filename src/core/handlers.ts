@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { ZodSchema } from "zod";
+import type { ZodSchema } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
 import { reqUrl } from "@/utils";

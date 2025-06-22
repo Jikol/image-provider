@@ -119,10 +119,13 @@ tasks:
         export IMAGE_PROVIDER_SSL_KEY_PATH=$(realpath ${IMAGE_PROVIDER_SSL_KEY_PATH})
       {{end}}
       docker volume create image-provider-data
+      {{if eq .GITLAB_CI "true"}}
+        sh -c 'docker compose --profile prod pull || (docker compose --profile prod down; exit 1)'
+      {{end}}
       {{if eq .CLI_ARGS ""}}
-        sh -c 'docker compose --profile prod up -d --no-build --force-recreate --pull always || (docker compose --profile prod down; exit 1)'
+        sh -c 'docker compose --profile prod up -d --no-build --force-recreate || (docker compose --profile prod down; exit 1)'
       {{else if eq .CLI_ARGS "attach"}}
-        sh -c 'docker compose --profile prod up --no-build --force-recreate --pull always || (docker compose --profile prod down; exit 1)'
+        sh -c 'docker compose --profile prod up --no-build --force-recreate || (docker compose --profile prod down; exit 1)'
       {{else if eq .CLI_ARGS "down"}}
         docker compose --profile prod down --remove-orphans
       {{else}}

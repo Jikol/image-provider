@@ -55,7 +55,8 @@ tasks:
     aliases: [d:b]
     platforms: [linux]
     requires:
-      vars: [IMAGE_PROVIDER_PORT]
+      vars:
+        - IMAGE_PROVIDER_PORT
     # prettier-ignore
     cmd: >
       docker buildx inspect containerd > /dev/null 2> /dev/null ||

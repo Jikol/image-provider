@@ -54,7 +54,7 @@ const createServer = {
     ),
   http: (): http.Server => http.createServer(app)
 };
-const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+const protocol = config.CONST.DEVELOPMENT ? "http" : "https";
 const server = createServer[protocol]();
 
 server.listen(config.ENVS.IMAGE_PROVIDER_PORT, () => {

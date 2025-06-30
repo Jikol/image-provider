@@ -5,14 +5,10 @@ services:
     container_name: image-provider
     image: ${DOCKER_IMAGE:-retina/image-provider}:${DOCKER_TAG:-latest}
     profiles: [prod]
-    build:
-      target: ${DOCKER_TARGET:-final}
-      args:
-        DOCKER_TAG: ${DOCKER_TAG:-latest}
-        IMAGE_PROVIDER_PORT: ${IMAGE_PROVIDER_PORT:?error}
     environment:
-      IMAGE_PROVIDER_DEBUG: true
+      IMAGE_PROVIDER_DEBUG: ${IMAGE_PROVIDER_DEBUG:?error}
       IMAGE_PROVIDER_PORT: ${IMAGE_PROVIDER_PORT:?error}
+      IMAGE_PROVIDER_UPLOAD_PATH: ${IMAGE_PROVIDER_UPLOAD_PATH:?error}
       IMAGE_PROVIDER_UPLOAD_SIZE: ${IMAGE_PROVIDER_UPLOAD_SIZE:?error}
       IMAGE_PROVIDER_SSL_CERT_PATH: ${IMAGE_PROVIDER_SSL_CERT_PATH:?error}
       IMAGE_PROVIDER_SSL_KEY_PATH: ${IMAGE_PROVIDER_SSL_KEY_PATH:?error}
@@ -24,7 +20,7 @@ services:
     volumes:
       - ${IMAGE_PROVIDER_SSL_CERT_PATH:?error}:${IMAGE_PROVIDER_SSL_CERT_PATH:?error}
       - ${IMAGE_PROVIDER_SSL_KEY_PATH:?error}:${IMAGE_PROVIDER_SSL_KEY_PATH:?error}
-      - image-data:/var/lib/image_provider
+      - image-data:${IMAGE_PROVIDER_UPLOAD_PATH:?error}
 
   image-provider-healthcheck:
     container_name: image-provider-healthcheck

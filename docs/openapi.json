@@ -162,10 +162,7 @@
             "description": "Specifies if the data should be private.",
             "schema": {
               "type": "string",
-              "enum": [
-                "true",
-                "false"
-              ]
+              "enum": ["true", "false"]
             }
           },
           {
@@ -231,9 +228,7 @@
                 },
                 "example": {
                   "context": {
-                    "imageUrls": [
-                      "https://{{HOST}}/api/v1/images/<imgId>.<imgExtension>"
-                    ]
+                    "imageUrls": ["https://{{HOST}}/api/v1/images/<imgId>.<imgExtension>"]
                   },
                   "message": "File Uploaded Successfully",
                   "code": 200

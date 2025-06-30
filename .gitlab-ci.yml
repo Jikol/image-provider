@@ -60,13 +60,17 @@ prepare:
     - ls -l /var/run/docker.sock || (echo "Docker socket not binded."; exit 1)
   script: |
     if [[ "$CI_RUNNER_TAGS" == *"staging"* ]]; then
+      echo "dns_cloudflare_api_token = $CI_CLOUDFLARE_TOKEN" > ./cloudflare.ini
       docker run --rm \
-      -p 80:80 \
       -v /etc/letsencrypt:/etc/letsencrypt \
       -v /var/log/letsencrypt:/var/log/letsencrypt \
-      --env CI_STAGING_HOSTNAME="$CI_STAGING_HOSTNAME" \
-      certbot/certbot certonly --standalone -d "$CI_STAGING_HOSTNAME" \
-      --non-interactive --agree-tos -m foo@bar.com
+      -v $(pwd)/cloudflare.ini:/cloudflare.ini \
+      -e CI_STAGING_HOSTNAME="$CI_STAGING_HOSTNAME" \
+      certbot/dns-cloudflare certonly --dns-cloudflare \
+        --dns-cloudflare-credentials /cloudflare.ini \
+        --cert-name "$CI_STAGING_HOSTNAME" \
+        -d "$CI_STAGING_HOSTNAME" --non-interactive \
+        --agree-tos -m foo@bar.com
     fi
 
 taskfile:
@@ -156,8 +160,6 @@ deploy-staging:
       ${CI_BIN_PATH}/task docker:compose \
         DOCKER_IMAGE="$AWS_PRIVATE_ECR_HOSTNAME/$CI_DOCKER_IMAGE" \
         DOCKER_TAG=staging
-  after_script:
-    - source aws-creds.sh
     - |
       docker run --rm \
         -e AWS_ACCESS_KEY_ID="$AWS_SESSION_ACCESS_KEY_ID" \

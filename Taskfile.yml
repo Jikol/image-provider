@@ -6,8 +6,7 @@ tasks:
   ## development tasks ##
   init:
     desc: >
-      Initialize express project for development | 
-      Usage: task init (i) [-- hard]
+      Initialize express project for development |  Usage: task init (i) [-- hard]
     aliases: [i]
     platforms: [linux]
     cmds:
@@ -22,8 +21,8 @@ tasks:
   ## deployment tasks ##
   docker:build:
     desc: >
-      Build docker images for deployment according to compose.yml definition | 
-      Usage: task docker:build (d:b) [
+      Build docker images for deployment according to compose.yml definition |  Usage:
+      task docker:build (d:b) [
         -- push;
         DOCKER_TARGET=test/final, default final;
         DOCKER_IMAGE=<string>, default retina/image-provider;
@@ -38,7 +37,7 @@ tasks:
       ]
 
       Build docker image for deployment
-      
+
       Optional arguments:
         push            Uploads the image to the registry instead of keep it locally
 
@@ -56,7 +55,9 @@ tasks:
     aliases: [d:b]
     platforms: [linux]
     requires:
-      vars: [IMAGE_PROVIDER_PORT]
+      vars:
+        - IMAGE_PROVIDER_PORT
+    # prettier-ignore
     cmd: >
       docker buildx inspect containerd > /dev/null 2> /dev/null ||
       docker buildx create --name containerd --driver docker-container --bootstrap &&
@@ -79,8 +80,8 @@ tasks:
 
   docker:compose:
     desc: >
-      Create and start builded docker images containers according to compose.yml definition | 
-      Usage: task docker:compose (d:c) [
+      Create and start builded docker images containers according to compose.yml
+      definition |  Usage: task docker:compose (d:c) [
         -- attach; -- down;
         DOCKER_IMAGE=<string>, default retina/image-provider;
         DOCKER_TAG=<MINOR.MAJOR.PATCH>, default latest;
@@ -93,11 +94,11 @@ tasks:
       ]
 
       Run builded docker image in container
-      
+
       Optional arguments:
         attach          Attaches logs of all docker containers when they started
         down            Stop and remove running containers and their associated networks       
-      
+
       Optional variables:
         DOCKER_IMAGE    Name of the project image which will be run in container
         DOCKER_TAG      Defines the tag of the image used to run in the container

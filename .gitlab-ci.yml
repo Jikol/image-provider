@@ -60,11 +60,17 @@ prepare:
     - ls -l /var/run/docker.sock || (echo "Docker socket not binded."; exit 1)
   script: |
     if [[ "$CI_RUNNER_TAGS" == *"staging"* ]]; then
-      echo "dns_cloudflare_api_token = $CI_CLOUDFLARE_TOKEN" > ./cloudflare.ini
+      rm -rf $CI_PROJECT_DIR/cloudflare.ini
+      echo "dns_cloudflare_api_token = $CI_CLOUDFLARE_TOKEN" > $CI_PROJECT_DIR/cloudflare.ini
+      ls -l $CI_PROJECT_DIR
+      docker run --rm \
+        -v $CI_PROJECT_DIR/cloudflare.ini:/cloudflare.ini:ro \
+        --entrypoint "" certbot/dns-cloudflare \
+        ls -l /
       docker run --rm \
       -v /etc/letsencrypt:/etc/letsencrypt \
       -v /var/log/letsencrypt:/var/log/letsencrypt \
-      -v $(pwd)/cloudflare.ini:/cloudflare.ini \
+      -v $CI_PROJECT_DIR/cloudflare.ini:/cloudflare.ini:ro \
       -e CI_STAGING_HOSTNAME="$CI_STAGING_HOSTNAME" \
       certbot/dns-cloudflare certonly --dns-cloudflare \
         --dns-cloudflare-credentials /cloudflare.ini \

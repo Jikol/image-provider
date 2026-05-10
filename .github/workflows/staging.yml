@@ -1,0 +1,21 @@
+name: Staging Workflow
+
+run-name: ${{ github.event.head_commit.message }}
+
+env:
+  CI_BIN_PATH: "~/.local/bin"
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  prepare:
+    name: prepare
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: taskfile
+        run:
+      - name: environments
+        run:

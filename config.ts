@@ -2,12 +2,11 @@ import dotenv from "dotenv";
 import path from "path";
 import { z } from "zod";
 
-dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local"), quiet: true });
 
 const constants = {
-  ROOT_PATH: path.resolve(process.cwd()),
-  API_BASE_PATH: "/api",
-  DEVELOPMENT: process.env.NODE_ENV === "development"
+  ROOT_PATH: path.resolve(import.meta.dirname),
+  API_BASE_PATH: "/api"
 } as const;
 
 const environments = z.object({
@@ -15,26 +14,12 @@ const environments = z.object({
     .string()
     .default("true")
     .transform((debug) => debug === "true"),
-  IMAGE_PROVIDER_PORT: z
-    .string()
-    .default("8000")
-    .transform((port) => +port),
-  IMAGE_PROVIDER_UPLOAD_PATH: z
-    .string()
-    .default("/tmp/image_provider")
-    .transform((_path) => path.resolve(_path)),
+  IMAGE_PROVIDER_PORT: z.string().transform((port) => +port),
+  IMAGE_PROVIDER_UPLOAD_PATH: z.string().transform((_path) => path.resolve(_path)),
   IMAGE_PROVIDER_UPLOAD_SIZE: z
     .string()
     .default("1024")
-    .transform((size) => parseInt(size) * 1000000),
-  IMAGE_PROVIDER_SSL_CERT_PATH: z
-    .string()
-    .default("/etc/ssl/certs/selfsigned-cert.pem")
-    .transform((_path) => path.resolve(_path)),
-  IMAGE_PROVIDER_SSL_KEY_PATH: z
-    .string()
-    .default("/etc/ssl/private/selfsigned-key.pem")
-    .transform((_path) => path.resolve(_path))
+    .transform((size) => parseInt(size) * 1000000)
 });
 
 export const handleEnv = (

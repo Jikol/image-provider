@@ -1,38 +1,22 @@
-name: retina-image-provider
+name: image-provider
 
 services:
   image-provider:
     container_name: image-provider
-    image: ${DOCKER_IMAGE:-retina/image-provider}:${DOCKER_TAG:-latest}
+    image: ${DOCKER_IMAGE:?error}:${DOCKER_TAG:?error}
     profiles: [prod]
     environment:
+      # SERVER ENVS
       IMAGE_PROVIDER_DEBUG: ${IMAGE_PROVIDER_DEBUG:?error}
       IMAGE_PROVIDER_PORT: ${IMAGE_PROVIDER_PORT:?error}
       IMAGE_PROVIDER_UPLOAD_PATH: ${IMAGE_PROVIDER_UPLOAD_PATH:?error}
       IMAGE_PROVIDER_UPLOAD_SIZE: ${IMAGE_PROVIDER_UPLOAD_SIZE:?error}
-      IMAGE_PROVIDER_SSL_CERT_PATH: ${IMAGE_PROVIDER_SSL_CERT_PATH:?error}
-      IMAGE_PROVIDER_SSL_KEY_PATH: ${IMAGE_PROVIDER_SSL_KEY_PATH:?error}
-    # noinspection ComposeUnknownValues
-    ports:
-      - ${IMAGE_PROVIDER_PORT:?error}:${IMAGE_PROVIDER_PORT:?error}
+    networks:
+      - default
+      - proxy
     restart: unless-stopped
     tty: true
-    volumes:
-      - ${IMAGE_PROVIDER_SSL_CERT_PATH:?error}:${IMAGE_PROVIDER_SSL_CERT_PATH:?error}
-      - ${IMAGE_PROVIDER_SSL_KEY_PATH:?error}:${IMAGE_PROVIDER_SSL_KEY_PATH:?error}
-      - image-data:${IMAGE_PROVIDER_UPLOAD_PATH:?error}
 
-  image-provider-healthcheck:
-    container_name: image-provider-healthcheck
-    image: alpine
-    profiles: [prod]
-    restart: no
-    depends_on:
-      image-provider:
-        condition: service_healthy
-    command: ["sh", "-c", "echo 'All services are healthy, exiting.'"]
-
-volumes:
-  image-data:
+networks:
+  proxy:
     external: true
-    name: image-provider-data

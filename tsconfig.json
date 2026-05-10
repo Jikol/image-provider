@@ -1,25 +1,36 @@
 {
   "compilerOptions": {
-    // Build Output
-    "outDir": "dist",
-    "sourceMap": true,
-    // Interop & Compatibility
-    "baseUrl": "./",
+    // Type checking & Linting
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "erasableSyntaxOnly": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noUncheckedSideEffectImports": true,
     // Module Resolution
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "types": ["bun-types", "node"],
     "paths": {
       "@/*": ["./src/*"],
       "/*": ["./*"]
     },
-    // Language & Type Checking
-    "strict": true,
-    "target": "ES2023"
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    // Output
+    "noEmit": true,
+    // Language Features
+    "lib": ["ESNext"],
+    // Misc
+    "skipLibCheck": true
   },
-  "include": ["src", "types"],
-  "exclude": ["node_modules"],
-  "ts-node": {
-    "files": true,
-    "require": ["tsconfig-paths/register"]
-  }
+  "include": [
+    "src",
+    "scripts",
+    "eslint.config.ts",
+    "prettier.config.ts",
+    "logger.ts",
+    "config.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
 }

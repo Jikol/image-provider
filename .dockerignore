@@ -7,11 +7,9 @@
 compose.yml
 Taskfile.yml
 README.md
-template.env
-aws-creds.sh
+.env.template
 **/*.local
 Dockerfile
 LICENSE
 dist
 node_modules
-docs

@@ -1,99 +1,103 @@
-import type { NextFunction, Request, Response } from "express";
-import { StatusCodes, getReasonPhrase } from "http-status-codes";
+import type { ErrorHandler, MiddlewareHandler, NotFoundHandler } from "hono";
+import type { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
+import type { z } from "zod";
 
-import { docsPaths } from "@/core";
-import { reqUrl } from "@/utils";
+import { resolveRequestOrigin } from "@/core/helpers.ts";
+import {
+  errorResponse,
+  methodNotAllowedResponse,
+  notFoundResponse
+} from "@/core/responses.ts";
+import { docsRouter } from "@/core/routers.ts";
+import type { generalResponseSchema } from "@/core/schemas.ts";
+import { resolveMatchesRoute } from "@/utils.ts";
 
-import log from "/logger";
+import { honoLog } from "/logger.ts";
 
-const getDocs = (req: Request): Record<string, object> => ({
-  docs: {
-    openapi: new URL(docsPaths.openapi, reqUrl(req)).toString(),
-    redoc: new URL(docsPaths.redoc, reqUrl(req)).toString()
-  }
-});
+/** Helper middlewares */
+const docsMiddleware = (hono: Hono): MiddlewareHandler =>
+  async function docs(ctx, next) {
+    await next();
 
-const baseResponse = (
-  req: Request,
-  res: Response,
-  context: object | undefined,
-  status_code: number,
-  headers?: Record<string, string | Array<string>>
-): Response => {
-  if (headers) {
-    Object.entries(headers).forEach(([key, value]) => res.setHeader(key, value));
-  }
+    const { status, headers } = ctx.res;
+    const requestOrigin = resolveRequestOrigin(ctx.req);
 
-  return res
-    .status(status_code)
-    .json({
-      context: { ...context, ...getDocs(req) },
-      status_message: getReasonPhrase(status_code),
-      status_code
-    })
-    .end();
-};
+    if (!headers.get("content-type")?.includes("application/json")) return;
 
-const responseMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  res.unsupportedContentType = ({ context, allowedContentType }): Response => {
-    return baseResponse(req, res, context, StatusCodes.UNSUPPORTED_MEDIA_TYPE, {
-      Accept: allowedContentType
-    });
-  };
-  res.unsupportedMedia = ({ context }): Response => {
-    return baseResponse(req, res, context, StatusCodes.UNSUPPORTED_MEDIA_TYPE);
-  };
-  res.notAllowed = ({ context, allowedMethods }): Response => {
-    return baseResponse(req, res, context, StatusCodes.METHOD_NOT_ALLOWED, {
-      Allow: allowedMethods
-    }).end();
-  };
-  res.tooLarge = ({ context }): Response => {
-    return baseResponse(req, res, context, StatusCodes.REQUEST_TOO_LONG);
-  };
-  res.notFound = ({ context }): Response => {
-    return baseResponse(req, res, context, StatusCodes.NOT_FOUND);
-  };
-  res.error = ({ context }): Response => {
-    return baseResponse(req, res, context, StatusCodes.INTERNAL_SERVER_ERROR);
-  };
-  res.badRequest = ({ context }): Response => {
-    return baseResponse(req, res, context, StatusCodes.BAD_REQUEST);
-  };
-  res.success = ({ context }): Response => {
-    return baseResponse(req, res, context, StatusCodes.OK);
+    const originalBody = (await ctx.res.json()) as Record<string, unknown>;
+    const newHeaders = new Headers(headers);
+
+    newHeaders.delete("content-length");
+
+    const newBody: z.infer<typeof generalResponseSchema> = {
+      ...(originalBody as z.infer<typeof generalResponseSchema>),
+      context: {
+        ...(originalBody.context as Record<string, unknown>),
+        docs: {
+          openapi: new URL(
+            hono.routes.find((route) => route.path.includes(docsRouter.paths.openapi))
+              ?.path ?? "",
+            requestOrigin
+          ).toString(),
+          scalar: new URL(
+            hono.routes.find((route) => route.path.includes(docsRouter.paths.docs))
+              ?.path ?? "",
+            requestOrigin
+          ).toString()
+        }
+      }
+    };
+
+    ctx.res = new Response(JSON.stringify(newBody), { status, headers: newHeaders });
   };
 
-  next();
-};
+const methodNotAllowedMiddleware = (hono: Hono): MiddlewareHandler =>
+  async function methodNotAllowed(c, next) {
+    const allowedMethods = [
+      ...new Set(
+        hono.routes
+          .filter(
+            (route) =>
+              route.method !== "ALL" && resolveMatchesRoute(route.path, c.req.path)
+          )
+          .map((route) => route.method.toUpperCase())
+          .filter((method) => method !== c.req.method.toUpperCase())
+      )
+    ];
 
-const notFoundMiddleware = (req: Request, res: Response): Response => {
-  log.warn(`Path not found (${reqUrl(req)})`);
-
-  return res.notFound({
-    context: {
-      message: `Path '${req.path}' not found for '${req.method}' request method (consult docs)`
+    if (allowedMethods.length > 0) {
+      return methodNotAllowedResponse({
+        message: `Method '${c.req.method.toUpperCase()}' is not allowed for path '${c.req.path}'`,
+        allowed_methods: allowedMethods
+      });
     }
-  }) as Response;
+
+    await next();
+  };
+
+/** Error middlewares */
+const notFoundMiddleware: NotFoundHandler = (c) => {
+  honoLog.warn(`Path not found: ${c.req.method} ${c.req.path}`);
+
+  return notFoundResponse({
+    message: `Path '${c.req.path}' not found for '${c.req.method.toUpperCase()}' request method`
+  });
 };
 
-const errorMiddleware = (
-  err: Error,
-  _req: Request,
-  res: Response,
-  next: NextFunction
-): Response => {
-  if (res.headersSent) {
-    next(err);
+const errorMiddleware: ErrorHandler = (err) => {
+  if (err instanceof HTTPException) {
+    return err.getResponse();
   }
 
-  log.error(err);
+  honoLog.error(err, "Unhandled error");
 
-  return res.error({
-    context: {
-      message: err.message
-    }
-  }) as Response;
+  return errorResponse({ message: err.message });
 };
 
-export { responseMiddleware, notFoundMiddleware, errorMiddleware };
+export {
+  docsMiddleware,
+  methodNotAllowedMiddleware,
+  notFoundMiddleware,
+  errorMiddleware
+};

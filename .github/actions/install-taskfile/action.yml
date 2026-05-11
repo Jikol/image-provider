@@ -1,0 +1,21 @@
+name: Install Taskfile
+description:
+  Installs Taskfile via setup-task and uploads the binary as a workflow artifact.
+
+runs:
+  using: composite
+  steps:
+    - name: Setup
+      uses: go-task/setup-task@v2
+
+    - name: Find Binary
+      shell: pwsh
+      run:
+        Add-Content -Path $env:GITHUB_ENV -Value "TASK_BIN=$((Get-Command task).Source)"
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: taskfile-bin
+        path: ${{ env.TASK_BIN }}
+        retention-days: 1

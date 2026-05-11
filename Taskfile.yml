@@ -3,6 +3,7 @@ version: 3
 dotenv: [".env.local"]
 
 env:
+  DEFAULT_DOCKER_NAME: local
   DEFAULT_DOCKER_IMAGE: image-provider
   DEFAULT_DOCKER_TAG: latest
   DEFAULT_DOCKER_REGISTRY: ntblppjavorsky:5000
@@ -10,7 +11,7 @@ env:
 tasks:
   ## development tasks ##
   init:
-    desc: |
+    desc: >
       Initialize project for development | Usage: task init (i) [-- hard]
     aliases: [i]
     platforms: [linux]
@@ -23,11 +24,9 @@ tasks:
           bun install
 
   docker:dev:
-    desc: |
-      Run docker compose with dev profile for local development | 
-      Usage: task docker:dev (d:d) [
-        DOCKER_REGISTRY=<string>, default {{.DEFAULT_DOCKER_REGISTRY}};
-      ]
+    desc: >
+      Run docker compose with dev profile for local development | Usage: task docker:dev
+      (d:d) [ DOCKER_REGISTRY=<string>, default {{.DEFAULT_DOCKER_REGISTRY}}; ]
     aliases: [d:d]
     platforms: [linux]
     env:
@@ -40,14 +39,11 @@ tasks:
   ## ----------------- ##
   ## deployment tasks ##
   docker:build:
-    desc: |
-      Build docker images for deployment according to compose.yml definition |
-      Usage: task docker:build (d:b) [
-        -- push;
-        DOCKER_TARGET=test/final, default final;
-        DOCKER_IMAGE=<string>, default {{.DEFAULT_DOCKER_IMAGE}};
-        DOCKER_TAG=<MINOR.MAJOR.PATCH>, default {{.DEFAULT_DOCKER_TAG}};
-      ]
+    desc: >
+      Build docker images for deployment according to compose.yml definition | Usage: task
+      docker:build (d:b) [ -- push; DOCKER_TARGET=test/final, default final;
+      DOCKER_IMAGE=<string>, default {{.DEFAULT_DOCKER_IMAGE}};
+      DOCKER_TAG=<MINOR.MAJOR.PATCH>, default {{.DEFAULT_DOCKER_TAG}}; ]
     summary: |
       Usage: task docker:build (d:b) [
         -- push;
@@ -106,17 +102,17 @@ tasks:
           .
 
   docker:compose:
-    desc: |
-      Create and start builded docker images containers according to compose.yml definition |
-      Usage: task docker:compose (d:c) [
-        -- attach; -- down;
-        DOCKER_REGISTRY=<string>, default {{.DEFAULT_DOCKER_REGISTRY}};
-        DOCKER_IMAGE=<string>, default {{.DEFAULT_DOCKER_IMAGE}};
-        DOCKER_TAG=<MINOR.MAJOR.PATCH>, default {{.DEFAULT_DOCKER_TAG}};
-      ]
+    desc: >
+      Create and start builded docker images containers according to compose.yml
+      definition | Usage: task docker:compose (d:c) [ -- [pull] [attach|down];
+      DOCKER_NAME=<string>, default {{.DEFAULT_DOCKER_NAME}};
+      DOCKER_REGISTRY=<string>, default {{.DEFAULT_DOCKER_REGISTRY}};
+      DOCKER_IMAGE=<string>, default {{.DEFAULT_DOCKER_IMAGE}};
+      DOCKER_TAG=<MINOR.MAJOR.PATCH>, default {{.DEFAULT_DOCKER_TAG}}; ]
     summary: |
       Usage: task docker:compose (d:c) [
-        -- attach; -- down;
+        -- [pull] [attach|down];
+        DOCKER_NAME=<string>, default {{.DEFAULT_DOCKER_NAME}};
         DOCKER_REGISTRY=<string>, default {{.DEFAULT_DOCKER_REGISTRY}};
         DOCKER_IMAGE=<string>, default {{.DEFAULT_DOCKER_IMAGE}};
         DOCKER_TAG=<MINOR.MAJOR.PATCH>, default {{.DEFAULT_DOCKER_TAG}};
@@ -125,18 +121,23 @@ tasks:
       Run builded docker image in container
 
       Optional arguments:
+        pull            Always pull the latest image from the registry before starting
         attach          Attaches logs of all docker containers when they started
         down            Stop and remove running containers and their associated networks
 
       Optional variables:
+        DOCKER_NAME     Compose project name and volume namespace (e.g. staging, production)
         DOCKER_REGISTRY Defines the registry where the image is located
         DOCKER_IMAGE    Name of the project image which will be run in container
         DOCKER_TAG      Defines the tag of the image used to run in the container
 
       Examples:
         task docker:compose
+        task docker:compose -- pull
+        task docker:compose -- pull attach
         task docker:compose -- attach
         task docker:compose -- down
+        task docker:compose DOCKER_NAME=staging
         task docker:compose DOCKER_REGISTRY=custom-registry:custom-port
         task docker:compose DOCKER_IMAGE=custom_user/custom_registry/custom_repository
         task docker:compose DOCKER_TAG=1.2.3
@@ -144,14 +145,18 @@ tasks:
     platforms: [linux]
     env:
       DOCKER_IMAGE: "{{.DOCKER_IMAGE | default .DEFAULT_DOCKER_IMAGE}}" # pass taskfile variable to environment
+      DOCKER_NAME: "{{.DOCKER_NAME | default .DEFAULT_DOCKER_NAME}}" # pass taskfile variable to environment
       DOCKER_TAG: "{{.DOCKER_TAG | default .DEFAULT_DOCKER_TAG}}" # pass taskfile variable to environment
       DOCKER_REGISTRY: "{{.DOCKER_REGISTRY | default .DEFAULT_DOCKER_REGISTRY}}" # pass taskfile variable to environment
     cmds:
       # prettier-ignore
+      - cmd: docker volume create ${DOCKER_NAME}-image-provider-data || true
       - cmd: |-
           sh -c '
           trap "docker compose --profile prod down --remove-orphans; exit 0" INT
-          docker compose --profile prod up -d --no-build --force-recreate --wait
+          docker compose --profile prod up -d --no-build \
+          {{if contains "pull" .CLI_ARGS}}--pull always{{else}}--pull missing{{end}} \
+          --force-recreate --wait
           EXIT_CODE=$?
           if [ $EXIT_CODE -ne 0 ]; then
             docker compose --profile prod logs
@@ -160,11 +165,13 @@ tasks:
           fi
           docker compose --profile prod logs
           '
-        if: '{{eq .CLI_ARGS ""}}'
+        if: '{{and (not (contains "attach" .CLI_ARGS)) (not (contains "down" .CLI_ARGS))}}'
       - cmd: |-
           sh -c '
           trap "docker compose --profile prod down --remove-orphans; exit 0" INT
-          docker compose --profile prod up -d --no-build --force-recreate --wait
+          docker compose --profile prod up -d --no-build \
+          {{if contains "pull" .CLI_ARGS}}--pull always{{else}}--pull missing{{end}} \
+          --force-recreate --wait
           EXIT_CODE=$?
           if [ $EXIT_CODE -ne 0 ]; then
             docker compose --profile prod logs
@@ -174,7 +181,11 @@ tasks:
           docker compose --profile prod logs -f
           docker compose --profile prod down --remove-orphans
           '
-        if: '{{eq .CLI_ARGS "attach"}}'
+        if: '{{and (contains "attach" .CLI_ARGS) (not (contains "down" .CLI_ARGS))}}'
       - cmd: docker compose --profile prod down --remove-orphans
-        if: '{{eq .CLI_ARGS "down"}}'
+        if: '{{and (contains "down" .CLI_ARGS) (not (contains "attach" .CLI_ARGS))}}'
+      - cmd: |-
+          echo "Error: invalid CLI_ARGS '{{.CLI_ARGS}}' — attach and down are mutually exclusive"
+          exit 1
+        if: '{{and (contains "attach" .CLI_ARGS) (contains "down" .CLI_ARGS)}}'
   ## ---------------- ##

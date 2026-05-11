@@ -1,8 +1,7 @@
-name: image-provider
+name: ${DOCKER_NAME:?error}
 
 services:
   image-provider:
-    container_name: image-provider
     image: ${DOCKER_IMAGE:?error}:${DOCKER_TAG:?error}
     profiles: [prod]
     environment:
@@ -14,9 +13,16 @@ services:
     networks:
       - default
       - proxy
+    volumes:
+      - data:${IMAGE_PROVIDER_UPLOAD_PATH:?error}
     restart: unless-stopped
     tty: true
 
 networks:
   proxy:
     external: true
+
+volumes:
+  data:
+    external: true
+    name: ${DOCKER_NAME:?error}-image-provider-data

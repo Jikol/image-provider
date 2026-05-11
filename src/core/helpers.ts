@@ -6,7 +6,7 @@ import type { z } from "zod";
 
 import { generalResponseSchema } from "@/core/schemas.ts";
 
-type TRouterWithPaths<T extends Record<string, string>> = Hono & { paths: T };
+type TRouterWithPaths<T extends Record<string, string>> = Hono & { paths: T; base: string };
 
 type TContext = Record<string, unknown>;
 
@@ -19,7 +19,12 @@ type TResponseFn<T = unknown> = {
 const createRouter = <T extends Record<string, string>>(
   paths: T,
   basePath?: string
-): TRouterWithPaths<T> => Object.assign(new Hono().basePath(basePath ?? "/"), { paths });
+): TRouterWithPaths<T> => {
+  const base = basePath ?? "/";
+
+
+return Object.assign(new Hono().basePath(base), { paths, base });
+};
 
 const createJsonResponse = (
   statusCode: number,

@@ -1,6 +1,7 @@
 import { describeRoute } from "hono-openapi";
 import { serveStatic } from "hono/bun";
 import { readdir } from "node:fs/promises";
+
 import { createDocs, createRouter, resolveRequestOrigin } from "@/core/helpers.ts";
 import {
   errorResponse,
@@ -45,12 +46,11 @@ imagesRouterV1.get(
     }
 
     const origin = resolveRequestOrigin(ctx.req);
+    const basePath = new URL(ctx.req.url).pathname;
 
     const imageUrls = entries
-      .filter((f) => !f.startsWith("."))
-      .map((f) =>
-        new URL([config.CONST.API_BASE_PATH, "v1", "images", f].join("/"), origin).toString()
-      );
+      .filter((file) => !file.startsWith("."))
+      .map((file) => new URL(`${basePath}/${file}`, origin).toString());
 
     return successResponse({ imageUrls });
   }
@@ -67,10 +67,7 @@ imagesRouterV1.get(
   serveStatic({
     root: config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH,
     rewriteRequestPath: (p) => {
-      const file = p.replace(
-        new RegExp(`^${config.CONST.API_BASE_PATH}/v1/images`),
-        ""
-      );
+      const file = `/${p.split("/").pop() ?? ""}`;
 
       return file.includes("..") ? "/" : file;
     },

@@ -1,7 +1,7 @@
 import { sValidator } from "@hono/standard-validator";
 import { describeRoute } from "hono-openapi";
+import { validator } from "hono/validator";
 import { readdir, unlink } from "node:fs/promises";
-import type { OpenAPIV3_1 } from "openapi-types";
 import path from "path";
 import { v4 } from "uuid";
 import { z } from "zod";
@@ -11,10 +11,12 @@ import {
   badRequestResponse,
   errorResponse,
   methodNotAllowedResponse,
+  notFoundResponse,
   successResponse,
   tooLargeResponse,
   unsupportedMediaTypeResponse
 } from "@/core/responses.ts";
+import { imagesRouterV1 } from "@/http/images.ts";
 
 import config from "/config.ts";
 import { honoLog } from "/logger.ts";
@@ -23,20 +25,49 @@ const uploadRouterV1 = createRouter(
   {
     upload: "upload",
     delete: "upload/delete",
-    deletePrivate: "upload/delete/private"
+    deleteInternal: "upload/delete/internal"
   } as const,
   "/v1"
 );
 
-const ALLOWED_EXT = /\.(jpe?g|png|gif|webp)$/i;
-const ALLOWED_MIME = /^image\/(jpeg|png|gif|webp)$/;
+const fileSchema = z
+  .instanceof(File)
+  .refine((v) => v.name != null && v.name.length > 0, "Provided file is empty");
+
+const uploadSchema = z.object({
+  file: z.union([fileSchema, z.array(fileSchema).min(1)])
+});
+
+const uploadQuerySchema = z.object({
+  file_name: z.string().optional(),
+  internal: z.enum(["true", "false"]).optional()
+});
 
 uploadRouterV1.post(
   uploadRouterV1.paths.upload,
   describeRoute({
     operationId: "postUpload",
     description: "Upload images to the server.",
-    tags: ["Upload"]
+    tags: ["Upload"],
+    requestBody: {
+      required: true,
+      content: {
+        "multipart/form-data": {
+          schema: {
+            type: "object",
+            required: ["file"],
+            properties: {
+              file: {
+                oneOf: [
+                  { type: "string", format: "binary" },
+                  { type: "array", items: { type: "string", format: "binary" } }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
   }),
   createDocs(
     methodNotAllowedResponse,
@@ -46,34 +77,41 @@ uploadRouterV1.post(
     unsupportedMediaTypeResponse,
     errorResponse
   ),
-  async (ctx) => {
-    const contentType = ctx.req.header("content-type") ?? "";
-
-    if (!contentType.includes("multipart/form-data")) {
+  validator("header", (value) => {
+    if (!(value["content-type"] ?? "").includes("multipart/form-data")) {
       return unsupportedMediaTypeResponse({
         allowed_content_type: "multipart/form-data"
       });
     }
+  }),
+  sValidator("query", uploadQuerySchema, (result) => {
+    if (!result.success) {
+      const issue = result.error[0];
+      const field = issue?.path?.join(".");
+      const message = field
+        ? `${field}: ${issue.message}`
+        : (issue?.message ?? "Invalid query");
 
-    let formData: FormData;
-
-    try {
-      formData = await ctx.req.formData();
-    } catch {
-      return badRequestResponse({ message: "Invalid multipart body" });
+      return badRequestResponse({ message });
     }
+  }),
+  sValidator("form", uploadSchema, (result) => {
+    if (!result.success) {
+      const issue = result.error[0];
+      const field = issue?.path?.join(".");
+      const message = field
+        ? `${field}: ${issue.message}`
+        : (issue?.message ?? "Invalid request body");
 
-    const files = formData.getAll("file").filter((v): v is File => v instanceof File);
-
-    if (files.length === 0) {
-      return badRequestResponse({
-        message: "Files have not been provided",
-        expectedFormId: "file"
-      });
+      return badRequestResponse({ message, expectedFormId: "file" });
     }
+  }),
+  async (ctx) => {
+    const { file } = ctx.req.valid("form");
+    const files = Array.isArray(file) ? file : [file];
 
-    const fileName = ctx.req.query("file_name");
-    const dataPrivate = ctx.req.query("data_private") === "true";
+    const { file_name: fileName, internal } = ctx.req.valid("query");
+    const isInternal = internal === "true";
 
     if (fileName && files.length > 1) {
       return badRequestResponse({
@@ -84,7 +122,10 @@ uploadRouterV1.post(
     for (const file of files) {
       const ext = path.extname(file.name).toLowerCase();
 
-      if (!ALLOWED_EXT.test(ext) || !ALLOWED_MIME.test(file.type)) {
+      if (
+        !config.CONST.ALLOWED_EXT.test(ext) ||
+        !config.CONST.ALLOWED_MIME.test(file.type)
+      ) {
         return unsupportedMediaTypeResponse({
           message: "Uploaded file format is not supported",
           allowedMimeTypes: ["jpg", "png", "gif", "webp"],
@@ -109,13 +150,13 @@ uploadRouterV1.post(
         const ext = path.extname(file.name).toLowerCase();
         const destName = fileName
           ? `${fileName}${ext}`
-          : `${dataPrivate ? "_" : ""}${v4().substring(0, 9)}${Date.now()}${ext}`;
+          : `${isInternal ? "_" : ""}${v4().substring(0, 9)}${Date.now()}${ext}`;
 
         await Bun.write(path.join(uploadPath, destName), file);
 
         imageUrls.push(
           new URL(
-            [config.CONST.API_BASE_PATH, "v1", "images", destName].join("/"),
+            `${config.CONST.API_BASE_PATH}${imagesRouterV1.base}/${imagesRouterV1.paths.images}/${destName}`,
             origin
           ).toString()
         );
@@ -148,7 +189,16 @@ uploadRouterV1.delete(
       required: true,
       content: {
         "application/json": {
-          schema: z.toJSONSchema(deleteSchema) as unknown as OpenAPIV3_1.SchemaObject
+          schema: {
+            type: "object",
+            required: ["imageUrls"],
+            properties: {
+              imageUrls: {
+                type: "array",
+                items: { type: "string", format: "uri" }
+              }
+            }
+          }
         }
       }
     }
@@ -157,12 +207,24 @@ uploadRouterV1.delete(
     methodNotAllowedResponse,
     successResponse,
     badRequestResponse,
+    notFoundResponse,
     unsupportedMediaTypeResponse,
     errorResponse
   ),
+  validator("header", (value) => {
+    if (!(value["content-type"] ?? "").includes("application/json")) {
+      return unsupportedMediaTypeResponse({ allowed_content_type: "application/json" });
+    }
+  }),
   sValidator("json", deleteSchema, (result) => {
     if (!result.success) {
-      return badRequestResponse({ message: "Invalid request body" });
+      const issue = result.error[0];
+      const field = issue?.path?.join(".");
+      const message = field
+        ? `${field}: ${issue.message}`
+        : (issue?.message ?? "Invalid request body");
+
+      return badRequestResponse({ message });
     }
   }),
   async (ctx) => {
@@ -190,9 +252,7 @@ uploadRouterV1.delete(
     }
 
     if (alreadyDeleted) {
-      return successResponse({
-        message: "Provided URLs has its file representation already deleted"
-      });
+      return notFoundResponse({ message: "Provided image URLs were not found" });
     }
 
     return successResponse({
@@ -203,14 +263,16 @@ uploadRouterV1.delete(
 );
 
 uploadRouterV1.delete(
-  uploadRouterV1.paths.deletePrivate,
+  uploadRouterV1.paths.deleteInternal,
   describeRoute({
-    operationId: "deleteUploadDeletePrivate",
-    description: "Removes all images uploaded with data_private=true.",
+    operationId: "deleteUploadDeleteInternal",
+    description: "Removes all images uploaded with internal=true.",
     tags: ["Upload"]
   }),
-  createDocs(methodNotAllowedResponse, successResponse, errorResponse),
+  createDocs(methodNotAllowedResponse, successResponse, notFoundResponse, errorResponse),
   async () => {
+    let deleted = false;
+
     try {
       const files = await readdir(config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH);
 
@@ -219,6 +281,7 @@ uploadRouterV1.delete(
 
         if (await Bun.file(filePath).exists()) {
           await unlink(filePath);
+          deleted = true;
         }
       }
     } catch (err) {
@@ -227,7 +290,11 @@ uploadRouterV1.delete(
       return errorResponse({ message: "Error while perform i/o operations" });
     }
 
-    return successResponse({ message: "All private images has been deleted" });
+    if (!deleted) {
+      return notFoundResponse({ message: "No internal images found" });
+    }
+
+    return successResponse({ message: "All internal images has been deleted" });
   }
 );
 

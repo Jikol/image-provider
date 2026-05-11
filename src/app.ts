@@ -17,9 +17,6 @@ import log, { honoLog } from "/logger.ts";
 /** Output global config */
 log.debug(config, "Config");
 
-/** Preparation of required system locations */
-await Bun.$`mkdir -p ${config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH}`;
-
 /** Instantiate Hono server */
 const hono = new Hono();
 
@@ -41,6 +38,8 @@ hono.onError(errorMiddleware);
 const bootstrapApp = async (
   hono: Hono
 ): Promise<[Bun.Server<undefined>, Array<() => Promise<void>>]> => {
+  await Bun.$`mkdir -p ${config.ENVS.IMAGE_PROVIDER_UPLOAD_PATH}`;
+
   const server = Bun.serve({
     port: config.ENVS.IMAGE_PROVIDER_PORT,
     idleTimeout: 30,

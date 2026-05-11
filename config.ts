@@ -6,7 +6,9 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env.local"), quiet: true });
 
 const constants = {
   ROOT_PATH: path.resolve(import.meta.dirname),
-  API_BASE_PATH: "/api"
+  API_BASE_PATH: "/api",
+  ALLOWED_EXT: /\.(jpe?g|png|gif|webp)$/i,
+  ALLOWED_MIME: /^image\/(jpeg|png|gif|webp)$/
 } as const;
 
 const environments = z.object({

@@ -4,37 +4,6 @@
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
 
-.production_pipeline: &production_pipeline
-  tags: [staging]
-  environment: production
-  rules:
-    - if: $CI_COMMIT_TAG =~ /^(v|test\/v)\d+\.\d+\.\d+$/
-
-.dind_job: &dind_job
-  tags: [staging-dind]
-  image: docker:28.1.1
-  services:
-    - name: docker:28.1.1-dind
-      alias: dind
-  variables:
-    DOCKER_HOST: tcp://dind:2375
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-
-.aws_authentication: &aws_authentication
-  before_script: |
-    export AWS_CREDS=$(docker run --rm \
-      -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
-      -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
-      amazon/aws-cli:2.25.6 sts assume-role --role-arn "$AWS_ROLE_ARN" \
-        --role-session-name "GitlabCIJobSession" \
-        --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
-        --output text
-    )
-    echo "export AWS_SESSION_ACCESS_KEY_ID=$(echo $AWS_CREDS | awk '{print $1}')" > aws-creds.sh
-    echo "export AWS_SESSION_SECRET_ACCESS_KEY=$(echo $AWS_CREDS | awk '{print $2}')" >> aws-creds.sh
-    echo "export AWS_SESSION_TOKEN=$(echo $AWS_CREDS | awk '{print $3}')" >> aws-creds.sh
-
 workflow:
   name: $CI_COMMIT_TITLE
 
@@ -46,32 +15,17 @@ default:
 
 variables:
   CI_BIN_PATH: "~/.local/bin"
-  CI_DOCKER_IMAGE: "retina/image-provider"
 
 stages:
   - test
-  - build
   - deploy
-  - release
 
 prepare:
   stage: .pre
   before_script:
     - ls -l /var/run/docker.sock || (echo "Docker socket not binded."; exit 1)
-  script: |
-    if [[ "$CI_RUNNER_TAGS" == *"staging"* ]]; then
-      echo "dns_cloudflare_api_token = $CI_CLOUDFLARE_TOKEN" > ./cloudflare.ini
-      docker run --rm \
-      -v /etc/letsencrypt:/etc/letsencrypt \
-      -v /var/log/letsencrypt:/var/log/letsencrypt \
-      -v $(pwd)/cloudflare.ini:/cloudflare.ini \
-      -e CI_STAGING_HOSTNAME="$CI_STAGING_HOSTNAME" \
-      certbot/dns-cloudflare certonly --dns-cloudflare \
-        --dns-cloudflare-credentials /cloudflare.ini \
-        --cert-name "$CI_STAGING_HOSTNAME" \
-        -d "$CI_STAGING_HOSTNAME" --non-interactive \
-        --agree-tos -m foo@bar.com
-    fi
+  script:
+    - echo "PHONY"
 
 taskfile:
   stage: .pre
@@ -87,197 +41,46 @@ taskfile:
       - ${CI_BIN_PATH}
 
 environments:
-  <<: *production_pipeline
+  <<: *staging_pipeline
   stage: .pre
-  before_script: |
-    apk add --no-cache jq
-  script: |
-    echo "CI_DOCKER_TAG=$(echo "$CI_COMMIT_TAG" | \
-      awk -F'v' '{print $2}'
-    )" >> variables.env
-    echo "CI_RELEASE_URI=$(printf "%s" "$CI_COMMIT_TAG" | \
-      jq -sRr @uri
-    )" >>  variables.env
-  artifacts:
-    reports:
-      dotenv: variables.env
+  variables:
+    REQUIRED_VARS: "CI_DOCKER_REGISTRY CI_DOCKER_IMAGE CI_STAGING_HOSTNAME"
+  before_script:
+    - apk add --no-cache jq
+    - |-
+      for var in $REQUIRED_VARS; do
+        eval "val=\$$var"
+        [ -z "$val" ] && echo "Required variable '$var' is not set." && exit 1
+      done
+  script:
+    - echo "PHONY"
 
 test-staging:
   <<: *staging_pipeline
   stage: test
-  script: |
+  script: |-
     ${CI_BIN_PATH}/task docker:build \
-      DOCKER_IMAGE="$AWS_PRIVATE_ECR_HOSTNAME/$CI_DOCKER_IMAGE" \
+      DOCKER_IMAGE=${CI_DOCKER_IMAGE} \
       DOCKER_TAG=staging \
       DOCKER_TARGET=test
   dependencies:
     - taskfile
 
-build-staging:
-  <<: *staging_pipeline
-  <<: *aws_authentication
-  stage: build
-  script:
-    - source aws-creds.sh
-    - |
-      echo $(docker run --rm \
-        -e AWS_ACCESS_KEY_ID="$AWS_SESSION_ACCESS_KEY_ID" \
-        -e AWS_SECRET_ACCESS_KEY="$AWS_SESSION_SECRET_ACCESS_KEY" \
-        -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
-        amazon/aws-cli:2.25.6 ecr get-login-password --region eu-central-1
-      ) | \
-      docker login -u AWS --password-stdin "$AWS_PRIVATE_ECR_HOSTNAME"
-    - |
-      docker run --rm \
-        -e AWS_ACCESS_KEY_ID="$AWS_SESSION_ACCESS_KEY_ID" \
-        -e AWS_SECRET_ACCESS_KEY="$AWS_SESSION_SECRET_ACCESS_KEY" \
-        -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
-        amazon/aws-cli:2.25.6 ecr create-repository \
-          --region eu-central-1 \
-          --repository-name $CI_DOCKER_IMAGE || true
-    - |
-      ${CI_BIN_PATH}/task docker:build \
-        DOCKER_IMAGE="$AWS_PRIVATE_ECR_HOSTNAME/$CI_DOCKER_IMAGE" \
-        DOCKER_TAG=staging -- push
-  dependencies:
-    - taskfile
-
 deploy-staging:
   <<: *staging_pipeline
-  <<: *aws_authentication
   stage: deploy
   script:
-    - source aws-creds.sh
-    - |
-      echo $(docker run --rm \
-        -e AWS_ACCESS_KEY_ID="$AWS_SESSION_ACCESS_KEY_ID" \
-        -e AWS_SECRET_ACCESS_KEY="$AWS_SESSION_SECRET_ACCESS_KEY" \
-        -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
-        amazon/aws-cli:2.25.6 ecr get-login-password --region eu-central-1
-      ) | \
-      docker login -u AWS --password-stdin "$AWS_PRIVATE_ECR_HOSTNAME"
-    - |
-      ${CI_BIN_PATH}/task docker:compose \
-        DOCKER_IMAGE="$AWS_PRIVATE_ECR_HOSTNAME/$CI_DOCKER_IMAGE" \
+    - |-
+      ${CI_BIN_PATH}/task docker:build \
+        DOCKER_IMAGE=${CI_DOCKER_IMAGE} \
         DOCKER_TAG=staging
-    - |
-      docker run --rm \
-        -e AWS_ACCESS_KEY_ID="$AWS_SESSION_ACCESS_KEY_ID" \
-        -e AWS_SECRET_ACCESS_KEY="$AWS_SESSION_SECRET_ACCESS_KEY" \
-        -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
-        amazon/aws-cli:2.25.6 ecr delete-repository \
-          --region eu-central-1 \
-          --repository-name $CI_DOCKER_IMAGE \
-          --force
+    - |-
+      ${CI_BIN_PATH}/task docker:compose \
+        DOCKER_REGISTRY=${CI_DOCKER_REGISTRY} \
+        DOCKER_IMAGE=${CI_DOCKER_IMAGE} \
+        DOCKER_TAG=staging
   environment:
     name: staging
-    url: https://${CI_STAGING_HOSTNAME}:${IMAGE_PROVIDER_PORT}/
+    url: https://${CI_STAGING_HOSTNAME}/api/scalar
   dependencies:
     - taskfile
-
-build-production:
-  <<: *production_pipeline
-  <<: *aws_authentication
-  stage: build
-  script:
-    - source aws-creds.sh
-    - |
-      echo $(docker run --rm \
-        -e AWS_ACCESS_KEY_ID="$AWS_SESSION_ACCESS_KEY_ID" \
-        -e AWS_SECRET_ACCESS_KEY="$AWS_SESSION_SECRET_ACCESS_KEY" \
-        -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
-        amazon/aws-cli:2.25.6 ecr-public get-login-password --region us-east-1
-      ) | \
-      docker login -u AWS --password-stdin "$AWS_PUBLIC_ECR_HOSTNAME"
-    - |
-      ${CI_BIN_PATH}/task docker:build \
-        DOCKER_IMAGE="$AWS_PUBLIC_ECR_HOSTNAME/$CI_DOCKER_IMAGE" \
-        DOCKER_TAG=latest -- push
-    - |
-      ${CI_BIN_PATH}/task docker:build \
-        DOCKER_IMAGE="$AWS_PUBLIC_ECR_HOSTNAME/$CI_DOCKER_IMAGE" \
-        DOCKER_TAG=$CI_DOCKER_TAG -- push
-  dependencies:
-    - taskfile
-    - environments
-
-deploy-production:
-  <<: *production_pipeline
-  stage: deploy
-  tags: [production]
-  script:
-    - |
-      ${CI_BIN_PATH}/task docker:compose \
-        DOCKER_IMAGE="$AWS_PUBLIC_ECR_HOSTNAME/$CI_DOCKER_IMAGE" \
-        DOCKER_TAG=$CI_DOCKER_TAG
-  environment:
-    name: production
-    url: https://${CI_PRODUCTION_HOSTNAME}:${IMAGE_PROVIDER_PORT}/
-  dependencies:
-    - taskfile
-    - environments
-
-release:
-  <<: *production_pipeline
-  <<: *dind_job
-  <<: *aws_authentication
-  stage: release
-  script:
-    - |
-      if wget --header="JOB-TOKEN: $CI_JOB_TOKEN" --spider -q \
-        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/releases/$CI_RELEASE_URI" >/dev/null 2>&1; then
-        echo "Release already exists for tag $CI_COMMIT_TAG, skipping."
-        exit 0
-      fi
-    - source aws-creds.sh
-    - |
-      if ! $(docker run --rm \
-        -e AWS_ACCESS_KEY_ID="$AWS_SESSION_ACCESS_KEY_ID" \
-        -e AWS_SECRET_ACCESS_KEY="$AWS_SESSION_SECRET_ACCESS_KEY" \
-        -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
-          amazon/aws-cli:2.25.6 s3api head-bucket --bucket "$CI_PRODUCTION_S3BUCKET" >/dev/null  2>&1); then
-          echo "Required S3 bucket '$CI_PRODUCTION_S3BUCKET' does not exist."
-          exit 1
-      fi
-    - |
-      docker pull "$AWS_PUBLIC_ECR_HOSTNAME/$CI_DOCKER_IMAGE:$CI_DOCKER_TAG"
-      docker save "$AWS_PUBLIC_ECR_HOSTNAME/$CI_DOCKER_IMAGE:$CI_DOCKER_TAG" | \
-        gzip > image_provider_$CI_DOCKER_TAG.tar.gz
-      docker run --rm \
-        -e AWS_ACCESS_KEY_ID="$AWS_SESSION_ACCESS_KEY_ID" \
-        -e AWS_SECRET_ACCESS_KEY="$AWS_SESSION_SECRET_ACCESS_KEY" \
-        -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
-        -v $(pwd):/app \
-        amazon/aws-cli:2.25.6 s3 cp /app/image_provider_$CI_DOCKER_TAG.tar.gz \
-          "s3://$CI_PRODUCTION_S3BUCKET/image_provider_$CI_DOCKER_TAG.tar.gz"
-    - |
-      export CI_IMAGE_ARTIFACT="https://$CI_PRODUCTION_S3BUCKET.s3.eu-central-1.amazonaws.com/image_provider_$CI_DOCKER_TAG.tar.gz"
-      CI_RELEASE_DESCRIPTION="$(cat <<EOF
-      ### 🚀 Image provider $CI_COMMIT_TAG
-
-      👤 **Autor**: $GITLAB_USER_NAME ($GITLAB_USER_EMAIL)
-
-      👷 **Pipeline**: $CI_PIPELINE_URL
-
-      🐳 **Docker Registry**: [retina/image-provider](https://gallery.ecr.aws/k7u6f6n6/$CI_DOCKER_IMAGE)
-
-      📦 **Docker Image**: [image_provider_$CI_COMMIT_TAG.tar.gz]($CI_IMAGE_ARTIFACT)
-
-      ### 📌 Changelog
-
-      $CI_COMMIT_TITLE
-      $CI_COMMIT_DESCRIPTION
-      EOF
-      )"
-      docker run --rm --entrypoint release-cli \
-        -e CI_SERVER_URL \
-        -e CI_PROJECT_ID \
-        -e CI_JOB_TOKEN \
-        -e CI_COMMIT_TAG \
-        -e CI_RELEASE_DESCRIPTION \
-        registry.gitlab.com/gitlab-org/release-cli:v0.23.0 create \
-        --name "🔖 Release $CI_COMMIT_TAG" \
-        --description "$CI_RELEASE_DESCRIPTION" \
-        --assets-link "{\"name\":\"Docker image (tar.gz)\",\"url\":\"$CI_IMAGE_ARTIFACT\",\"link_type\":\"package\"}"
-  dependencies:
-    - environments

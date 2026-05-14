@@ -1,0 +1,20 @@
+name: Use Taskfile
+description: Downloads Taskfile binary artifact and adds it to PATH.
+
+runs:
+  using: composite
+  steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: taskfile-bin
+        path: ${{ runner.temp }}/taskfile-bin
+
+    - name: Add to PATH
+      shell: pwsh
+      run: |
+        $binPath = Join-Path $env:RUNNER_TEMP "taskfile-bin"
+        if ($IsLinux -or $IsMacOS) {
+          chmod +x (Join-Path $binPath "task")
+        }
+        Add-Content -Path $env:GITHUB_PATH -Value $binPath

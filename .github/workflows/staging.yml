@@ -1,0 +1,105 @@
+name: Staging Workflow
+
+run-name: ${{ github.event.head_commit.message }}
+
+on:
+  push:
+    branches: [develop]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  prepare:
+    name: Prepare Environment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/install-taskfile
+
+  test:
+    name: Test via Docker Build
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/use-taskfile
+      - uses: ./.github/actions/export-vars
+        with:
+          vars: ${{ toJSON(vars) }}
+          env: staging
+      - run: task docker:build DOCKER_TARGET=test
+
+  build:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/use-taskfile
+      - uses: ./.github/actions/export-vars
+        with:
+          vars: ${{ toJSON(vars) }}
+          env: staging
+      - run: |-
+          echo "${{ secrets.CI_DOCKER_PASSWORD }}" | docker login -u "${{ vars.CI_DOCKER_USERNAME }}" \
+              --password-stdin "${{ vars.CI_DOCKER_REGISTRY }}"
+          task docker:build \
+            DOCKER_IMAGE="${{ vars.CI_DOCKER_REGISTRY }}/${{ vars.CI_DOCKER_IMAGE }}" \
+            DOCKER_TAG=staging \
+            -- push
+
+  deploy:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://${{ vars.CI_DEPLOY_HOSTNAME }}/api/docs
+    needs: [test, build]
+    env:
+      REMOTE_CWD: /tmp/image-provider
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/export-vars
+        with:
+          vars: ${{ toJSON(vars) }}
+          env: staging
+      - name: Copy Docker Compose
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ vars.CI_SSH_HOSTNAME }}
+          username: ${{ vars.CI_SSH_USERNAME }}
+          key: ${{ secrets.CI_SSH_PRIVATE_KEY }}
+          source: "compose.yml,Taskfile.yml"
+          target: ${{ env.REMOTE_CWD }}
+      - name: Run Docker Compose
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ vars.CI_SSH_HOSTNAME }}
+          username: ${{ vars.CI_SSH_USERNAME }}
+          key: ${{ secrets.CI_SSH_PRIVATE_KEY }}
+          envs: IMAGE_PROVIDER_DEBUG,IMAGE_PROVIDER_PORT,IMAGE_PROVIDER_UPLOAD_PATH,IMAGE_PROVIDER_UPLOAD_SIZE
+          script: |-
+            echo "${{ secrets.CI_DOCKER_PASSWORD }}" | docker login -u "${{ vars.CI_DOCKER_USERNAME }}" \
+              --password-stdin "${{ vars.CI_DOCKER_REGISTRY }}"
+            cd ${{ env.REMOTE_CWD }}
+            task docker:compose \
+              DOCKER_NAME=staging \
+              DOCKER_IMAGE="${{ vars.CI_DOCKER_REGISTRY }}/${{ vars.CI_DOCKER_IMAGE }}" \
+              DOCKER_TAG=staging \
+              -- pull
+            rm -rf ${{ env.REMOTE_CWD }}
+      - name: Smoke Test
+        run: |-
+          set -e
+          base="https://${{ vars.CI_DEPLOY_HOSTNAME }}"
+          for i in $(seq 1 12); do
+            if curl -fsS "$base/api/health" > /dev/null; then
+              echo "Healthy after $i attempts"
+              exit 0
+            fi
+            echo "Attempt $i failed, retry..."
+            sleep 5
+          done
+          echo "Smoke failed"
+          exit 1

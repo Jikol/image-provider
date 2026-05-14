@@ -1,0 +1,30 @@
+name: Export Variables
+description: Exports GitHub Actions variables to shell environment variables. Strips environment suffix (e.g. VAR_STAGING → VAR).
+
+inputs:
+  vars:
+    description: Serialized vars context — pass as toJSON(vars)
+    required: true
+  env:
+    description: Environment suffix to strip — staging or production
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Export Variables
+      shell: pwsh
+      env:
+        VARS_JSON: ${{ inputs.vars }}
+        ENV_PREFIX: ${{ inputs.env }}
+      run: |
+        $prefix = "$($env:ENV_PREFIX.ToUpper())_"
+        $vars = $env:VARS_JSON | ConvertFrom-Json
+        $vars.PSObject.Properties | ForEach-Object {
+          if ($_.Name.StartsWith($prefix)) {
+            $name = $_.Name.Substring($prefix.Length)
+            Add-Content -Path $env:GITHUB_ENV -Value "$name=$($_.Value)"
+          } elseif (-not ($_.Name.StartsWith("STAGING_") -or $_.Name.StartsWith("PRODUCTION_"))) {
+            Add-Content -Path $env:GITHUB_ENV -Value "$($_.Name)=$($_.Value)"
+          }
+        }

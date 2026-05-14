@@ -1,62 +1,186 @@
 # Image Provider
 
-[![license](https://img.shields.io/badge/License-MIT-coral)](https://opensource.org/license/mit)
-[![pipeline](https://gitlab.vsb.cz/retina/image-provider/badges/develop/pipeline.svg)](https://gitlab.vsb.cz/retina/image-provider/-/pipelines)
-[![release](https://gitlab.vsb.cz/retina/image-provider/-/badges/release.svg)](https://gitlab.vsb.cz/retina/image-provider/-/releases)
-[![docker](https://img.shields.io/badge/Docker_Registry-retina%2Fimage--provider-dodgerblue)](https://gallery.ecr.aws/k7u6f6n6/retina/image-provider)
+> Self-hosted HTTP API for uploading, storing, and serving images.
 
-> API service used to upload image files that can then be served using their URL. \
-> Primarily used for the Retina API.
+[![CI](https://github.com/Jikol/image-provider/actions/workflows/staging.yml/badge.svg?branch=develop)](https://github.com/Jikol/image-provider/actions/workflows/staging.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Overview
+## Features
 
-[API Documentation](https://retina.jikol.dev:2053/api/redoc)
+- Upload single or multiple images (`jpg`, `png`, `gif`, `webp`)
+- Serve images statically by name or list all uploaded files
+- Delete images by URL or purge all internal uploads in one call
+- Configurable upload size limit and storage path
+- Interactive docs via [Scalar](https://scalar.com) at `/api/docs`
+- OpenAPI spec at `/api/openapi.json`
 
-### Tech Stack
+## Quick Start
 
-| **Server**                                                                                                                       | **Docs**                                                                                                                                              |
-| -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [![nodejs](https://img.shields.io/badge/_-_?style=flat-square&logo=nodedotjs&label=Node.js&color=5fa04e)](https://nodejs.org/en) | [![redocly](https://img.shields.io/badge/_-_?style=flat-square&logo=readthedocs&label=Redocly&color=8ca1af)](https://redocly.com/)                    |
-| [![express](https://img.shields.io/badge/_-_?style=flat-square&logo=express&label=Express&color=000000)](https://expressjs.com/) | [![openapi](https://img.shields.io/badge/_-_?style=flat-square&logo=openapiinitiative&label=OpenAPI&color=6BA539)](https://swagger.io/specification/) |
+**Prerequisites:** [Bun](https://bun.com/docs), [Docker](https://www.docker.com),
+[Taskfile](https://taskfile.dev)
+
+```bash
+git clone https://github.com/Jikol/image-provider.git
+cd image-provider
+cp .env.template .env.local   # fill in required variables
+task init                     # install dependencies
+bun dev                       # start dev server
+```
+
+API available at `http://localhost:<IMAGE_PROVIDER_PORT>/api`.
+
+## API
+
+| Method   | Path                             | Description                 |
+| -------- | -------------------------------- | --------------------------- |
+| `GET`    | `/api/health`                    | Health check                |
+| `GET`    | `/api/v1/images`                 | List all uploaded images    |
+| `GET`    | `/api/v1/images/:name`           | Serve image by name         |
+| `POST`   | `/api/v1/upload`                 | Upload one or more images   |
+| `DELETE` | `/api/v1/upload/delete`          | Delete images by URL        |
+| `DELETE` | `/api/v1/upload/delete/internal` | Remove all internal uploads |
+
+All responses follow a unified shape:
+
+```json
+{
+  "context": { "message": "..." },
+  "status_message": "OK",
+  "status_code": 200
+}
+```
+
+## Configuration
+
+Copy `.env.template` to `.env.local` and fill in the required values.
+
+| Variable                     | Required | Default | Description                 |
+| ---------------------------- | -------- | ------- | --------------------------- |
+| `IMAGE_PROVIDER_PORT`        | yes      | —       | HTTP server port            |
+| `IMAGE_PROVIDER_UPLOAD_PATH` | yes      | —       | Filesystem path for storage |
+| `IMAGE_PROVIDER_UPLOAD_SIZE` | no       | `1024`  | Max upload size in MB       |
+| `IMAGE_PROVIDER_DEBUG`       | no       | `true`  | Verbose logging             |
+
+<details>
+<summary>Adding a new variable</summary>
+
+1. **`README.md`** — add a row to the table above
+
+2. **`.env.template`** — add an empty entry with a comment:
+
+   ```dotenv
+   # <type> [<default>]
+   IMAGE_PROVIDER_NEW_VAR=
+   ```
+
+3. **`.env.local`** — add with a real value for local development (not committed):
+
+   ```dotenv
+   IMAGE_PROVIDER_NEW_VAR=value
+   ```
+
+4. **`config.ts`** — add to the Zod `environments` schema:
+
+   ```ts
+   IMAGE_PROVIDER_NEW_VAR: z.string();
+   ```
+
+5. **`compose.yml`** — add under `environment:` of the service:
+
+   ```yaml
+   IMAGE_PROVIDER_NEW_VAR: ${IMAGE_PROVIDER_NEW_VAR:?error}
+   ```
+
+6. _(Only if required at Docker build time — e.g. in `EXPOSE` or `HEALTHCHECK`)_
+   **`Dockerfile`** — add `ARG` in the relevant stage, **`Taskfile.yml`** — add to
+   `requires.vars` and as `--build-arg`, **`.env.ci.template`** — add with environment
+   prefix:
+
+   ```dockerfile
+   ARG IMAGE_PROVIDER_NEW_VAR
+   ```
+
+   ```yaml
+   requires:
+     vars:
+       - IMAGE_PROVIDER_NEW_VAR
+   ```
+
+   ```
+   --build-arg IMAGE_PROVIDER_NEW_VAR={{.IMAGE_PROVIDER_NEW_VAR}}
+   ```
+
+   ```dotenv
+   STAGING_IMAGE_PROVIDER_NEW_VAR=
+   PRODUCTION_IMAGE_PROVIDER_NEW_VAR=
+   ```
+
+</details>
 
 ## Development
 
-**Required programs**
-
-[![taskfile](https://img.shields.io/badge/_-_?style=flat-square&logo=yaml&label=Taskfile&color=94dfd8)](https://taskfile.dev/installation/)
-[![bun](https://img.shields.io/badge/_-_?style=flat-square&logo=bun&label=Bun&color=fbf0df)](https://bun.sh/)
-[![nodejs](https://img.shields.io/badge/_-_?style=flat-square&logo=nodedotjs&label=Node.js&color=5fa04e)](https://nodejs.org/en)
-[![git](https://img.shields.io/badge/_-_?style=flat-square&logo=git&label=Git&color=f05032)](https://git-scm.com/)
-
-### Instructions
-
-Clone the project and checkout to develop branch
-
 ```bash
-  git clone https://gitlab.vsb.cz/retina/image-provider.git
-  cd image-provider && git checkout origin/develop
+bun run dev          # dev server with hot reload
+bun run test         # run tests
+bun run lint     # typecheck + eslint --fix
+bun run form     # prettier --write
 ```
 
-Install JavaScript runtime dependencies
+### Docker
 
 ```bash
-  task init
+task docker:dev                                    # local dev via Docker Compose
+task docker:build [-- push] [DOCKER_TAG=x.y.z]    # build image
+task docker:compose [-- pull] [-- attach|down]     # run production image
 ```
 
-Create `.env.local` file from `template.env` and fill the desired variables
+## Project Structure
 
-Now you can start Node.js `express` server in `nodemon` runtime
-
-```bash
-  bun dev
+```
+image-provider/
+├── src/
+│   ├── app.ts          # Bun.serve bootstrap + graceful shutdown
+│   ├── core/           # Routing, middleware, response factories
+│   ├── http/           # Domain handlers (images.ts, upload.ts)
+│   └── utils.ts        # Shared utilities
+├── scripts/            # Build scripts
+├── config.ts           # Zod-validated environment configuration
+├── logger.ts           # Pino logger instance
+├── compose.yml         # Docker Compose definitions
+├── Dockerfile          # Multi-stage build (base → test → build → final)
+└── Taskfile.yml        # Project automation
 ```
 
-You should see development documentation on
-`https://localhost:$IMAGE_PROVIDER_PORT/api/redoc`
+<details>
+<summary>CI/CD — GitHub Actions setup</summary>
 
-## Conventions
+The staging pipeline runs on push to `develop`. Defined in `.env.ci.template`.
 
-- [General](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions)
-- [Commit messages](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Commit-messages)
-- [Versioning](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Versioning)
-- [Docker](https://gitlab.vsb.cz/retina/image-provider/-/wikis/Conventions/Docker)
+**Repository variables** (Settings → Secrets and variables → Actions → Variables) use
+`STAGING_` / `PRODUCTION_` prefix — a single `export-vars` composite action strips the
+prefix per environment:
+
+| Variable                         | Description                                                  |
+| -------------------------------- | ------------------------------------------------------------ |
+| `STAGING_IMAGE_PROVIDER_PORT`    | HTTP port for the staging container                          |
+| `PRODUCTION_IMAGE_PROVIDER_PORT` | HTTP port for the production container                       |
+| `CI_DOCKER_REGISTRY`             | Docker registry hostname                                     |
+| `CI_DOCKER_IMAGE`                | Docker image name                                            |
+| `CI_DEPLOY_HOSTNAME`             | VPS hostname for the deployment URL                          |
+| `CI_DOCKER_NAME`                 | Docker Compose project name prefix (`staging`, `production`) |
+| `CI_DOCKER_USERNAME`             | Docker registry login                                        |
+| `CI_SSH_HOSTNAME`                | VPS SSH host                                                 |
+| `CI_SSH_USERNAME`                | VPS SSH user                                                 |
+
+**Environment secrets** (Settings → Environments → `staging` / `production`):
+
+| Secret               | Description                  |
+| -------------------- | ---------------------------- |
+| `CI_DOCKER_PASSWORD` | Docker registry password     |
+| `CI_SSH_PRIVATE_KEY` | PEM private key for SSH auth |
+
+</details>
+
+## License
+
+[MIT](LICENSE)

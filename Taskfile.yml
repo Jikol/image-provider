@@ -26,11 +26,13 @@ tasks:
   docker:dev:
     desc: >
       Run docker compose with dev profile for local development | Usage: task docker:dev
-      (d:d) [ DOCKER_REGISTRY=<string>, default {{.DEFAULT_DOCKER_REGISTRY}}; ]
+      (d:d) [ DOCKER_NAME=<string>, default {{.DEFAULT_DOCKER_NAME}};
+      DOCKER_REGISTRY=<string>, default {{.DEFAULT_DOCKER_REGISTRY}}; ]
     aliases: [d:d]
     platforms: [linux]
     env:
       DOCKER_IMAGE: "{{.DOCKER_IMAGE | default .DEFAULT_DOCKER_IMAGE}}" # pass taskfile variable to environment
+      DOCKER_NAME: "{{.DOCKER_NAME | default .DEFAULT_DOCKER_NAME}}" # pass taskfile variable to environment
       DOCKER_TAG: "{{.DOCKER_TAG | default .DEFAULT_DOCKER_TAG}}" # pass taskfile variable to environment
       DOCKER_REGISTRY: "{{.DOCKER_REGISTRY | default .DEFAULT_DOCKER_REGISTRY}}" # pass taskfile variable to environment
     cmds:

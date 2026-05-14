@@ -1,129 +1,70 @@
 # Image Provider
 
-> HTTP API service for image uploading and serving.
+> Self-hosted HTTP API for uploading, storing, and serving images.
 
-## Tech Stack
+[![CI](https://github.com/Jikol/image-provider/actions/workflows/staging.yml/badge.svg?branch=develop)](https://github.com/Jikol/image-provider/actions/workflows/staging.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- **[Bun](https://bun.com/docs)** - Runtime environment
-- **[Hono](https://hono.dev)** - HTTP framework
-- **[Pino](https://getpino.io)** - Logging
-- **[Zod](https://zod.dev)** - Schema validation
-- **[TypeScript](https://www.typescriptlang.org)** - Type safety
-- **[Docker](https://www.docker.com)** - Containerization
+## Features
 
-## Development
+- Upload single or multiple images (`jpg`, `png`, `gif`, `webp`)
+- Serve images statically by name or list all uploaded files
+- Delete images by URL or purge all internal uploads in one call
+- Configurable upload size limit and storage path
+- Interactive docs via [Scalar](https://scalar.com) at `/api/docs`
+- OpenAPI spec at `/api/openapi.json`
 
-### Prerequisites
+## Quick Start
 
-- **[Git](https://git-scm.com)** - Version control
-- **[Taskfile](https://taskfile.dev/docs/guide)** - Project automation
-- **[Bun](https://bun.com/docs)** - Runtime environment
-- **[Docker](https://www.docker.com)** - Container runtime
-
-Clone the project and checkout to develop branch
+**Prerequisites:** [Bun](https://bun.com/docs), [Docker](https://www.docker.com),
+[Taskfile](https://taskfile.dev)
 
 ```bash
-git clone <repository-url>
-cd image-provider && git checkout origin/develop
+git clone https://github.com/Jikol/image-provider.git
+cd image-provider
+cp .env.template .env.local   # fill in required variables
+task init                     # install dependencies
+bun dev                       # start dev server
 ```
 
-Create `.env.local` from `.env.template` and fill the desired variables
+API available at `http://localhost:<IMAGE_PROVIDER_PORT>/api`.
 
-### Install
+## API
 
-```bash
-task init
+| Method   | Path                             | Description                 |
+| -------- | -------------------------------- | --------------------------- |
+| `GET`    | `/api/health`                    | Health check                |
+| `GET`    | `/api/v1/images`                 | List all uploaded images    |
+| `GET`    | `/api/v1/images/:name`           | Serve image by name         |
+| `POST`   | `/api/v1/upload`                 | Upload one or more images   |
+| `DELETE` | `/api/v1/upload/delete`          | Delete images by URL        |
+| `DELETE` | `/api/v1/upload/delete/internal` | Remove all internal uploads |
+
+All responses follow a unified shape:
+
+```json
+{
+  "context": { "message": "..." },
+  "status_message": "OK",
+  "status_code": 200
+}
 ```
 
-### Development
+## Configuration
 
-```bash
-bun dev
-```
+Copy `.env.template` to `.env.local` and fill in the required values.
 
-### Build
+| Variable                     | Required | Default | Description                 |
+| ---------------------------- | -------- | ------- | --------------------------- |
+| `IMAGE_PROVIDER_PORT`        | yes      | —       | HTTP server port            |
+| `IMAGE_PROVIDER_UPLOAD_PATH` | yes      | —       | Filesystem path for storage |
+| `IMAGE_PROVIDER_UPLOAD_SIZE` | no       | `1024`  | Max upload size in MB       |
+| `IMAGE_PROVIDER_DEBUG`       | no       | `true`  | Verbose logging             |
 
-```bash
-task docker:build
-```
+<details>
+<summary>Adding a new variable</summary>
 
-### Additional Commands
-
-#### Bun scripts (`bun run <script>`)
-
-| Command        | Description                           |
-| -------------- | ------------------------------------- |
-| `bun dev`      | Start dev server with hot reload      |
-| `bun test`     | Run test suite                        |
-| `bun run lint` | Lint source files and auto-fix issues |
-| `bun run form` | Format source files with Prettier     |
-
-#### Taskfile tasks (`task <task>`)
-
-| Command               | Alias | Description                                                                                    |
-| --------------------- | ----- | ---------------------------------------------------------------------------------------------- |
-| `task init`           | `i`   | Install dependencies (`-- hard` to also delete lockfile)                                       |
-| `task docker:dev`     | `d:d` | Start local dev environment via Docker Compose                                                 |
-| `task docker:build`   | `d:b` | Build Docker image for deployment (supports `-- push`, `DOCKER_TAG`, `DOCKER_TARGET`)          |
-| `task docker:compose` | `d:c` | Run the built production image via Docker Compose (supports `-- pull`, `-- attach`, `-- down`) |
-
-## Project Structure
-
-```
-image-provider/
-├── src/
-│   ├── app.ts          # Bun.serve bootstrap + graceful shutdown
-│   ├── core/           # Routing, middleware, response factories
-│   ├── http/           # Domain handlers, one file per resource
-│   └── utils.ts        # Shared utilities
-├── scripts/            # Build scripts
-├── types/              # Shared TypeScript type definitions
-├── config.ts           # Zod-validated environment configuration
-├── logger.ts           # Pino logger instance
-├── compose.yml         # Docker Compose service definitions
-├── Dockerfile          # Docker image build definition
-└── Taskfile.yml        # Project automation tasks
-```
-
-## Environment Variables
-
-### Runtime (injected into container via Docker Compose)
-
-| Variable                     | Type      | Default | Description                  |
-| ---------------------------- | --------- | ------- | ---------------------------- |
-| `IMAGE_PROVIDER_DEBUG`       | `boolean` | `true`  | Enable debug/verbose logging |
-| `IMAGE_PROVIDER_PORT`        | `number`  | -       | HTTP server port             |
-| `IMAGE_PROVIDER_UPLOAD_PATH` | `string`  | -       | Unix path for image storage  |
-| `IMAGE_PROVIDER_UPLOAD_SIZE` | `number`  | `1024`  | Max upload size in MB        |
-
-### CI (GitHub Actions)
-
-Defined in `.env.ci.template` — serves as reference for configuring GitHub Actions variables and secrets.
-
-**Repository variables** (Settings → Secrets and variables → Actions → Variables) use `STAGING_` / `PRODUCTION_` prefix so a single `export-vars` composite action can strip the prefix and expose the correct value for each environment:
-
-| Variable                              | Description                                  |
-| ------------------------------------- | -------------------------------------------- |
-| `STAGING_IMAGE_PROVIDER_PORT`         | HTTP port exposed by the staging container   |
-| `PRODUCTION_IMAGE_PROVIDER_PORT`      | HTTP port exposed by the production container |
-| `CI_DOCKER_REGISTRY`                  | Docker registry hostname                     |
-| `CI_DOCKER_IMAGE`                     | Docker image name (e.g. `user/repo`)         |
-| `CI_DEPLOY_HOSTNAME`                  | VPS hostname used for the deployment URL     |
-| `CI_DOCKER_NAME`                      | Docker Compose project name prefix (e.g. `staging`, `production`) |
-| `CI_DOCKER_USERNAME`                  | Docker registry login                        |
-| `CI_SSH_HOSTNAME`                     | VPS SSH host                                 |
-| `CI_SSH_USERNAME`                     | VPS SSH user                                 |
-
-**Environment secrets** (Settings → Environments → `staging` / `production`) are scoped per environment and have no prefix:
-
-| Secret                | Description                  |
-| --------------------- | ---------------------------- |
-| `CI_DOCKER_PASSWORD`  | Docker registry password     |
-| `CI_SSH_PRIVATE_KEY`  | PEM private key for SSH auth |
-
-### Adding a new variable
-
-1. **`README.md`** — add a row to the environment variables table above
+1. **`README.md`** — add a row to the table above
 
 2. **`.env.template`** — add an empty entry with a comment:
 
@@ -141,7 +82,7 @@ Defined in `.env.ci.template` — serves as reference for configuring GitHub Act
 4. **`config.ts`** — add to the Zod `environments` schema:
 
    ```ts
-   IMAGE_PROVIDER_NEW_VAR: z.string()
+   IMAGE_PROVIDER_NEW_VAR: z.string();
    ```
 
 5. **`compose.yml`** — add under `environment:` of the service:
@@ -150,9 +91,10 @@ Defined in `.env.ci.template` — serves as reference for configuring GitHub Act
    IMAGE_PROVIDER_NEW_VAR: ${IMAGE_PROVIDER_NEW_VAR:?error}
    ```
 
-6. _(Only if the variable is required at Docker build time — e.g. in `EXPOSE` or `HEALTHCHECK`)_
-   **`Dockerfile`** — add `ARG` in the relevant stage, **`Taskfile.yml`** — add to `requires.vars`
-   and as `--build-arg`, and **`.env.ci.template`** — add with environment prefix:
+6. _(Only if required at Docker build time — e.g. in `EXPOSE` or `HEALTHCHECK`)_
+   **`Dockerfile`** — add `ARG` in the relevant stage, **`Taskfile.yml`** — add to
+   `requires.vars` and as `--build-arg`, **`.env.ci.template`** — add with environment
+   prefix:
 
    ```dockerfile
    ARG IMAGE_PROVIDER_NEW_VAR
@@ -172,3 +114,73 @@ Defined in `.env.ci.template` — serves as reference for configuring GitHub Act
    STAGING_IMAGE_PROVIDER_NEW_VAR=
    PRODUCTION_IMAGE_PROVIDER_NEW_VAR=
    ```
+
+</details>
+
+## Development
+
+```bash
+bun run dev          # dev server with hot reload
+bun run test         # run tests
+bun run lint     # typecheck + eslint --fix
+bun run form     # prettier --write
+```
+
+### Docker
+
+```bash
+task docker:dev                                    # local dev via Docker Compose
+task docker:build [-- push] [DOCKER_TAG=x.y.z]    # build image
+task docker:compose [-- pull] [-- attach|down]     # run production image
+```
+
+## Project Structure
+
+```
+image-provider/
+├── src/
+│   ├── app.ts          # Bun.serve bootstrap + graceful shutdown
+│   ├── core/           # Routing, middleware, response factories
+│   ├── http/           # Domain handlers (images.ts, upload.ts)
+│   └── utils.ts        # Shared utilities
+├── scripts/            # Build scripts
+├── config.ts           # Zod-validated environment configuration
+├── logger.ts           # Pino logger instance
+├── compose.yml         # Docker Compose definitions
+├── Dockerfile          # Multi-stage build (base → test → build → final)
+└── Taskfile.yml        # Project automation
+```
+
+<details>
+<summary>CI/CD — GitHub Actions setup</summary>
+
+The staging pipeline runs on push to `develop`. Defined in `.env.ci.template`.
+
+**Repository variables** (Settings → Secrets and variables → Actions → Variables) use
+`STAGING_` / `PRODUCTION_` prefix — a single `export-vars` composite action strips the
+prefix per environment:
+
+| Variable                         | Description                                                  |
+| -------------------------------- | ------------------------------------------------------------ |
+| `STAGING_IMAGE_PROVIDER_PORT`    | HTTP port for the staging container                          |
+| `PRODUCTION_IMAGE_PROVIDER_PORT` | HTTP port for the production container                       |
+| `CI_DOCKER_REGISTRY`             | Docker registry hostname                                     |
+| `CI_DOCKER_IMAGE`                | Docker image name                                            |
+| `CI_DEPLOY_HOSTNAME`             | VPS hostname for the deployment URL                          |
+| `CI_DOCKER_NAME`                 | Docker Compose project name prefix (`staging`, `production`) |
+| `CI_DOCKER_USERNAME`             | Docker registry login                                        |
+| `CI_SSH_HOSTNAME`                | VPS SSH host                                                 |
+| `CI_SSH_USERNAME`                | VPS SSH user                                                 |
+
+**Environment secrets** (Settings → Environments → `staging` / `production`):
+
+| Secret               | Description                  |
+| -------------------- | ---------------------------- |
+| `CI_DOCKER_PASSWORD` | Docker registry password     |
+| `CI_SSH_PRIVATE_KEY` | PEM private key for SSH auth |
+
+</details>
+
+## License
+
+[MIT](LICENSE)
